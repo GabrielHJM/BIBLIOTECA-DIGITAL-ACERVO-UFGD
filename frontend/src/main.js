@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import VueRouter from 'vue-router'
 
 // Vuetify
 import 'vuetify/styles'
@@ -14,4 +15,4 @@ const vuetify = createVuetify({
   directives,
 })
 
-createApp(App).use(vuetify).mount('#app')
+createApp(App).use(VueRouter).use(vuetify).mount('#app')
