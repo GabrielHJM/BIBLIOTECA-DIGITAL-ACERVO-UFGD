@@ -11,8 +11,8 @@ import * as directives from 'vuetify/directives'
 import App from './App.vue'
 
 const vuetify = createVuetify({
-  components,
-  directives,
+	components,
+	directives,
 })
 
 createApp(App).use(VueRouter).use(vuetify).mount('#app')
