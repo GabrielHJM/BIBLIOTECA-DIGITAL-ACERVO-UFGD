@@ -14,13 +14,17 @@
 				Botão Vuetify 09
 			</v-btn>
 		</v-main>
+
+		<Footer />
 	</v-app>
 </template>
 
 <script>
+import Footer from './components/Footer.vue';
 
 export default {
 	name: 'App',
+	components: {Footer}
 }
 </script>
 
