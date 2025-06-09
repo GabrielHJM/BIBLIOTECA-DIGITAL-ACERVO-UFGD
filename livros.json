@@ -1,0 +1,502 @@
+[
+  {
+    "nome": "Estruturas de Dados e Algoritmos em Java",
+    "ano_publicacao": 2023,
+    "paginas": 1121,
+    "capitulos": 20,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Michael T. Goodrich, Roberto Tamassia",
+    "link": "https://m.media-amazon.com/images/I/91YgfEma0CL._SL1500_.jpg"
+  },
+  {
+    "nome": "Clean Code",
+    "ano_publicacao": 2018,
+    "paginas": 821,
+    "capitulos": 26,
+    "volume": 2,
+    "edicao": 13,
+    "autor": "Robert C. Martin",
+    "link": "https://universidade.exemplo.com/livros/clean-code-computação"
+  },
+  {
+    "nome": "Design Patterns",
+    "ano_publicacao": 2020,
+    "paginas": 1109,
+    "capitulos": 16,
+    "volume": 1,
+    "edicao": 8,
+    "autor": "Erich Gamma et al.",
+    "link": "https://universidade.exemplo.com/livros/design-patterns-computação"
+  },
+  {
+    "nome": "Introduction to Algorithms",
+    "ano_publicacao": 2021,
+    "paginas": 1255,
+    "capitulos": 18,
+    "volume": 1,
+    "edicao": 1,
+    "autor": "Thomas H. Cormen",
+    "link": "https://universidade.exemplo.com/livros/introduction-to-algorithms-computação"
+  },
+  {
+    "nome": "The Pragmatic Programmer",
+    "ano_publicacao": 2010,
+    "paginas": 460,
+    "capitulos": 30,
+    "volume": 1,
+    "edicao": 10,
+    "autor": "Andrew Hunt, David Thomas",
+    "link": "https://universidade.exemplo.com/livros/the-pragmatic-programmer-computação"
+  },
+  {
+    "nome": "Princípios de Anatomia e Fisiologia",
+    "ano_publicacao": 2013,
+    "paginas": 1173,
+    "capitulos": 34,
+    "volume": 2,
+    "edicao": 13,
+    "autor": "Tortora, Derrickson",
+    "link": "https://universidade.exemplo.com/livros/princípios-de-anatomia-e-fisiologia-medicina"
+  },
+  {
+    "nome": "Bioquímica Ilustrada",
+    "ano_publicacao": 2022,
+    "paginas": 1495,
+    "capitulos": 12,
+    "volume": 2,
+    "edicao": 8,
+    "autor": "Harper",
+    "link": "https://universidade.exemplo.com/livros/bioquímica-ilustrada-medicina"
+  },
+  {
+    "nome": "Farmacologia",
+    "ano_publicacao": 2024,
+    "paginas": 1448,
+    "capitulos": 28,
+    "volume": 1,
+    "edicao": 2,
+    "autor": "Rang & Dale",
+    "link": "https://universidade.exemplo.com/livros/farmacologia-medicina"
+  },
+  {
+    "nome": "Patologia Estrutural e Funcional",
+    "ano_publicacao": 2014,
+    "paginas": 1082,
+    "capitulos": 19,
+    "volume": 1,
+    "edicao": 4,
+    "autor": "Robbins",
+    "link": "https://universidade.exemplo.com/livros/patologia-estrutural-e-funcional-medicina"
+  },
+  {
+    "nome": "Semiologia Médica",
+    "ano_publicacao": 2014,
+    "paginas": 1487,
+    "capitulos": 21,
+    "volume": 1,
+    "edicao": 4,
+    "autor": "DeGowin",
+    "link": "https://universidade.exemplo.com/livros/semiologia-médica-medicina"
+  },
+  {
+    "nome": "Fundamentos de Direito Civil",
+    "ano_publicacao": 2020,
+    "paginas": 1027,
+    "capitulos": 21,
+    "volume": 1,
+    "edicao": 1,
+    "autor": "Carlos Roberto Gonçalves",
+    "link": "https://universidade.exemplo.com/livros/fundamentos-de-direito-civil-direito"
+  },
+  {
+    "nome": "Introdução ao Estudo do Direito",
+    "ano_publicacao": 2017,
+    "paginas": 1075,
+    "capitulos": 30,
+    "volume": 1,
+    "edicao": 9,
+    "autor": "Miguel Reale",
+    "link": "https://universidade.exemplo.com/livros/introdução-ao-estudo-do-direito-direito"
+  },
+  {
+    "nome": "Curso de Direito Penal",
+    "ano_publicacao": 2016,
+    "paginas": 1103,
+    "capitulos": 20,
+    "volume": 2,
+    "edicao": 4,
+    "autor": "Damásio de Jesus",
+    "link": "https://universidade.exemplo.com/livros/curso-de-direito-penal-direito"
+  },
+  {
+    "nome": "Direito Constitucional Esquematizado",
+    "ano_publicacao": 2014,
+    "paginas": 403,
+    "capitulos": 19,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Pedro Lenza",
+    "link": "https://universidade.exemplo.com/livros/direito-constitucional-esquematizado-direito"
+  },
+  {
+    "nome": "Manual de Direito Administrativo",
+    "ano_publicacao": 2022,
+    "paginas": 978,
+    "capitulos": 27,
+    "volume": 2,
+    "edicao": 6,
+    "autor": "Alexandre Mazza",
+    "link": "https://universidade.exemplo.com/livros/manual-de-direito-administrativo-direito"
+  },
+  {
+    "nome": "Cálculo - Volume 1",
+    "ano_publicacao": 2020,
+    "paginas": 458,
+    "capitulos": 25,
+    "volume": 2,
+    "edicao": 3,
+    "autor": "James Stewart",
+    "link": "https://universidade.exemplo.com/livros/cálculo---volume-1-engenharia"
+  },
+  {
+    "nome": "Mecânica dos Materiais",
+    "ano_publicacao": 2014,
+    "paginas": 482,
+    "capitulos": 28,
+    "volume": 2,
+    "edicao": 14,
+    "autor": "Beer & Johnston",
+    "link": "https://universidade.exemplo.com/livros/mecânica-dos-materiais-engenharia"
+  },
+  {
+    "nome": "Resistência dos Materiais",
+    "ano_publicacao": 2014,
+    "paginas": 831,
+    "capitulos": 14,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Hibbeler",
+    "link": "https://universidade.exemplo.com/livros/resistência-dos-materiais-engenharia"
+  },
+  {
+    "nome": "Engenharia Econômica",
+    "ano_publicacao": 2012,
+    "paginas": 1381,
+    "capitulos": 28,
+    "volume": 1,
+    "edicao": 12,
+    "autor": "Leland Blank",
+    "link": "https://universidade.exemplo.com/livros/engenharia-econômica-engenharia"
+  },
+  {
+    "nome": "Termodinâmica",
+    "ano_publicacao": 2018,
+    "paginas": 1500,
+    "capitulos": 33,
+    "volume": 1,
+    "edicao": 1,
+    "autor": "Yunus Çengel",
+    "link": "https://universidade.exemplo.com/livros/termodinâmica-engenharia"
+  },
+  {
+    "nome": "Administração: Teoria, Processo e Prática",
+    "ano_publicacao": 2021,
+    "paginas": 1205,
+    "capitulos": 28,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Idalberto Chiavenato",
+    "link": "https://universidade.exemplo.com/livros/administração:-teoria,-processo-e-prática-administração"
+  },
+  {
+    "nome": "Fundamentos da Administração Financeira",
+    "ano_publicacao": 2021,
+    "paginas": 1050,
+    "capitulos": 34,
+    "volume": 1,
+    "edicao": 13,
+    "autor": "Gitman",
+    "link": "https://universidade.exemplo.com/livros/fundamentos-da-administração-financeira-administração"
+  },
+  {
+    "nome": "Marketing",
+    "ano_publicacao": 2013,
+    "paginas": 1251,
+    "capitulos": 29,
+    "volume": 2,
+    "edicao": 5,
+    "autor": "Philip Kotler",
+    "link": "https://universidade.exemplo.com/livros/marketing-administração"
+  },
+  {
+    "nome": "Comportamento Organizacional",
+    "ano_publicacao": 2021,
+    "paginas": 474,
+    "capitulos": 18,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Stephen Robbins",
+    "link": "https://universidade.exemplo.com/livros/comportamento-organizacional-administração"
+  },
+  {
+    "nome": "Administração de Produção",
+    "ano_publicacao": 2023,
+    "paginas": 1473,
+    "capitulos": 22,
+    "volume": 1,
+    "edicao": 7,
+    "autor": "Nigel Slack",
+    "link": "https://universidade.exemplo.com/livros/administração-de-produção-administração"
+  },
+  {
+    "nome": "Psicologia: Uma Introdução",
+    "ano_publicacao": 2013,
+    "paginas": 696,
+    "capitulos": 26,
+    "volume": 2,
+    "edicao": 10,
+    "autor": "David G. Myers",
+    "link": "https://universidade.exemplo.com/livros/psicologia:-uma-introdução-psicologia"
+  },
+  {
+    "nome": "O Comportamento Humano",
+    "ano_publicacao": 2022,
+    "paginas": 873,
+    "capitulos": 20,
+    "volume": 1,
+    "edicao": 15,
+    "autor": "B.F. Skinner",
+    "link": "https://universidade.exemplo.com/livros/o-comportamento-humano-psicologia"
+  },
+  {
+    "nome": "Psicologia do Desenvolvimento",
+    "ano_publicacao": 2018,
+    "paginas": 877,
+    "capitulos": 25,
+    "volume": 2,
+    "edicao": 3,
+    "autor": "Papalia",
+    "link": "https://universidade.exemplo.com/livros/psicologia-do-desenvolvimento-psicologia"
+  },
+  {
+    "nome": "Psicopatologia",
+    "ano_publicacao": 2023,
+    "paginas": 1191,
+    "capitulos": 29,
+    "volume": 2,
+    "edicao": 15,
+    "autor": "Kaplan & Sadock",
+    "link": "https://universidade.exemplo.com/livros/psicopatologia-psicologia"
+  },
+  {
+    "nome": "Terapia Cognitivo-Comportamental",
+    "ano_publicacao": 2017,
+    "paginas": 962,
+    "capitulos": 30,
+    "volume": 1,
+    "edicao": 13,
+    "autor": "Judith Beck",
+    "link": "https://universidade.exemplo.com/livros/terapia-cognitivo-comportamental-psicologia"
+  },
+  {
+    "nome": "História da Arquitetura Ocidental",
+    "ano_publicacao": 2017,
+    "paginas": 1415,
+    "capitulos": 30,
+    "volume": 2,
+    "edicao": 6,
+    "autor": "David Watkin",
+    "link": "https://universidade.exemplo.com/livros/história-da-arquitetura-ocidental-arquitetura"
+  },
+  {
+    "nome": "Arquitetura: Forma, Espaço e Ordem",
+    "ano_publicacao": 2019,
+    "paginas": 1500,
+    "capitulos": 13,
+    "volume": 2,
+    "edicao": 10,
+    "autor": "Francis D. K. Ching",
+    "link": "https://universidade.exemplo.com/livros/arquitetura:-forma,-espaço-e-ordem-arquitetura"
+  },
+  {
+    "nome": "Desenho Arquitetônico",
+    "ano_publicacao": 2015,
+    "paginas": 354,
+    "capitulos": 32,
+    "volume": 2,
+    "edicao": 1,
+    "autor": "Ernest Norling",
+    "link": "https://universidade.exemplo.com/livros/desenho-arquitetônico-arquitetura"
+  },
+  {
+    "nome": "Projeto de Arquitetura",
+    "ano_publicacao": 2018,
+    "paginas": 1054,
+    "capitulos": 16,
+    "volume": 2,
+    "edicao": 4,
+    "autor": "Peter Zumthor",
+    "link": "https://universidade.exemplo.com/livros/projeto-de-arquitetura-arquitetura"
+  },
+  {
+    "nome": "Urbanismo",
+    "ano_publicacao": 2011,
+    "paginas": 456,
+    "capitulos": 12,
+    "volume": 1,
+    "edicao": 13,
+    "autor": "Françoise Choay",
+    "link": "https://universidade.exemplo.com/livros/urbanismo-arquitetura"
+  },
+  {
+    "nome": "Estruturas de Dados e Algoritmos em Java",
+    "ano_publicacao": 2020,
+    "paginas": 1154,
+    "capitulos": 17,
+    "volume": 1,
+    "edicao": 15,
+    "autor": "Michael T. Goodrich, Roberto Tamassia",
+    "link": "https://universidade.exemplo.com/livros/estruturas-de-dados-e-algoritmos-em-java-computação"
+  },
+  {
+    "nome": "Clean Code",
+    "ano_publicacao": 2023,
+    "paginas": 708,
+    "capitulos": 11,
+    "volume": 2,
+    "edicao": 2,
+    "autor": "Robert C. Martin",
+    "link": "https://universidade.exemplo.com/livros/clean-code-computação"
+  },
+  {
+    "nome": "Design Patterns",
+    "ano_publicacao": 2022,
+    "paginas": 708,
+    "capitulos": 25,
+    "volume": 2,
+    "edicao": 3,
+    "autor": "Erich Gamma et al.",
+    "link": "https://universidade.exemplo.com/livros/design-patterns-computação"
+  },
+  {
+    "nome": "Introduction to Algorithms",
+    "ano_publicacao": 2013,
+    "paginas": 925,
+    "capitulos": 25,
+    "volume": 2,
+    "edicao": 4,
+    "autor": "Thomas H. Cormen",
+    "link": "https://universidade.exemplo.com/livros/introduction-to-algorithms-computação"
+  },
+  {
+    "nome": "The Pragmatic Programmer",
+    "ano_publicacao": 2021,
+    "paginas": 1147,
+    "capitulos": 19,
+    "volume": 1,
+    "edicao": 9,
+    "autor": "Andrew Hunt, David Thomas",
+    "link": "https://universidade.exemplo.com/livros/the-pragmatic-programmer-computação"
+  },
+  {
+    "nome": "Princípios de Anatomia e Fisiologia",
+    "ano_publicacao": 2010,
+    "paginas": 510,
+    "capitulos": 33,
+    "volume": 2,
+    "edicao": 4,
+    "autor": "Tortora, Derrickson",
+    "link": "https://universidade.exemplo.com/livros/princípios-de-anatomia-e-fisiologia-medicina"
+  },
+  {
+    "nome": "Bioquímica Ilustrada",
+    "ano_publicacao": 2021,
+    "paginas": 980,
+    "capitulos": 12,
+    "volume": 1,
+    "edicao": 14,
+    "autor": "Harper",
+    "link": "https://universidade.exemplo.com/livros/bioquímica-ilustrada-medicina"
+  },
+  {
+    "nome": "Farmacologia",
+    "ano_publicacao": 2014,
+    "paginas": 964,
+    "capitulos": 33,
+    "volume": 1,
+    "edicao": 9,
+    "autor": "Rang & Dale",
+    "link": "https://universidade.exemplo.com/livros/farmacologia-medicina"
+  },
+  {
+    "nome": "Patologia Estrutural e Funcional",
+    "ano_publicacao": 2015,
+    "paginas": 479,
+    "capitulos": 24,
+    "volume": 2,
+    "edicao": 3,
+    "autor": "Robbins",
+    "link": "https://universidade.exemplo.com/livros/patologia-estrutural-e-funcional-medicina"
+  },
+  {
+    "nome": "Semiologia Médica",
+    "ano_publicacao": 2024,
+    "paginas": 402,
+    "capitulos": 30,
+    "volume": 2,
+    "edicao": 2,
+    "autor": "DeGowin",
+    "link": "https://universidade.exemplo.com/livros/semiologia-médica-medicina"
+  },
+  {
+    "nome": "Fundamentos de Direito Civil",
+    "ano_publicacao": 2014,
+    "paginas": 639,
+    "capitulos": 35,
+    "volume": 1,
+    "edicao": 3,
+    "autor": "Carlos Roberto Gonçalves",
+    "link": "https://universidade.exemplo.com/livros/fundamentos-de-direito-civil-direito"
+  },
+  {
+    "nome": "Introdução ao Estudo do Direito",
+    "ano_publicacao": 2021,
+    "paginas": 332,
+    "capitulos": 30,
+    "volume": 1,
+    "edicao": 1,
+    "autor": "Miguel Reale",
+    "link": "https://universidade.exemplo.com/livros/introdução-ao-estudo-do-direito-direito"
+  },
+  {
+    "nome": "Curso de Direito Penal",
+    "ano_publicacao": 2019,
+    "paginas": 495,
+    "capitulos": 12,
+    "volume": 2,
+    "edicao": 3,
+    "autor": "Damásio de Jesus",
+    "link": "https://universidade.exemplo.com/livros/curso-de-direito-penal-direito"
+  },
+  {
+    "nome": "Direito Constitucional Esquematizado",
+    "ano_publicacao": 2015,
+    "paginas": 547,
+    "capitulos": 20,
+    "volume": 2,
+    "edicao": 8,
+    "autor": "Pedro Lenza",
+    "link": "https://universidade.exemplo.com/livros/direito-constitucional-esquematizado-direito"
+  },
+  {
+    "nome": "Manual de Direito Administrativo",
+    "ano_publicacao": 2024,
+    "paginas": 596,
+    "capitulos": 31,
+    "volume": 1,
+    "edicao": 9,
+    "autor": "Alexandre Mazza",
+    "link": "https://universidade.exemplo.com/livros/manual-de-direito-administrativo-direito"
+  }
+]
