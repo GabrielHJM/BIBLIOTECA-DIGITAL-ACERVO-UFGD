@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar :elevation="2" color="#242424">
+		<v-app-bar :elevation="2" color="#242424" height="70">
 			<template v-slot:prepend>
 				<v-app-bar-nav-icon></v-app-bar-nav-icon>
 			</template>
@@ -35,5 +35,10 @@ export default {
 	color: #2c3e50;
 	margin: 0;
 	padding: 0;
+	background-color: red;
+}
+
+.v-application {
+  background-color: #3a6391 !important; /* ou #3a6391 se quiser outra */
 }
 </style>

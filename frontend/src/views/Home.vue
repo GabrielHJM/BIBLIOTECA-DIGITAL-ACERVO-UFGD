@@ -1,155 +1,177 @@
 <template>
-	<div class="mx-auto border">
+	<div class="mx-auto mt-5">
 		<v-container class="pa-0" fluid="">
-			<v-card variant="tonal" min-width="100%">
-				<v-row no-gutters="">
+			<v-card min-width="100%" rounded="xl" style="background-color: rgba(36, 36, 36, 0.50);">
+				<v-row no-gutters="" class="ma-4">
 					<!-- Tela à esquerda, mostrando os matériais sugeridos-->
 					<v-col>
 						<v-chip
 							variant="text"
 							size="large"
 							label
+							class="text-white text-h4 ma-2"
 						>
 							COMEÇE SEUS ESTUDOS
 						</v-chip>
 						<div>
-							<v-row no-gutters="" class="border">
+							<!-- Session 01 -->
+							<v-row no-gutters class="border">
+								<!-- Material 01 -->
 								<v-col cols="6">
 									<div>
-										<v-row no-gutters="">
-											<v-col cols="12">Sistemas de Inf</v-col>
+										<v-row no-gutters>
+											<v-col cols="12" class="custom-title">Sistemas de Inf</v-col>
 											<v-col cols="12">
-												<!-- Div que mostra oconteúdo relacionado a {Sistemas de Inf} -->
-												<div>
-													<v-row no-gutters="">
-														<!-- Imagem -->
-														<v-col cols="6" class="border pa-0">
-															<v-img
-																width="250"
-																aspect-ratio="1/1"
-																cover
+												<!-- Linha que contém duas divs lado a lado -->
+												<v-row no-gutters>
+													<v-col cols="6">
+														<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+															<img
 																:src="livros[0].link"
-															></v-img>
-														</v-col>
-														<!-- Descrição -->
-														<v-col cols="6" class="border pa-0">
-															<v-card
-																class="mx-auto"
-																max-width="300"
-															>
-																<v-toolbar color="cyan-lighten-1">
-																	<v-icon icon="mdi-book" variant="text"></v-icon>
-																	<v-toolbar-title>{{livros[0].nome}}</v-toolbar-title>
-																</v-toolbar>
-
-																<v-list density="compact">
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-account"></v-icon>
-																		</template>
-
-																		<v-list-item-title v-text="livros[0].autor"></v-list-item-title>
-																	</v-list-item>
-
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-format-page-break"></v-icon>
-																		</template>
-
-																		<v-list-item-title>Páginas: {{ livros[0].paginas }}</v-list-item-title>
-																	</v-list-item>
-
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-counter"></v-icon>
-																		</template>
-
-																		<v-list-item-title>Capítulos: {{ livros[0].capitulos }}</v-list-item-title>
-																	</v-list-item>
-
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-numeric"></v-icon>
-																		</template>
-
-																		<v-list-item-title>Volume: {{ livros[0].volume }}</v-list-item-title>
-																	</v-list-item>
-
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-numeric-0-box-multiple-outline"></v-icon>
-																		</template>
-
-																		<v-list-item-title>Edição: {{ livros[0].edicao }}</v-list-item-title>
-																	</v-list-item>
-
-																	<v-list-item color="primary">
-																		<template v-slot:prepend>
-																			<v-icon icon="mdi-numeric-0-box-multiple-outline"></v-icon>
-																		</template>
-
-																		<v-list-item-title>Edição: {{ livros[0].edicao }}</v-list-item-title>
-																	</v-list-item>
-																</v-list>
-															</v-card>
-														</v-col>
-													</v-row>
-												</div>
+																style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
+															/>
+														</div>
+													</v-col>
+													<v-col cols="6">
+														<div class="pa-2 border" style="height: 300px; overflow: auto;">
+															<ul style="list-style: none; padding: 0; margin: 0;">
+																<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
+																<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+																<li class="custom-item">
+																	<strong>Páginas:</strong> 220 |
+																	<strong>Capítulos:</strong> 5
+																</li>
+																<li class="custom-item"><strong>Volume:</strong> 1</li>
+																<li class="custom-item"><strong>Edição:</strong> 1</li>
+																<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+															</ul>
+														</div>
+													</v-col>
+												</v-row>
 											</v-col>
 										</v-row>
 									</div>
 								</v-col>
+
+								<!-- Material 02 -->
 								<v-col cols="6">
 									<v-row no-gutters="">
-										<v-col cols="12">Psicologia</v-col>
-										<v-col cols="12">Div's</v-col>
+										<v-col cols="12" class="custom-title">Psicologia</v-col>
+										<v-col cols="12">
+											<!-- Linha que contém duas divs lado a lado -->
+											<v-row no-gutters>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+														<img
+															:src="livros[0].link"
+															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
+														/>
+													</div>
+												</v-col>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+														<ul style="list-style: none; padding: 0; margin: 0;">
+															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
+															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+															<li class="custom-item">
+																<strong>Páginas:</strong> 220 |
+																<strong>Capítulos:</strong> 5
+															</li>
+															<li class="custom-item"><strong>Volume:</strong> 1</li>
+															<li class="custom-item"><strong>Edição:</strong> 1</li>
+															<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+														</ul>
+													</div>
+												</v-col>
+											</v-row>
+										</v-col>
 									</v-row>
 								</v-col>
 							</v-row>
+
+							<!-- Session 02 -->
 							<v-row no-gutters="" class="border">
 								<v-col cols="6">
 									<v-row no-gutters="">
-										<v-col cols="12">História</v-col>
-										<v-col cols="12">Div's</v-col>
+										<v-col cols="12" class="custom-title">História</v-col>
+										<v-col cols="12">
+											<!-- Linha que contém duas divs lado a lado -->
+											<v-row no-gutters>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+														<img
+															:src="livros[0].link"
+															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
+														/>
+													</div>
+												</v-col>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+														<ul style="list-style: none; padding: 0; margin: 0;">
+															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
+															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+															<li class="custom-item">
+																<strong>Páginas:</strong> 220 |
+																<strong>Capítulos:</strong> 5
+															</li>
+															<li class="custom-item"><strong>Volume:</strong> 1</li>
+															<li class="custom-item"><strong>Edição:</strong> 1</li>
+															<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+														</ul>
+													</div>
+												</v-col>
+											</v-row>
+										</v-col>
 									</v-row>
 								</v-col>
 								<v-col cols="6">
 									<v-row no-gutters="">
-										<v-col cols="12">Engenharia de Energia</v-col>
-										<v-col cols="12">Div's</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
-							<v-row no-gutters="" class="border">
-								<v-col cols="6">
-									<v-row no-gutters="">
-										<v-col cols="12">Eng. de Computação</v-col>
-										<v-col cols="12">Div's</v-col>
-									</v-row>
-								</v-col>
-								<v-col cols="6">
-									<v-row no-gutters="">
-										<v-col cols="12">Eng. Civil</v-col>
-										<v-col cols="12">Div's</v-col>
+										<v-col cols="12" class="custom-title">Engenharia de Energia</v-col>
+										<v-col cols="12">
+											<!-- Linha que contém duas divs lado a lado -->
+											<v-row no-gutters>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+														<img
+															:src="livros[0].link"
+															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
+														/>
+													</div>
+												</v-col>
+												<v-col cols="6">
+													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+														<ul style="list-style: none; padding: 0; margin: 0;">
+															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
+															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+															<li class="custom-item">
+																<strong>Páginas:</strong> 220 |
+																<strong>Capítulos:</strong> 5
+															</li>
+															<li class="custom-item"><strong>Volume:</strong> 1</li>
+															<li class="custom-item"><strong>Edição:</strong> 1</li>
+															<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+														</ul>
+													</div>
+												</v-col>
+											</v-row>
+										</v-col>
 									</v-row>
 								</v-col>
 							</v-row>
 						</div>
 					</v-col>
+
 					<v-divider
 						class="border-opacity-50"
 						color="black"
 						vertical
 					></v-divider>
+
 					<!-- Tela á direita, mostrando as vantegens da Biblioteca Digital -->
 					<v-col cols="5">
-						<v-chip
-							variant="text"
-							size="large"
-							label
-						>
-							<p>O QUE TORNA A <strong>BIBLIOTECA DIGITAL ACESSÍVEL</strong> UMA EXCELENTE OPÇÃO?</p>
-						</v-chip>
+						<v-sheet class="pa-4 text-white text-h5 text-left" elevation="0" style="background-color: transparent;">
+							O QUE TORNA A <strong>BIBLIOTECA DIGITAL ACESSÍVEL</strong> UMA EXCELENTE OPÇÃO?
+						</v-sheet>
 					</v-col>
 				</v-row>
 			</v-card>
@@ -165,12 +187,41 @@ export default {
 	data: () => ({
 		pack: require('../../package.json'),
 		livros: livros
-	})
+	}),
+	mounted() {
+		console.log('livro: ', this.livros[0])
+	}
 }
 </script>
 
 <style>
 	.border {
 		border: 1px solid black;
+	}
+
+	ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
+	}
+
+	li {
+		text-align: left;
+	}
+
+	.custom-title {
+		color: white;
+		font-size: 20px;
+		font-weight: bold;
+	}
+
+	.custom-item {
+		color: white;
+		font-size: 15px;
+		line-height: 2.5;
 	}
 </style>

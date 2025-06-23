@@ -1,25 +1,20 @@
 <template>
+	<v-footer
+		class="d-flex align-center justify-center ga-2 flex-wrap flex-grow-1 py-3"
+		color="#242424"
+	>
+		<v-btn
+			v-for="link in links"
+			:key="link"
+			:text="link"
+			variant="text"
+			rounded
+		></v-btn>
 
-  <v-footer class="d-flex flex-column" color="#242424" rounded="lg">
-		<div class="d-flex w-100 align-center px-4 py-2">
-			<strong>Get connected with us on social networks!</strong>
-
-			<div class="d-flex ga-2 ms-auto">
-				<v-btn
-				v-for="icon in icons"
-				:key="icon"
-				:icon="icon"
-				size="small"
-				variant="plain"
-				></v-btn>
-			</div>
+		<div class="flex-1-0-100 text-center mt-2">
+			Biblioteca Digital (Projeto de Sistemas Computacionais II - UFGD) | <strong>Versão: 1.0</strong> - Todos os Direitos Reservados
 		</div>
-
-		<div class="px-4 py-2 bg-surface-variant text-center w-100 rounded-lg">
-			<span class="text-footer"> Biblioteca Digital 2025 - Versão: <a class="link">{{ pack.version }} </a> | Projeto de Sistemas Computacionais II - UFGD | Copyright 2024 Todos os direitos reservados &copy;</span>
-		</div>
-  </v-footer>
-
+	</v-footer>
 </template>
 
 <script>
@@ -27,11 +22,13 @@
 export default {
 	name: 'Footer-Vue',
 	data: () => ({
-		icons: [
-			'mdi-facebook',
-			'mdi-twitter',
-			'mdi-linkedin',
-			'mdi-instagram',
+		links: [
+			'Home',
+			'About Us',
+			'Team',
+			'Services',
+			'Blog',
+			'Contact Us',
 		],
 		pack: require('../../package.json')
 	})
