@@ -15,7 +15,7 @@
 						</v-chip>
 						<div>
 							<!-- Session 01 -->
-							<v-row no-gutters class="border">
+							<v-row no-gutters>
 								<!-- Material 01 -->
 								<v-col cols="6">
 									<div>
@@ -25,7 +25,7 @@
 												<!-- Linha que contém duas divs lado a lado -->
 												<v-row no-gutters>
 													<v-col cols="6">
-														<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+														<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 															<img
 																:src="livros[0].link"
 																style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
@@ -33,7 +33,7 @@
 														</div>
 													</v-col>
 													<v-col cols="6">
-														<div class="pa-2 border" style="height: 300px; overflow: auto;">
+														<div class="pa-2" style="height: 300px; overflow: auto;">
 															<ul style="list-style: none; padding: 0; margin: 0;">
 																<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
 																<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
@@ -61,7 +61,7 @@
 											<!-- Linha que contém duas divs lado a lado -->
 											<v-row no-gutters>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
 															:src="livros[0].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
@@ -69,7 +69,7 @@
 													</div>
 												</v-col>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+													<div class="pa-2" style="height: 300px; overflow: auto;">
 														<ul style="list-style: none; padding: 0; margin: 0;">
 															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
 															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
@@ -90,7 +90,7 @@
 							</v-row>
 
 							<!-- Session 02 -->
-							<v-row no-gutters="" class="border">
+							<v-row no-gutters="" class="mt-6">
 								<v-col cols="6">
 									<v-row no-gutters="">
 										<v-col cols="12" class="custom-title">História</v-col>
@@ -98,7 +98,7 @@
 											<!-- Linha que contém duas divs lado a lado -->
 											<v-row no-gutters>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
 															:src="livros[0].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
@@ -106,7 +106,7 @@
 													</div>
 												</v-col>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+													<div class="pa-2" style="height: 300px; overflow: auto;">
 														<ul style="list-style: none; padding: 0; margin: 0;">
 															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
 															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
@@ -131,7 +131,7 @@
 											<!-- Linha que contém duas divs lado a lado -->
 											<v-row no-gutters>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: hidden; position: relative;">
+													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
 															:src="livros[0].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
@@ -139,7 +139,7 @@
 													</div>
 												</v-col>
 												<v-col cols="6">
-													<div class="pa-2 border" style="height: 300px; overflow: auto;">
+													<div class="pa-2" style="height: 300px; overflow: auto;">
 														<ul style="list-style: none; padding: 0; margin: 0;">
 															<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
 															<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
