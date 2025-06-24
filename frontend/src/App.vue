@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar :elevation="2" color="#242424" height="70">
+		<v-app-bar :elevation="2" color="#242424" height="80">
 			<template v-slot:prepend>
 				<v-app-bar-nav-icon></v-app-bar-nav-icon>
 			</template>
