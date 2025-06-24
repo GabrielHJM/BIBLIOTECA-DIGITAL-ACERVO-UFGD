@@ -13,6 +13,12 @@ const routes = [
 		component: () => import('@/views/Login.vue'),
 		meta: { requiresAuth: false }
 	},
+	{
+		path: '/cadastro',
+		name: 'cadastro',
+		component: () => import('@/views/Cadastro.vue'),
+		meta: { requiresAuth: false }
+	}
 ]
 
 const router = createRouter({
