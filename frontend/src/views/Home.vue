@@ -172,6 +172,34 @@
 						<v-sheet class="pa-4 text-white text-h5 text-left" elevation="0" style="background-color: transparent;">
 							O QUE TORNA A <strong>BIBLIOTECA DIGITAL ACESSÍVEL</strong> UMA EXCELENTE OPÇÃO?
 						</v-sheet>
+
+						<div class="border space">
+							<v-row>
+								<v-col cls="6">
+									<img
+										:src="imgsSide[0]"
+										style="width: 50px; height: 50px; object-fit: contain;"
+									/>
+									Sem Limites
+								</v-col>
+								<v-col cls="6">Acesso Instantâneo</v-col>
+							</v-row>
+
+							<v-row>
+								<v-col cls="6">Personalização</v-col>
+								<v-col cls="6">Gratuito</v-col>
+							</v-row>
+
+							<v-row>
+								<v-col cls="12">Sem Restrição Geográfica</v-col>
+							</v-row>
+
+							<v-row>
+								<v-col cls="12">
+									<p>Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcançe. Cadastre-se agora e começe a explorar!</p>
+								</v-col>
+							</v-row>
+						</div>
 					</v-col>
 				</v-row>
 			</v-card>
@@ -186,7 +214,14 @@ export default {
 	name: 'HomePage',
 	data: () => ({
 		pack: require('../../package.json'),
-		livros: livros
+		livros: livros,
+		imgsSide: [
+			'../assets/images/site-images/home/1.png',
+			'../assets/images/site-images/home/2.jpg',
+			'../assets/images/site-images/home/3.jpg',
+			'../assets/images/site-images/home/4.jpg',
+			'../assets/images/site-images/home/5.jpg'
+		]
 	}),
 	mounted() {
 		console.log('livro: ', this.livros[0])
@@ -197,6 +232,10 @@ export default {
 <style>
 	.border {
 		border: 1px solid black;
+	}
+
+	.space {
+		margin-left: 15px;
 	}
 
 	ul {
