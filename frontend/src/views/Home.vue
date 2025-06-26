@@ -163,7 +163,7 @@
 
 					<v-divider
 						class="border-opacity-50"
-						color="black"
+						color="white"
 						vertical
 					></v-divider>
 
