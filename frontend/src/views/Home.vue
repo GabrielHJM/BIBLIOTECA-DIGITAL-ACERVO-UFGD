@@ -63,7 +63,7 @@
 												<v-col cols="6">
 													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
-															:src="livros[0].link"
+															:src="livros[1].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
 														/>
 													</div>
@@ -100,7 +100,7 @@
 												<v-col cols="6">
 													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
-															:src="livros[0].link"
+															:src="livros[2].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
 														/>
 													</div>
@@ -133,7 +133,7 @@
 												<v-col cols="6">
 													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 														<img
-															:src="livros[0].link"
+															:src="livros[3].link"
 															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
 														/>
 													</div>
