@@ -196,7 +196,7 @@
 
 							<v-row>
 								<v-col cls="12">
-									<p>Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcançe. Cadastre-se agora e começe a explorar!</p>
+									<p>Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcance. Cadastre-se agora e começe a explorar!</p>
 								</v-col>
 							</v-row>
 						</div>
