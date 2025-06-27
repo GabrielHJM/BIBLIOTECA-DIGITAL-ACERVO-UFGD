@@ -92,19 +92,67 @@
 												<v-col cols="8">
 													<v-row>
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-instagram</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-instagram
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-facebook</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-facebook
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-reddit</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-reddit
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-whatsapp</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-whatsapp
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 													</v-row>
 												</v-col>
@@ -181,19 +229,67 @@
 												<v-col cols="8">
 													<v-row>
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-instagram</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-instagram
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-facebook</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-facebook
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-reddit</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-reddit
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-whatsapp</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-whatsapp
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 													</v-row>
 												</v-col>
@@ -270,19 +366,67 @@
 												<v-col cols="8">
 													<v-row>
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-instagram</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-instagram
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-facebook</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-facebook
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-reddit</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-reddit
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 
 														<v-col cols="3">
-															<v-icon color="white" size="x-large">mdi-whatsapp</v-icon>
+															<v-hover>
+																<template v-slot:default="{ isHovering, props }">
+																	<a href="">
+																		<v-icon
+																			size="x-large"
+																			v-bind="props"
+																			:color="isHovering ? 'purple' : 'white'"
+																		>
+																			mdi-whatsapp
+																		</v-icon>
+																	</a>
+																</template>
+															</v-hover>
 														</v-col>
 													</v-row>
 												</v-col>
