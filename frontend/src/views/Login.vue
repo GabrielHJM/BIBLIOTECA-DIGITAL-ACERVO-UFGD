@@ -22,7 +22,7 @@
 			</v-row>
 
 			<v-row justify="center" class="mt-4">
-				<v-btn class="login-button" elevation="0" @click="login">Login</v-btn>
+				<v-btn class="login-button" elevation="0" @click="login" :loading="loading" :disabled="loading">Login</v-btn>
 			</v-row>
 
 			<v-row class="mt-10 text-left">
@@ -46,16 +46,22 @@ export default {
 	data: () => ({
 		pack: require('../../package.json'),
 		livros: livros,
-		caminho: require("@/assets/images/site-images/login/person-img.png")
+		caminho: require("@/assets/images/site-images/login/person-img.png"),
+		loading: false
 	}),
 	mounted() {
 		console.log('livro: ', this.livros[0])
 	},
 	methods: {
 		login() {
-			const user = { nome: 'João Teste', email: 'joao@email.com' }
-			auth.login(user)
-			this.$router.push('/dashboard')
+			this.loading = true
+
+			setTimeout(() => {
+				const user = { nome: 'João Teste', email: 'joao@email.com' }
+				auth.login(user)
+				this.$router.push('/dashboard')
+				this.loading = false
+			}, 2000)
 		}
 	}
 }
@@ -88,16 +94,16 @@ export default {
 	}
 
 	.login-button {
-		background-color: #00B8D4; /* azul-esmeralda */
+		background-color: #00B8D4;
 		color: white;
 		padding: 10px 24px;
 		border-radius: 25px;
-		text-transform: none; /* evita letras maiúsculas automáticas */
+		text-transform: none;
 		font-size: 16px;
 	}
 
 	.login-button:hover {
-		background-color: #00B8D4; /* tom mais escuro no hover */
+		background-color: #00B8D4;
 	}
 
 	.no-account {
