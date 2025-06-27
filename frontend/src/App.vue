@@ -9,7 +9,7 @@
 			<v-spacer />
 
 			<div class="input-wrapper" ref="inputWrapperRef">
-				<i class="mdi mdi-magnify input-icon"></i>
+				<i class="mdi mdi-magnify input-icon pr-8"></i>
 				<input type="text" class="custom-input w-100" placeholder="Pesquisar por material..." v-model="searchInput" />
 
 				<Teleport to="body">
@@ -32,17 +32,28 @@
 
 			<v-spacer />
 
-			<v-btn icon>
-				<v-icon>mdi-magnify</v-icon>
-			</v-btn>
+			<div>
+				<router-link v-if="$route.path === '/'" to="/login">
 
-			<v-btn icon>
-				<v-icon>mdi-heart</v-icon>
-			</v-btn>
+					<v-btn color="white" class="mr-6" size="large">
+						<v-icon color="white" class="mr-2">mdi-login</v-icon>
+						Entrar
+					</v-btn>
+				</router-link>
 
-			<v-btn icon>
-				<v-icon>mdi-dots-vertical</v-icon>
-			</v-btn>
+				<template v-else>
+					<v-btn color="white" class="mr-6" size="large" @click="logout">
+						<v-icon color="white" class="mr-2">mdi-arrow-left-bold-outline</v-icon>
+						Sair
+					</v-btn>
+					<v-btn icon>
+						<v-icon>mdi-heart</v-icon>
+					</v-btn>
+					<v-btn icon>
+						<v-icon>mdi-dots-vertical</v-icon>
+					</v-btn>
+				</template>
+			</div>
 		</v-app-bar>
 
 		<v-main>
@@ -60,6 +71,7 @@ import Footer from './components/Footer.vue'
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import debounce from 'lodash.debounce'
 import livros from '../../livros.json'
+import auth from '@/auth'
 
 export default {
 	name: 'App',
@@ -67,6 +79,12 @@ export default {
 	data() {
 		return {
 			publicRoutes: ['/login', '/cadastro'] // rotas onde AppBar e Footer não aparecem
+		}
+	},
+	methods: {
+		logout() {
+			auth.logout()
+			this.$router.push('/')
 		}
 	},
 	computed: {
