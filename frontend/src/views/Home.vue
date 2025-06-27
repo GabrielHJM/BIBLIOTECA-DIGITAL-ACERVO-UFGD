@@ -173,30 +173,119 @@
 							O QUE TORNA A <strong>BIBLIOTECA DIGITAL ACESSÍVEL</strong> UMA EXCELENTE OPÇÃO?
 						</v-sheet>
 
-						<div class="border space">
+						<div class="space pt-16">
 							<v-row>
 								<v-col cls="6">
-									<img
-										:src="imgsSide[0]"
-										style="width: 50px; height: 50px; object-fit: contain;"
-									/>
-									Sem Limites
+									<v-row class="text-center">
+										<v-col>
+											<img
+												src="../assets/images/site-images/home/infinite.png"
+												style="width: 75px; height: 75px; object-fit: contain;"
+											/>
+										</v-col>
+
+										<v-col class="text-left mt-6">
+											<v-chip
+												color="blue"
+												variant="outlined"
+												label
+											>
+												Sem Limites
+											</v-chip>
+										</v-col>
+									</v-row>
 								</v-col>
-								<v-col cls="6">Acesso Instantâneo</v-col>
+								<v-col cls="6">
+									<v-row class="text-center">
+										<v-col>
+											<img
+												src="../assets/images/site-images/home/4.png"
+												style="width: 75px; height: 75px; object-fit: contain;"
+											/>
+										</v-col>
+
+										<v-col class="text-left mt-6">
+											<v-chip
+												color="blue"
+												variant="outlined"
+												label
+											>
+												Acesso Instantâneo
+											</v-chip>
+										</v-col>
+									</v-row>
+								</v-col>
 							</v-row>
 
 							<v-row>
-								<v-col cls="6">Personalização</v-col>
-								<v-col cls="6">Gratuito</v-col>
-							</v-row>
+								<v-col cls="6">
+									<v-row class="text-center">
+										<v-col>
+											<img
+												src="../assets/images/site-images/home/2.png"
+												style="width: 75px; height: 75px; object-fit: contain;"
+											/>
+										</v-col>
 
-							<v-row>
-								<v-col cls="12">Sem Restrição Geográfica</v-col>
+										<v-col class="text-left mt-6">
+											<v-chip
+												color="blue"
+												variant="outlined"
+												label
+											>
+												Personalização
+											</v-chip>
+										</v-col>
+									</v-row>
+								</v-col>
+								<v-col cls="6">
+									<v-row class="text-center">
+										<v-col>
+											<img
+												src="../assets/images/site-images/home/5.png"
+												style="width: 75px; height: 75px; object-fit: contain;"
+											/>
+										</v-col>
+
+										<v-col class="text-left mt-6">
+											<v-chip
+												color="blue"
+												variant="outlined"
+												label
+											>
+												Gratuito
+											</v-chip>
+										</v-col>
+									</v-row>
+								</v-col>
 							</v-row>
 
 							<v-row>
 								<v-col cls="12">
-									<p>Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcance. Cadastre-se agora e começe a explorar!</p>
+									<v-row class="text-center">
+										<v-col>
+											<img
+												src="../assets/images/site-images/home/3.png"
+												style="width: 75px; height: 75px; object-fit: contain;"
+											/>
+										</v-col>
+
+										<v-col class="text-left mt-6">
+											<v-chip
+												color="blue"
+												variant="outlined"
+												label
+											>
+												Sem Restrição Geográfica
+											</v-chip>
+										</v-col>
+									</v-row>
+								</v-col>
+							</v-row>
+
+							<v-row>
+								<v-col cls="12">
+									<p class="welcome-text">Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcance. Cadastre-se agora e começe a explorar!</p>
 								</v-col>
 							</v-row>
 						</div>
@@ -214,14 +303,7 @@ export default {
 	name: 'HomePage',
 	data: () => ({
 		pack: require('../../package.json'),
-		livros: livros,
-		imgsSide: [
-			'../assets/images/site-images/home/1.png',
-			'../assets/images/site-images/home/2.jpg',
-			'../assets/images/site-images/home/3.jpg',
-			'../assets/images/site-images/home/4.jpg',
-			'../assets/images/site-images/home/5.jpg'
-		]
+		livros: livros
 	}),
 	mounted() {
 		console.log('livro: ', this.livros[0])
@@ -262,5 +344,13 @@ export default {
 		color: white;
 		font-size: 15px;
 		line-height: 2.5;
+	}
+
+	.welcome-text {
+		padding: 50px 20px;
+		font-weight: bolder;
+		font-size: 1.5rem;
+		color: white;
+		text-align: justify;
 	}
 </style>
