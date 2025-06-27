@@ -193,7 +193,8 @@ export default {
 	},
 	mounted() {
 		console.log('livro: ', this.livros[0]);
-		const exemploPDF = '/pdfs/exemplo.pdf';
+		// const exemploPDF = '/pdfs/exemplo.pdf';
+		const exemploPDF = 'https://dn790006.ca.archive.org/0/items/estruturas-de-dados-e-algoritmos-em-java-pdfdrive/Estruturas%20de%20dados%20e%20algoritmos%20em%20JAVA%20(%20PDFDrive%20).pdf'
 		this.embedDocumento(exemploPDF);
 	}
 }

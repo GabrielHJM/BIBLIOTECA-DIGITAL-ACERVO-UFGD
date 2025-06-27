@@ -5,8 +5,9 @@
 	>
 		<v-btn
 			v-for="link in links"
-			:key="link"
-			:text="link"
+			:key="link.title"
+			:text="link.title"
+			:to="link.link"
 			variant="text"
 			rounded
 		></v-btn>
@@ -23,12 +24,11 @@ export default {
 	name: 'Footer-Vue',
 	data: () => ({
 		links: [
-			'Home',
-			'About Us',
-			'Team',
-			'Services',
-			'Blog',
-			'Contact Us',
+			{title: "Home", link: "/dashboard"},
+			{title: "About Us", link: "/about"},
+			{title: "Team", link: "/team"},
+			{title: "Services", link: "/services"},
+			{title: "Estudo", link: "/estudo"}
 		],
 		pack: require('../../package.json')
 	})
