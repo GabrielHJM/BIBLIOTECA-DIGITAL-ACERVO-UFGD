@@ -1,6 +1,6 @@
 <template>
 	<div class="mx-auto mt-5">
-		<v-container class="pa-0" fluid="">
+		<v-container class="pa-0" fluid>
 			<v-card min-width="100%" rounded="xl" style="background-color: rgba(36, 36, 36, 0.50);">
 				<v-row no-gutters="" class="ma-4">
 					<!-- Tela à esquerda, mostrando os matériais sugeridos-->
