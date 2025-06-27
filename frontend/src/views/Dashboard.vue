@@ -45,15 +45,15 @@
 									<v-col cols="6">
 										<div class="pa-2" style="height: 300px; overflow: auto;">
 											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
+												<li class="custom-item"><strong>Título:</strong> Estrutura de Dados</li>
 												<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
 												<li class="custom-item">
 													<strong>Páginas:</strong> 220 |
 													<strong>Capítulos:</strong> 5
 												</li>
 												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 1</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+												<li class="custom-item"><strong>Edição:</strong> 4</li>
+												<li class="custom-item"><strong>Organizadores:</strong> Michael T. Goodrich</li>
 											</ul>
 										</div>
 									</v-col>
@@ -174,7 +174,7 @@
 									<v-col cols="6">
 										<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 											<img
-												:src="livros[0].link"
+												:src="livros[6].link"
 												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
 											/>
 										</div>
@@ -182,15 +182,15 @@
 									<v-col cols="6">
 										<div class="pa-2" style="height: 300px; overflow: auto;">
 											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
-												<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+												<li class="custom-item"><strong>Título:</strong> Psicopatologia</li>
+												<li class="custom-item"><strong>Publicado em:</strong> 03/05/2018</li>
 												<li class="custom-item">
-													<strong>Páginas:</strong> 220 |
-													<strong>Capítulos:</strong> 5
+													<strong>Páginas:</strong> 335 |
+													<strong>Capítulos:</strong> 12
 												</li>
 												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 1</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+												<li class="custom-item"><strong>Edição:</strong> 3</li>
+												<li class="custom-item"><strong>Organizadores:</strong> Paulo Dalgalarrondo</li>
 											</ul>
 										</div>
 									</v-col>
@@ -311,7 +311,7 @@
 									<v-col cols="6">
 										<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
 											<img
-												:src="livros[0].link"
+												:src="livros[2].link"
 												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
 											/>
 										</div>
@@ -319,15 +319,15 @@
 									<v-col cols="6">
 										<div class="pa-2" style="height: 300px; overflow: auto;">
 											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Tempos Digitais</li>
-												<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
+												<li class="custom-item"><strong>Título:</strong> Meu primeiro livro de programação</li>
+												<li class="custom-item"><strong>Publicado em:</strong> 08/06/2024</li>
 												<li class="custom-item">
-													<strong>Páginas:</strong> 220 |
-													<strong>Capítulos:</strong> 5
+													<strong>Páginas:</strong> 144 |
+													<strong>Capítulos:</strong> 1
 												</li>
 												<li class="custom-item"><strong>Volume:</strong> 1</li>
 												<li class="custom-item"><strong>Edição:</strong> 1</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
+												<li class="custom-item"><strong>Organizadores:</strong> Nestor Burlamaqui</li>
 											</ul>
 										</div>
 									</v-col>
