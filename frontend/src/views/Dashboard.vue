@@ -445,15 +445,26 @@
 
 <script>
 import livros from '../../../livros.json'
+import auth from '@/auth'
 
 export default {
 	name: 'DashboardPage',
 	data: () => ({
 		pack: require('../../package.json'),
-		livros: livros
+		livros: livros,
+		user: {}
 	}),
 	mounted() {
 		console.log('livro: ', this.livros[0])
+	},
+	created() {
+		this.user = auth.getUser()
+	},
+	methods: {
+		logout() {
+			auth.logout()
+			this.$router.push('/login')
+		}
 	}
 }
 </script>

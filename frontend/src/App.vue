@@ -1,6 +1,6 @@
 <template>
 	<v-app>
-		<v-app-bar :elevation="2" color="#242424" height="80">
+		<v-app-bar v-if="showBar" :elevation="2" color="#242424" height="80">
 			<template v-slot:prepend>
 				<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" style="height: 70px; margin-right: 10px; margin-left: 20px;" />
 				<v-app-bar-title>BIBLIOTECA DIGITAL</v-app-bar-title>
@@ -64,6 +64,22 @@ import livros from '../../livros.json'
 export default {
 	name: 'App',
 	components: { Footer },
+	data() {
+		return {
+			publicRoutes: ['/login', '/cadastro'] // rotas onde AppBar e Footer não aparecem
+		}
+	},
+	computed: {
+		showBar() {
+			return !this.publicRoutes.includes(this.$route.path)
+		}
+	},
+	watch: {
+		'$route.path'() {
+			// força reatividade
+			this.showBar
+		}
+	},
 	setup() {
 		const search = ref('')
 		const searchInput = ref('')

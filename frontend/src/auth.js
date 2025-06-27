@@ -1,4 +1,3 @@
-// src/auth.js
 export default {
 	login(user) {
 		localStorage.setItem('auth', 'true')

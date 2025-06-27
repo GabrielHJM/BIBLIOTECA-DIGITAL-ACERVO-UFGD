@@ -22,7 +22,7 @@
 			</v-row>
 
 			<v-row justify="center" class="mt-4">
-				<v-btn class="login-button" elevation="0">Login</v-btn>
+				<v-btn class="login-button" elevation="0" @click="login">Login</v-btn>
 			</v-row>
 
 			<v-row class="mt-10 text-left">
@@ -39,6 +39,7 @@
 
 <script>
 import livros from '../../../livros.json'
+import auth from '@/auth'
 
 export default {
 	name: 'LoginPage',
@@ -49,6 +50,13 @@ export default {
 	}),
 	mounted() {
 		console.log('livro: ', this.livros[0])
+	},
+	methods: {
+		login() {
+			const user = { nome: 'João Teste', email: 'joao@email.com' }
+			auth.login(user)
+			this.$router.push('/dashboard')
+		}
 	}
 }
 </script>

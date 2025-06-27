@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import auth from '@/auth'
 
 const routes = [
 	{
@@ -23,7 +24,9 @@ const routes = [
 		path: '/dashboard',
 		name: 'dashboard',
 		component: () => import('@/views/Dashboard.vue'),
-		meta: { requiresAuth: false }
+		beforeEnter: (to, from, next) => {
+			auth.isAuthenticated() ? next() : next('/login')
+		}
 	},
 	{
 		path: '/estudo',
