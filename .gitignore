@@ -1,0 +1,29 @@
+# OS and Editor files
+.DS_Store
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Backend exclusions
+backend/.env
+backend/build_test
+backend/bin/
+
+# Frontend exclusions
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+
+# Root exclusions
+node_modules/
+dist/
+.env

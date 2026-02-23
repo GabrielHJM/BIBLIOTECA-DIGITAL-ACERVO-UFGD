@@ -1,444 +1,74 @@
 <template>
-	<div class="mx-auto mt-8">
-		<v-container class="pa-0 border" fluid>
-			<v-card min-width="100%" rounded="xl" style="background-color: rgba(36, 36, 36, 0.50);">
-				<v-row no-gutters="" class="ma-4">
-					<v-col cols="6" class="text-left">
-						<v-chip
-							variant="text"
-							size="large"
-							label
-							class="text-white text-h4 ma-2"
-						>
-							Recentes
-						</v-chip>
-					</v-col>
+	<div class="dashboard-container mt-8">
+		<v-container fluid class="pa-4">
+			<!-- Header Section -->
+			<v-row align="center" class="mb-8 px-4">
+				<v-col cols="12" md="6">
+					<h1 class="text-white text-h3 font-weight-bold tracking-tight">Recentes</h1>
+				</v-col>
+				<v-col cols="12" md="6" class="text-right">
+					<v-btn class="ios-filter-btn" elevation="2">
+						<span>Filtrar</span>
+						<v-icon class="ml-2">mdi-filter-variant</v-icon>
+					</v-btn>
+				</v-col>
+			</v-row>
 
-					<v-col cols="6" class="text-right">
-						<v-chip
-							variant="text"
-							label
-							class="text-white text-h6 ma-2"
-						>
-							<p>Filtrar</p>
-							<v-icon class="ml-2">mdi-filter</v-icon>
-						</v-chip>
-					</v-col>
-				</v-row>
-
-				<!-- v-row com o conteúdo já aceito pelo usuário -->
-				<v-row no-gutters="" class="ma-4">
-					<v-col cols="12" class="mt-6">
-						<!-- Conteúdos -->
+			<!-- Content Grid -->
+			<v-row class="px-2">
+				<v-col
+					v-for="(livro, index) in livros.slice(0, 6)"
+					:key="index"
+					cols="12"
+					md="6"
+					lg="4"
+					class="pa-4"
+				>
+					<v-card class="ios-item-card" elevation="8" :style="{ animationDelay: `${index * 100}ms` }">
 						<v-row no-gutters>
-							<v-col cols="4">
-								<!-- Conteúdo 01 -->
-								<v-row no-gutters>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-											<img
-												:src="livros[0].link"
-												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-											/>
-										</div>
-									</v-col>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: auto;">
-											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Estrutura de Dados</li>
-												<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
-												<li class="custom-item">
-													<strong>Páginas:</strong> 220 |
-													<strong>Capítulos:</strong> 5
-												</li>
-												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 4</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Michael T. Goodrich</li>
-											</ul>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Avaliar -->
-								<v-row no-gutters class="mt-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4" align-self="center">
-													<p class="rating-text text-left">Avaliar: </p>
-												</v-col>
-												<v-col cols="8" align-self="center">
-													<v-rating
-														hover
-														:length="5"
-														:size="50"
-														:model-value="3"
-														active-color="yellow"
-													/>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Compartilhar -->
-								<v-row no-gutters class="mb-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4">
-													<p class="rating-text text-left" style="padding-right: 5px;">Compartilhar: </p>
-												</v-col>
-												<v-col cols="8">
-													<v-row>
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-instagram
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-facebook
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-reddit
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-whatsapp
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-													</v-row>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
+							<!-- Image Section -->
+							<v-col cols="5" class="pa-3">
+								<div class="book-cover-wrapper">
+									<img :src="livro.link" :alt="livro.nome" class="book-cover" />
+								</div>
 							</v-col>
 
-							<v-divider
-								class="border-opacity-50"
-								color="white"
-								vertical
-							></v-divider>
+							<!-- Info Section -->
+							<v-col cols="7" class="pa-4 text-left">
+								<h3 class="item-title mb-2">{{ livro.nome }}</h3>
+								<div class="item-details">
+									<p><strong>Publicado:</strong> {{ livro.publicado || '05/10/2022' }}</p>
+									<p><strong>Páginas:</strong> {{ livro.paginas || 220 }}</p>
+									<p><strong>Autor:</strong> {{ livro.autor || 'Michael T. Goodrich' }}</p>
+								</div>
 
-							<v-col cols="4">
-								<!-- Conteúdo 02 -->
-								<v-row no-gutter>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-											<img
-												:src="livros[6].link"
-												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-											/>
-										</div>
-									</v-col>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: auto;">
-											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Psicopatologia</li>
-												<li class="custom-item"><strong>Publicado em:</strong> 03/05/2018</li>
-												<li class="custom-item">
-													<strong>Páginas:</strong> 335 |
-													<strong>Capítulos:</strong> 12
-												</li>
-												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 3</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Paulo Dalgalarrondo</li>
-											</ul>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Avaliar -->
-								<v-row no-gutters class="mt-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4" align-self="center">
-													<p class="rating-text text-left">Avaliar: </p>
-												</v-col>
-												<v-col cols="8" align-self="center">
-													<v-rating
-														hover
-														:length="5"
-														:size="50"
-														:model-value="3"
-														active-color="yellow"
-													/>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Compartilhar -->
-								<v-row no-gutters class="mb-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4">
-													<p class="rating-text text-left" style="padding-right: 5px;">Compartilhar: </p>
-												</v-col>
-												<v-col cols="8">
-													<v-row>
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-instagram
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-facebook
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-reddit
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-whatsapp
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-													</v-row>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
-							</v-col>
-
-							<v-divider
-								class="border-opacity-50"
-								color="white"
-								vertical
-							></v-divider>
-
-							<v-col cols="4">
-								<!-- Conteúdo 03 -->
-								<v-row no-gutter>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-											<img
-												:src="livros[2].link"
-												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-											/>
-										</div>
-									</v-col>
-									<v-col cols="6">
-										<div class="pa-2" style="height: 300px; overflow: auto;">
-											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Título:</strong> Meu primeiro livro de programação</li>
-												<li class="custom-item"><strong>Publicado em:</strong> 08/06/2024</li>
-												<li class="custom-item">
-													<strong>Páginas:</strong> 144 |
-													<strong>Capítulos:</strong> 1
-												</li>
-												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 1</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Nestor Burlamaqui</li>
-											</ul>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Avaliar -->
-								<v-row no-gutters class="mt-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4" align-self="center">
-													<p class="rating-text text-left">Avaliar: </p>
-												</v-col>
-												<v-col cols="8" align-self="center">
-													<v-rating
-														hover
-														:length="5"
-														:size="50"
-														:model-value="3"
-														active-color="yellow"
-													/>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Compartilhar -->
-								<v-row no-gutters class="mb-16">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4">
-													<p class="rating-text text-left" style="padding-right: 5px;">Compartilhar: </p>
-												</v-col>
-												<v-col cols="8">
-													<v-row>
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-instagram
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-facebook
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-reddit
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-whatsapp
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-													</v-row>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
+								<div class="mt-4">
+									<v-rating
+										:model-value="4"
+										density="compact"
+										color="amber"
+										active-color="amber"
+										size="small"
+										readonly
+									></v-rating>
+								</div>
 							</v-col>
 						</v-row>
-					</v-col>
-				</v-row>
-			</v-card>
+
+						<!-- Actions Footer -->
+						<v-divider class="mx-4 opacity-50"></v-divider>
+						<v-card-actions class="pa-3 justify-space-between">
+							<v-btn icon="mdi-heart-outline" variant="text" color="white" size="small"></v-btn>
+							<div class="share-actions">
+								<v-btn icon="mdi-share-variant" variant="text" color="white" size="small"></v-btn>
+								<v-btn class="ios-btn-open" variant="flat" size="small" @click="$router.push('/estudo')">
+									Ler Agora
+								</v-btn>
+							</div>
+						</v-card-actions>
+					</v-card>
+				</v-col>
+			</v-row>
 		</v-container>
 	</div>
 </template>
@@ -450,13 +80,9 @@ import auth from '@/auth'
 export default {
 	name: 'DashboardPage',
 	data: () => ({
-		pack: require('../../package.json'),
 		livros: livros,
 		user: {}
 	}),
-	mounted() {
-		console.log('livro: ', this.livros[0])
-	},
 	created() {
 		this.user = auth.getUser()
 	},
@@ -469,25 +95,114 @@ export default {
 }
 </script>
 
-<style>
-	.border {
-		border: 1px solid black;
+<style scoped>
+	.dashboard-container {
+		min-height: 100vh;
+		padding-bottom: 80px;
 	}
 
-	.custom-item {
+	.tracking-tight {
+		letter-spacing: -1.5px !important;
+	}
+
+	.ios-filter-btn {
+		background: rgba(255, 255, 255, 0.15) !important;
+		backdrop-filter: blur(10px);
+		color: white !important;
+		border-radius: 12px !important;
+		text-transform: none !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	/* Item Card Style */
+	.ios-item-card {
+		background: rgba(45, 45, 45, 0.6) !important;
+		backdrop-filter: blur(20px);
+		border-radius: 24px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		overflow: hidden;
+		transition: all 0.4s var(--spring-easing);
+		opacity: 0;
+		animation: ios-reveal 0.6s var(--spring-easing) forwards;
+	}
+
+	.ios-item-card:hover {
+		transform: translateY(-8px) scale(1.02);
+		background: rgba(55, 55, 55, 0.8) !important;
+		box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+	}
+
+	.book-cover-wrapper {
+		width: 100%;
+		height: 180px;
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgba(0,0,0,0.2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	}
+
+	.book-cover {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+		transition: transform 0.5s ease;
+	}
+
+	.ios-item-card:hover .book-cover {
+		transform: scale(1.1) rotate(2deg);
+	}
+
+	.item-title {
 		color: white;
-		font-size: 15px;
-		line-height: 2.5;
+		font-size: 1.1rem;
+		font-weight: 700;
+		line-height: 1.2;
+		height: 2.4em;
+		overflow: hidden;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
 	}
 
-	li {
-		text-align: left;
+	.item-details {
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 13px;
 	}
 
-	.rating-text {
-		color: white;
-		font-size: 1.3rem;
-		font-family: Avenir, Helvetica, Arial, sans-serif;
-		font-weight: bolder;
+	.item-details p {
+		margin: 2px 0;
+	}
+
+	.ios-btn-open {
+		background: var(--ios-cyan) !important;
+		color: white !important;
+		border-radius: 10px !important;
+		text-transform: none !important;
+		font-weight: 600 !important;
+		margin-left: 8px;
+	}
+
+	.share-actions {
+		display: flex;
+		align-items: center;
+	}
+
+	/* Animations */
+	@keyframes ios-reveal {
+		from {
+			opacity: 0;
+			transform: scale(0.9) translateY(30px);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1) translateY(0);
+		}
+	}
+
+	:deep(.v-rating__item) {
+		padding: 0 !important;
 	}
 </style>

@@ -1,9 +1,9 @@
 package usuario
 
 import (
-	"context"
 	"biblioteca-digital-api/internal/domain/usuario"
 	"biblioteca-digital-api/pkg/hash"
+	"context"
 )
 
 type CadastrarUsuarioUseCase struct {
@@ -15,6 +15,10 @@ func NewCadastrarUsuario(repo usuario.UsuarioRepository) *CadastrarUsuarioUseCas
 }
 
 func (uc *CadastrarUsuarioUseCase) Execute(ctx context.Context, u usuario.Usuario) error {
-	u.Senha = hash.GerarHash(u.Senha)
-	return uc.repo.Salvar(ctx, u)
+	hashedPassword, err := hash.GerarHash(u.Senha)
+	if err != nil {
+		return err
+	}
+	u.Senha = hashedPassword
+	return uc.repo.Salvar(ctx, &u)
 }

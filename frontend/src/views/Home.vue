@@ -1,297 +1,106 @@
 <template>
-	<div class="mx-auto mt-5">
-		<v-container class="pa-0" fluid>
-			<v-card min-width="100%" rounded="xl" style="background-color: rgba(36, 36, 36, 0.50);">
-				<v-row no-gutters="" class="ma-4">
-					<!-- Tela à esquerda, mostrando os matériais sugeridos-->
-					<v-col>
-						<v-chip
-							variant="text"
-							size="large"
-							label
-							class="text-white text-h4 ma-2"
+	<div class="home-container mt-8">
+		<v-container fluid class="pa-4">
+			<v-row>
+				<!-- Main Content: Suggested Materials -->
+				<v-col cols="12" lg="8" class="pa-4">
+					<div class="section-header mb-6">
+						<h1 class="text-white text-h3 font-weight-bold tracking-tight">Comece seus Estudos</h1>
+						<p class="text-white opacity-70 mt-2">Materiais selecionados para sua jornada acadêmica</p>
+					</div>
+
+					<v-row>
+						<v-col
+							v-for="(livro, index) in livros.slice(0, 4)"
+							:key="index"
+							cols="12"
+							md="6"
+							class="pa-3"
 						>
-							COMEÇE SEUS ESTUDOS
-						</v-chip>
-						<div>
-							<!-- Session 01 -->
-							<v-row no-gutters>
-								<!-- Material 01 -->
-								<v-col cols="6">
-									<div>
-										<v-row no-gutters>
-											<v-col cols="12" class="custom-title">Sistemas de Inf</v-col>
-											<v-col cols="12">
-												<!-- Linha que contém duas divs lado a lado -->
-												<v-row no-gutters>
-													<v-col cols="6">
-														<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-															<img
-																:src="livros[0].link"
-																style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-															/>
-														</div>
-													</v-col>
-													<v-col cols="6">
-														<div class="pa-2" style="height: 300px; overflow: auto;">
-															<ul style="list-style: none; padding: 0; margin: 0;">
-																<li class="custom-item"><strong>Título:</strong> Estrutura de Dados</li>
-																<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
-																<li class="custom-item">
-																	<strong>Páginas:</strong> 220 |
-																	<strong>Capítulos:</strong> 5
-																</li>
-																<li class="custom-item"><strong>Volume:</strong> 1</li>
-																<li class="custom-item"><strong>Edição:</strong> 4</li>
-																<li class="custom-item"><strong>Organizadores:</strong> Michael T. Goodrich</li>
-															</ul>
-														</div>
-													</v-col>
-												</v-row>
-											</v-col>
-										</v-row>
-									</div>
-								</v-col>
+							<v-card class="ios-item-card" elevation="8" :style="{ animationDelay: `${index * 100}ms` }">
+								<v-row no-gutters>
+									<v-col cols="5" class="pa-3">
+										<div class="book-cover-wrapper">
+											<img :src="livro.link" :alt="livro.nome" class="book-cover" />
+										</div>
+									</v-col>
+									<v-col cols="7" class="pa-4 text-left">
+										<h4 class="item-category mb-1">{{ livro.categoria || 'Sistemas de Inf' }}</h4>
+										<h3 class="item-title mb-2">{{ livro.nome }}</h3>
+										<div class="item-details">
+											<p><strong>Publicado:</strong> {{ livro.publicado || '05/10/2022' }}</p>
+											<p><strong>Páginas:</strong> {{ livro.paginas || 220 }}</p>
+										</div>
+										<v-btn class="ios-btn-ghost mt-4 px-0" variant="text" size="small" @click="$router.push('/login')">
+											Ver detalhes <v-icon size="small">mdi-chevron-right</v-icon>
+										</v-btn>
+									</v-col>
+								</v-row>
+							</v-card>
+						</v-col>
+					</v-row>
+				</v-col>
 
-								<!-- Material 02 -->
-								<v-col cols="6">
-									<v-row no-gutters="">
-										<v-col cols="12" class="custom-title">Psicologia</v-col>
-										<v-col cols="12">
-											<!-- Linha que contém duas divs lado a lado -->
-											<v-row no-gutters>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-														<img
-															:src="livros[6].link"
-															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-														/>
-													</div>
-												</v-col>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: auto;">
-														<ul style="list-style: none; padding: 0; margin: 0;">
-															<li class="custom-item"><strong>Título:</strong> Psicopatologia</li>
-															<li class="custom-item"><strong>Publicado em:</strong> 03/05/2018</li>
-															<li class="custom-item">
-																<strong>Páginas:</strong> 335 |
-																<strong>Capítulos:</strong> 12
-															</li>
-															<li class="custom-item"><strong>Volume:</strong> 1</li>
-															<li class="custom-item"><strong>Edição:</strong> 3</li>
-															<li class="custom-item"><strong>Organizadores:</strong> Paulo Dalgalarrondo</li>
-														</ul>
-													</div>
-												</v-col>
-											</v-row>
-										</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
+				<!-- Sidebar: Why us? -->
+				<v-col cols="12" lg="4" class="pa-4">
+					<v-card class="ios-card-premium pa-6 benefits-card" elevation="12">
+						<h2 class="text-white text-h4 font-weight-bold mb-8 leading-tight">
+							O que torna a <span class="text-cyan">Biblioteca Digital</span> excelente?
+						</h2>
 
-							<!-- Session 02 -->
-							<v-row no-gutters="" class="mt-6">
-								<v-col cols="6">
-									<v-row no-gutters="">
-										<v-col cols="12" class="custom-title">Sistemas de Inf</v-col>
-										<v-col cols="12">
-											<!-- Linha que contém duas divs lado a lado -->
-											<v-row no-gutters>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-														<img
-															:src="livros[2].link"
-															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-														/>
-													</div>
-												</v-col>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: auto;">
-														<ul style="list-style: none; padding: 0; margin: 0;">
-															<li class="custom-item"><strong>Título:</strong> Meu primeiro livro de programação</li>
-															<li class="custom-item"><strong>Publicado em:</strong> 08/06/2024</li>
-															<li class="custom-item">
-																<strong>Páginas:</strong> 144 |
-																<strong>Capítulos:</strong> 1
-															</li>
-															<li class="custom-item"><strong>Volume:</strong> 1</li>
-															<li class="custom-item"><strong>Edição:</strong> 1</li>
-															<li class="custom-item"><strong>Organizadores:</strong> Nestor Burlamaqui</li>
-														</ul>
-													</div>
-												</v-col>
-											</v-row>
-										</v-col>
-									</v-row>
-								</v-col>
-								<v-col cols="6">
-									<v-row no-gutters="">
-										<v-col cols="12" class="custom-title">Sistemas de Inf</v-col>
-										<v-col cols="12">
-											<!-- Linha que contém duas divs lado a lado -->
-											<v-row no-gutters>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: hidden; position: relative;">
-														<img
-															:src="livros[3].link"
-															style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-														/>
-													</div>
-												</v-col>
-												<v-col cols="6">
-													<div class="pa-2" style="height: 300px; overflow: auto;">
-														<ul style="list-style: none; padding: 0; margin: 0;">
-															<li class="custom-item"><strong>Título:</strong> Introdução á teoria da computação</li>
-															<li class="custom-item"><strong>Publicado em:</strong> 24/07/2005</li>
-															<li class="custom-item">
-																<strong>Páginas:</strong> 448 |
-																<strong>Capítulos:</strong> 10
-															</li>
-															<li class="custom-item"><strong>Volume:</strong> 1</li>
-															<li class="custom-item"><strong>Edição:</strong> 2</li>
-															<li class="custom-item"><strong>Organizadores:</strong> Michael Sipser</li>
-														</ul>
-													</div>
-												</v-col>
-											</v-row>
-										</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
+						<div class="benefits-list">
+							<div class="benefit-item d-flex align-center mb-6">
+								<div class="benefit-icon-wrapper mr-4">
+									<img src="../assets/images/site-images/home/infinite.png" alt="Infinite" />
+								</div>
+								<div>
+									<h4 class="text-white font-weight-bold">Sem Limites</h4>
+									<p class="text-white opacity-60 text-caption">Acesso ilimitado a todo o acervo</p>
+								</div>
+							</div>
+
+							<div class="benefit-item d-flex align-center mb-6">
+								<div class="benefit-icon-wrapper mr-4">
+									<img src="../assets/images/site-images/home/4.png" alt="Instant" />
+								</div>
+								<div>
+									<h4 class="text-white font-weight-bold">Acesso Instantâneo</h4>
+									<p class="text-white opacity-60 text-caption">Estude de qualquer lugar, a qualquer hora</p>
+								</div>
+							</div>
+
+							<div class="benefit-item d-flex align-center mb-6">
+								<div class="benefit-icon-wrapper mr-4">
+									<img src="../assets/images/site-images/home/2.png" alt="Custom" />
+								</div>
+								<div>
+									<h4 class="text-white font-weight-bold">Personalização</h4>
+									<p class="text-white opacity-60 text-caption">Sua própria estante virtual organizada</p>
+								</div>
+							</div>
+
+							<div class="benefit-item d-flex align-center mb-6">
+								<div class="benefit-icon-wrapper mr-4">
+									<img src="../assets/images/site-images/home/5.png" alt="Free" />
+								</div>
+								<div>
+									<h4 class="text-white font-weight-bold">Gratuito</h4>
+									<p class="text-white opacity-60 text-caption">Conhecimento livre para todos</p>
+								</div>
+							</div>
 						</div>
-					</v-col>
 
-					<v-divider
-						class="border-opacity-50"
-						color="white"
-						vertical
-					></v-divider>
+						<v-divider class="my-8 opacity-20"></v-divider>
 
-					<!-- Tela á direita, mostrando as vantegens da Biblioteca Digital -->
-					<v-col cols="5">
-						<v-sheet class="pa-4 text-white text-h5 text-left" elevation="0" style="background-color: transparent;">
-							O QUE TORNA A <strong>BIBLIOTECA DIGITAL ACESSÍVEL</strong> UMA EXCELENTE OPÇÃO?
-						</v-sheet>
-
-						<div class="space pt-16">
-							<v-row>
-								<v-col cls="6">
-									<v-row class="text-center">
-										<v-col>
-											<img
-												src="../assets/images/site-images/home/infinite.png"
-												style="width: 75px; height: 75px; object-fit: contain;"
-											/>
-										</v-col>
-
-										<v-col class="text-left mt-6">
-											<v-chip
-												color="blue"
-												variant="outlined"
-												label
-											>
-												Sem Limites
-											</v-chip>
-										</v-col>
-									</v-row>
-								</v-col>
-								<v-col cls="6">
-									<v-row class="text-center">
-										<v-col>
-											<img
-												src="../assets/images/site-images/home/4.png"
-												style="width: 75px; height: 75px; object-fit: contain;"
-											/>
-										</v-col>
-
-										<v-col class="text-left mt-6">
-											<v-chip
-												color="blue"
-												variant="outlined"
-												label
-											>
-												Acesso Instantâneo
-											</v-chip>
-										</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
-
-							<v-row>
-								<v-col cls="6">
-									<v-row class="text-center">
-										<v-col>
-											<img
-												src="../assets/images/site-images/home/2.png"
-												style="width: 75px; height: 75px; object-fit: contain;"
-											/>
-										</v-col>
-
-										<v-col class="text-left mt-6">
-											<v-chip
-												color="blue"
-												variant="outlined"
-												label
-											>
-												Personalização
-											</v-chip>
-										</v-col>
-									</v-row>
-								</v-col>
-								<v-col cls="6">
-									<v-row class="text-center">
-										<v-col>
-											<img
-												src="../assets/images/site-images/home/5.png"
-												style="width: 75px; height: 75px; object-fit: contain;"
-											/>
-										</v-col>
-
-										<v-col class="text-left mt-6">
-											<v-chip
-												color="blue"
-												variant="outlined"
-												label
-											>
-												Gratuito
-											</v-chip>
-										</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
-
-							<v-row>
-								<v-col cls="12">
-									<v-row class="text-center">
-										<v-col>
-											<img
-												src="../assets/images/site-images/home/3.png"
-												style="width: 75px; height: 75px; object-fit: contain;"
-											/>
-										</v-col>
-
-										<v-col class="text-left mt-6">
-											<v-chip
-												color="blue"
-												variant="outlined"
-												label
-											>
-												Sem Restrição Geográfica
-											</v-chip>
-										</v-col>
-									</v-row>
-								</v-col>
-							</v-row>
-
-							<v-row>
-								<v-col cls="12">
-									<p class="welcome-text">Junte-se a nós nesta emocionante jornada de descoberta literária. Com a Biblioteca Digital Livre, o mundo acadêmico está ao seu alcance. Cadastre-se agora e começe a explorar!</p>
-								</v-col>
-							</v-row>
+						<div class="cta-section">
+							<p class="text-white font-italic mb-6">"O mundo acadêmico está ao seu alcance."</p>
+							<v-btn class="ios-action-btn w-100" elevation="6" @click="$router.push('/cadastro')">
+								Cadastre-se Agora
+							</v-btn>
 						</div>
-					</v-col>
-				</v-row>
-			</v-card>
+					</v-card>
+				</v-col>
+			</v-row>
 		</v-container>
 	</div>
 </template>
@@ -302,55 +111,135 @@ import livros from '../../../livros.json'
 export default {
 	name: 'HomePage',
 	data: () => ({
-		pack: require('../../package.json'),
 		livros: livros
-	}),
-	mounted() {
-		console.log('livro: ', this.livros[0])
-	}
+	})
 }
 </script>
 
-<style>
-	.border {
-		border: 1px solid black;
+<style scoped>
+	.home-container {
+		min-height: 100vh;
+		padding-bottom: 80px;
 	}
 
-	.space {
-		margin-left: 15px;
+	.tracking-tight {
+		letter-spacing: -1.5px !important;
 	}
 
-	ul {
-		list-style: none;
-		padding: 0;
-		margin: 0;
+	.opacity-70 { opacity: 0.7; }
+	.opacity-60 { opacity: 0.6; }
+	.opacity-20 { opacity: 0.2; }
+	.text-cyan { color: var(--ios-cyan); }
+
+	.ios-card-premium {
+		background: rgba(58, 99, 145, 0.6) !important;
+		backdrop-filter: blur(20px);
+		border-radius: 32px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.benefits-card {
+		height: 100%;
 		display: flex;
 		flex-direction: column;
-		justify-content: space-between;
+		justify-content: center;
+	}
+
+	.benefit-icon-wrapper {
+		width: 54px;
+		height: 54px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 14px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 10px;
+	}
+
+	.benefit-icon-wrapper img {
+		width: 100%;
 		height: 100%;
+		object-fit: contain;
 	}
 
-	li {
-		text-align: left;
+	/* Item Card Style */
+	.ios-item-card {
+		background: rgba(45, 45, 45, 0.6) !important;
+		backdrop-filter: blur(20px);
+		border-radius: 24px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		overflow: hidden;
+		transition: all 0.4s var(--spring-easing);
+		opacity: 0;
+		animation: ios-reveal 0.6s var(--spring-easing) forwards;
 	}
 
-	.custom-title {
+	.ios-item-card:hover {
+		transform: translateY(-8px) scale(1.02);
+		background: rgba(55, 55, 55, 0.8) !important;
+		box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+	}
+
+	.book-cover-wrapper {
+		width: 100%;
+		height: 180px;
+		border-radius: 12px;
+		overflow: hidden;
+		background: rgba(0,0,0,0.2);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.book-cover {
+		max-width: 100%;
+		max-height: 100%;
+		object-fit: contain;
+		transition: transform 0.5s ease;
+	}
+
+	.ios-item-card:hover .book-cover {
+		transform: scale(1.1);
+	}
+
+	.item-category {
+		color: var(--ios-cyan);
+		font-size: 12px;
+		text-transform: uppercase;
+		font-weight: 800;
+		letter-spacing: 1px;
+	}
+
+	.item-title {
 		color: white;
-		font-size: 20px;
-		font-weight: bold;
+		font-size: 1.2rem;
+		font-weight: 700;
+		line-height: 1.2;
 	}
 
-	.custom-item {
-		color: white;
-		font-size: 15px;
-		line-height: 2.5;
+	.item-details {
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 13px;
 	}
 
-	.welcome-text {
-		padding: 50px 20px;
-		font-weight: bolder;
-		font-size: 1.5rem;
-		color: white;
-		text-align: justify;
+	.ios-btn-ghost {
+		color: white !important;
+		text-transform: none !important;
+		font-weight: 600 !important;
+	}
+
+	.ios-action-btn {
+		background: linear-gradient(135deg, #00B8D4 0%, #0097A7 100%) !important;
+		color: white !important;
+		border-radius: 16px !important;
+		height: 54px !important;
+		text-transform: none !important;
+		font-size: 18px !important;
+		font-weight: 700 !important;
+	}
+
+	@keyframes ios-reveal {
+		from { opacity: 0; transform: scale(0.9) translateY(30px); }
+		to { opacity: 1; transform: scale(1) translateY(0); }
 	}
 </style>

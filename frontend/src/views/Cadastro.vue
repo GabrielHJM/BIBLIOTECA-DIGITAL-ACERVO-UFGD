@@ -1,175 +1,227 @@
 <template>
-	<v-container class="d-flex justify-center">
-		<v-card class="ma-7 pa-5" style="width: 75%; height: 700px; background-color: #3a6391;" elevation="0">
+	<v-container class="d-flex justify-center align-center min-vh-100">
+		<v-card class="ios-card-premium pa-8" elevation="12">
+			<v-row justify="center" class="mb-6">
+				<v-img
+					:src="caminho"
+					alt="Avatar"
+					max-width="120"
+					class="drop-shadow"
+					contain
+				></v-img>
+			</v-row>
+
 			<v-row>
-				<v-sheet class="pa-4 text-white text-h4 text-left" elevation="0" style="background-color: transparent; font-weight: bolder;">
-					CADASTRE-SE
-				</v-sheet>
-			</v-row>
-
-			<v-row class="mt-8">
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12" class="text-left"><label>Nome:</label></v-col>
-						<v-col cols="12"><input type="text" class="custom-input w-100" /></v-col>
-					</v-row>
-				</v-col>
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12" class="text-left"><label>Instituição de Ensino:</label></v-col>
-						<v-col cols="12"><input type="text" class="custom-input w-100" /></v-col>
-					</v-row>
+				<v-col cols="12" class="text-center mb-6">
+					<h1 class="text-white text-h4 font-weight-bold">CADASTRE-SE</h1>
 				</v-col>
 			</v-row>
 
-			<v-row class="mt-8">
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12" class="text-left"><label>Email:</label></v-col>
-						<v-col cols="12"><input type="text" class="custom-input w-100" /></v-col>
-					</v-row>
+			<v-row>
+				<v-col cols="12" md="6" class="py-1">
+					<label class="ios-label">Nome:</label>
+					<input v-model="nome" type="text" placeholder="Seu nome completo" class="ios-input-field w-100" />
 				</v-col>
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12" class="text-left"><label>Senha:</label></v-col>
-						<v-col cols="12"><input type="password" class="custom-input w-100" /></v-col>
-					</v-row>
+				<v-col cols="12" md="6" class="py-1">
+					<label class="ios-label">Instituição:</label>
+					<input v-model="instituicao" type="text" placeholder="Escola ou Faculdade" class="ios-input-field w-100" />
+				</v-col>
+			</v-row>
+
+			<v-row class="mt-4">
+				<v-col cols="12" md="6" class="py-1">
+					<label class="ios-label">Email:</label>
+					<input v-model="email" type="email" placeholder="seu@email.com" class="ios-input-field w-100" />
+				</v-col>
+				<v-col cols="12" md="6" class="py-1">
+					<label class="ios-label">Senha:</label>
+					<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-field w-100" />
+				</v-col>
+			</v-row>
+
+			<v-row class="mt-4 align-center">
+				<v-col cols="12" md="6" class="py-1">
+					<label class="ios-label">Eu sou:</label>
+					<v-select
+						class="ios-select-field"
+						:items="['Aluno', 'Professor', 'Curador Especializado', 'Suporte']"
+						v-model="tipoUsuario"
+						variant="solo"
+						flat
+						hide-details
+						density="comfortable"
+						bg-color="white"
+						placeholder="Selecione seu perfil"
+					></v-select>
+				</v-col>
+				<v-col cols="12" md="6" class="text-center mt-6">
+					<v-btn size="x-large" class="ios-action-btn w-100" elevation="4" @click="cadastrar" :loading="loading" :disabled="loading">
+						Cadastrar-me
+					</v-btn>
 				</v-col>
 			</v-row>
 
 			<v-row class="mt-8">
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12" class="text-left"><label>Eu sou:</label></v-col>
-						<v-col cols="12">
-							<v-select
-								class="custom-input custom-select w-100"
-								:items="['Aluno', 'Professor', 'Curador Especializado', 'Suporte']"
-								variant="plain"
-								hide-details
-								density="comfortable"
-								v-model="tipoUsuario"
-								menu-icon=""
-								chips
-							></v-select>
-						</v-col>
-					</v-row>
-				</v-col>
-				<v-col cols="6">
-					<v-row>
-						<v-col cols="12"><label></label></v-col>
-						<v-col cols="12" class="text-left">
-							<v-btn size="large" class="login-button mx-auto" elevation="0">Cadastrar-me</v-btn>
-						</v-col>
-					</v-row>
+				<v-col cols="12" class="text-center">
+					<router-link to="/login" class="ios-secondary-link">
+						<v-icon color="white" size="24" class="mr-2">mdi-arrow-left</v-icon>
+						<span class="back-text">Já tenho cadastro? Ir para o Login</span>
+					</router-link>
 				</v-col>
 			</v-row>
+
+			<v-snackbar v-model="snackbar" :color="snackbarColor" location="top" rounded="pill">
+				{{ snackbarText }}
+			</v-snackbar>
 		</v-card>
 	</v-container>
 </template>
 
 <script>
-import livros from '../../../livros.json'
+import UsuarioService from '@/services/UsuarioService'
 
 export default {
 	name: 'CadastroPage',
 	data: () => ({
-		pack: require('../../package.json'),
-		livros: livros,
 		caminho: require("@/assets/images/site-images/login/person-img.png"),
-		tipoUsuario: ''
+		tipoUsuario: null,
+		nome: '',
+		instituicao: '',
+		email: '',
+		senha: '',
+		loading: false,
+		snackbar: false,
+		snackbarText: '',
+		snackbarColor: 'success'
 	}),
-	mounted() {
-		console.log('livro: ', this.livros[0])
+	methods: {
+		async cadastrar() {
+			if (!this.nome || !this.email || !this.senha || !this.tipoUsuario) {
+				this.snackbarText = "Por favor, preencha todos os campos obrigatórios."
+				this.snackbarColor = "warning"
+				this.snackbar = true
+				return
+			}
+
+			this.loading = true
+			try {
+				let tipo = 0
+				switch(this.tipoUsuario) {
+					case 'Aluno': tipo = 1; break;
+					case 'Professor': tipo = 2; break;
+					case 'Curador Especializado': tipo = 3; break;
+					case 'Suporte': tipo = 4; break;
+					default: tipo = 1;
+				}
+
+				await UsuarioService.cadastrar({
+					nome: this.nome,
+					email: this.email,
+					senha: this.senha,
+					tipo: tipo
+				})
+
+				this.snackbarText = "Cadastro realizado com sucesso! Bem-vindo(a)!"
+				this.snackbarColor = "success"
+				this.snackbar = true
+
+				setTimeout(() => {
+					this.$router.push('/login')
+				}, 1500)
+
+			} catch (error) {
+				console.error(error)
+				this.snackbarText = error.response?.data || "Erro ao realizar cadastro. Tente outro email."
+				this.snackbarColor = "error"
+				this.snackbar = true
+			} finally {
+				this.loading = false
+			}
+		}
 	}
 }
 </script>
 
-<style>
-	label {
-		color: white;
-		font-weight: bolder;
-		padding-left: 10px;
+<style scoped>
+	.min-vh-100 {
+		min-height: 100vh;
 	}
 
-	.border {
-		border: 1px solid white;
+	.ios-card-premium {
+		width: 100%;
+		max-width: 800px;
+		background: rgba(58, 99, 145, 0.8) !important;
+		backdrop-filter: blur(20px);
+		border-radius: 32px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		transition: transform 0.3s var(--spring-easing);
 	}
 
-	.custom-input {
-		border: 2px solid black;
-		border-radius: 25px;
-		padding: 8px 12px;
-		font-size: 16px;
-		color: #000;
-		background-color: white;
-		height: 40px;
-		box-sizing: border-box;
+	.ios-card-premium:hover {
+		transform: translateY(-5px);
 	}
 
-	.login-button {
-		background-color: #00B8D4;
-		color: white;
-		padding: 10px 24px;
-		border-radius: 25px;
-		text-transform: none;
-		font-size: 16px;
+	.ios-label {
+		color: rgba(255, 255, 255, 0.9);
+		font-weight: 600;
+		font-size: 14px;
+		margin-left: 12px;
+		display: block;
+		margin-bottom: 4px;
 	}
 
-	.login-button:hover {
-		background-color: #00B8D4;
-	}
-
-	.space-v-row {
-		margin-top: 25px;
-	}
-
-	.custom-select.v-input {
-		padding: 0 !important;
-		min-height: 0 !important;
-		height: 40px;
-	}
-
-	.custom-select.v-input .v-input__control {
-		padding: 0 !important;
-		height: 100%;
-		align-items: center;
-	}
-
-	.custom-select.v-input .v-field__input {
-		padding: 0 8px !important;
-		height: 100%;
-		display: flex;
-		align-items: center;
-	}
-
-	.custom-select.v-input {
-		padding: 0 !important;
-		min-height: 0 !important;
-		height: 40px !important;
-	}
-
-	.custom-select.v-input .v-input__control {
-		padding: 0 !important;
-		height: 100% !important;
-		align-items: center;
-	}
-
-	.custom-select.v-input .v-field__field {
-		height: 100% !important;
-		display: flex;
-		align-items: center;
-	}
-
-	.custom-select.v-input .v-field__input {
-		padding: 0 12px !important;
-		height: 100% !important;
-		display: flex;
-		align-items: center;
-	}
-
-	.custom-select.v-input .v-field {
+	.ios-input-field {
+		background: rgba(255, 255, 255, 0.9) !important;
 		border: none !important;
-		box-shadow: none !important;
+		border-radius: 16px;
+		padding: 12px 20px;
+		font-size: 15px;
+		color: #333;
+		transition: all 0.2s ease;
+	}
+
+	.ios-input-field:focus {
+		outline: none;
+		background: white !important;
+		box-shadow: 0 0 0 3px rgba(0, 184, 212, 0.4);
+	}
+
+	.ios-select-field :deep(.v-field) {
+		border-radius: 16px !important;
+		background: rgba(255, 255, 255, 0.9) !important;
+	}
+
+	.ios-action-btn {
+		background: linear-gradient(135deg, #00B8D4 0%, #0097A7 100%) !important;
+		color: white !important;
+		border-radius: 16px !important;
+		height: 54px !important;
+		text-transform: none !important;
+		font-size: 18px !important;
+		font-weight: 700 !important;
+		letter-spacing: 0.5px !important;
+	}
+
+	.ios-secondary-link {
+		color: white;
+		text-decoration: none;
+		font-weight: 500;
+		display: inline-flex;
+		align-items: center;
+		opacity: 0.8;
+		transition: all 0.2s;
+	}
+
+	.ios-secondary-link:hover {
+		opacity: 1;
+		transform: scale(1.05);
+	}
+
+	.back-text {
+		font-size: 16px;
+	}
+
+	.drop-shadow {
+		filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
 	}
 </style>

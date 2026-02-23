@@ -21,6 +21,18 @@ const routes = [
 		meta: { requiresAuth: false }
 	},
 	{
+		path: '/esqueci-senha',
+		name: 'esqueci-senha',
+		component: () => import('@/views/EsqueciSenha.vue'),
+		meta: { requiresAuth: false }
+	},
+	{
+		path: '/sobre-nos',
+		name: 'sobre-nos',
+		component: () => import('@/views/SobreNos.vue'),
+		meta: { requiresAuth: false }
+	},
+	{
 		path: '/dashboard',
 		name: 'dashboard',
 		component: () => import('@/views/Dashboard.vue'),

@@ -1,64 +1,71 @@
 <template>
-	<v-app>
-		<v-app-bar v-if="showBar" :elevation="2" color="#242424" height="80">
+	<v-app class="ios-app">
+		<v-app-bar v-if="showBar" :elevation="0" class="glass-app-bar" height="80">
 			<template v-slot:prepend>
-				<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" style="height: 70px; margin-right: 10px; margin-left: 20px;" />
-				<v-app-bar-title>BIBLIOTECA DIGITAL</v-app-bar-title>
+				<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" class="logo-img" />
+				<v-app-bar-title class="app-title">BIBLIOTECA DIGITAL</v-app-bar-title>
 			</template>
 
 			<v-spacer />
 
-			<div class="input-wrapper" ref="inputWrapperRef">
-				<i class="mdi mdi-magnify input-icon pr-8"></i>
-				<input type="text" class="custom-input w-100" placeholder="Pesquisar por material..." v-model="searchInput" />
+			<div class="search-container" ref="inputWrapperRef">
+				<div class="search-wrapper" :class="{ 'search-active': isSearchFocused }">
+					<i class="mdi mdi-magnify search-icon"></i>
+					<input
+						type="text"
+						class="ios-search-input"
+						placeholder="Buscar materiais..."
+						v-model="searchInput"
+						@focus="isSearchFocused = true"
+						@blur="isSearchFocused = false"
+					/>
+				</div>
 
 				<Teleport to="body">
-					<div
-						class="suggestions-dropdown"
-						v-if="suggestions.length && searchInput"
-						:style="dropdownStyle"
-					>
+					<transition name="fade">
 						<div
-							class="suggestion-item"
-							v-for="(item, index) in suggestions"
-							:key="index"
-							@click="selectSuggestion(item)"
+							class="ios-suggestions"
+							v-if="suggestions.length && searchInput"
+							:style="dropdownStyle"
 						>
-							{{ item }}
+							<div
+								class="ios-suggestion-item"
+								v-for="(item, index) in suggestions"
+								:key="index"
+								@click="selectSuggestion(item)"
+							>
+								{{ item }}
+							</div>
 						</div>
-					</div>
+					</transition>
 				</Teleport>
 			</div>
 
 			<v-spacer />
 
-			<div>
+			<div class="nav-actions">
 				<router-link v-if="$route.path === '/'" to="/login">
-
-					<v-btn color="white" class="mr-6" size="large">
-						<v-icon color="white" class="mr-2">mdi-login</v-icon>
+					<v-btn class="ios-btn-primary" elevation="0">
+						<v-icon class="mr-2">mdi-login</v-icon>
 						Entrar
 					</v-btn>
 				</router-link>
 
 				<template v-else>
-					<v-btn color="white" class="mr-6" size="large" @click="logout">
-						<v-icon color="white" class="mr-2">mdi-arrow-left-bold-outline</v-icon>
-						Sair
-					</v-btn>
-					<v-btn icon>
-						<v-icon>mdi-heart</v-icon>
-					</v-btn>
-					<v-btn icon>
-						<v-icon>mdi-dots-vertical</v-icon>
-					</v-btn>
+					<v-btn class="ios-btn-ghost mr-2" elevation="0" @click="logout" icon="mdi-logout"></v-btn>
+					<v-btn class="ios-btn-ghost mr-2" elevation="0" icon="mdi-heart-outline"></v-btn>
+					<v-btn class="ios-btn-ghost" elevation="0" icon="mdi-dots-vertical"></v-btn>
 				</template>
 			</div>
 		</v-app-bar>
 
 		<v-main>
-			<v-container fluid="false">
-				<router-view />
+			<v-container fluid class="pa-0">
+				<router-view v-slot="{ Component }">
+					<transition name="ios-page" mode="out-in">
+						<component :is="Component" />
+					</transition>
+				</router-view>
 			</v-container>
 		</v-main>
 
@@ -78,7 +85,8 @@ export default {
 	components: { Footer },
 	data() {
 		return {
-			publicRoutes: ['/login', '/cadastro'] // rotas onde AppBar e Footer não aparecem
+			publicRoutes: ['/login', '/cadastro', '/esqueci-senha'],
+			isSearchFocused: false
 		}
 	},
 	methods: {
@@ -99,7 +107,6 @@ export default {
 		}
 	},
 	setup() {
-		const search = ref('')
 		const searchInput = ref('')
 		const suggestions = ref([])
 		const loading = ref(false)
@@ -130,10 +137,10 @@ export default {
 			if (inputWrapperRef.value) {
 				const rect = inputWrapperRef.value.getBoundingClientRect()
 				dropdownStyle.value = {
-				top: `${rect.bottom + window.scrollY}px`,
-				left: `${rect.left + window.scrollX}px`,
-				width: `${rect.width}px`,
-				position: 'absolute',
+					top: `${rect.bottom + window.scrollY + 8}px`,
+					left: `${rect.left + window.scrollX}px`,
+					width: `${rect.width}px`,
+					position: 'absolute',
 				}
 			}
 		}
@@ -151,7 +158,6 @@ export default {
 			await nextTick()
 			updateDropdownPosition()
 			fetchSuggestions(val)
-			console.log('input:', val, 'sugestões:', suggestions.value)
 		})
 
 		const handleClickOutside = (event) => {
@@ -176,7 +182,6 @@ export default {
 		})
 
 		return {
-			search,
 			searchInput,
 			suggestions,
 			loading,
@@ -189,73 +194,161 @@ export default {
 </script>
 
 <style>
-	#app {
-		font-family: Avenir, Helvetica, Arial, sans-serif;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-		text-align: center;
-		color: #2c3e50;
+	:root {
+		--ios-blue: #007AFF;
+		--ios-cyan: #5AC8FA;
+		--ios-bg: #3a6391;
+		--ios-card: rgba(255, 255, 255, 0.95);
+		--spring-easing: cubic-bezier(0.4, 0, 0.2, 1);
+		--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+	}
+
+	body {
 		margin: 0;
 		padding: 0;
-		background-color: red;
+		font-family: var(--apple-font);
+		background-color: var(--ios-bg);
+		overflow-x: hidden;
 	}
 
-	.v-application {
-		background-color: #3a6391 !important;
+	.ios-app {
+		background-color: var(--ios-bg) !important;
 	}
 
-	.v-app-bar-title {
-		font-size: 35px !important;
-		font-weight: bolder;
+	/* Glassmorphism AppBar */
+	.glass-app-bar {
+		background: rgba(36, 36, 36, 0.7) !important;
+		backdrop-filter: blur(20px) saturate(180%) !important;
+		-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+		transition: background 0.3s ease;
 	}
 
-	.input-wrapper {
+	.app-title {
+		font-size: 28px !important;
+		font-weight: 800 !important;
+		letter-spacing: -0.5px;
+		color: white !important;
+	}
+
+	.logo-img {
+		height: 60px;
+		margin: 0 15px 0 20px;
+		filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+	}
+
+	/* iOS Search Input */
+	.search-container {
+		flex: 1;
+		max-width: 500px;
+		margin: 0 20px;
+	}
+
+	.search-wrapper {
 		position: relative;
-		width: 300px;
+		background: rgba(255, 255, 255, 0.15);
+		border-radius: 20px;
+		padding: 4px 16px;
 		display: flex;
 		align-items: center;
-		flex: 15;
-		margin-left: 20px;
+		transition: all 0.3s var(--spring-easing);
+		border: 1px solid rgba(255, 255, 255, 0.1);
 	}
 
-	.input-icon {
-		position: absolute;
-		left: 12px;
+	.search-active {
+		background: rgba(255, 255, 255, 0.25) !important;
+		transform: scale(1.02);
+		box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+	}
+
+	.search-icon {
 		font-size: 20px;
-		color: #555;
+		color: rgba(255, 255, 255, 0.7);
+		margin-right: 12px;
 	}
 
-	.custom-input {
+	.ios-search-input {
 		width: 100%;
-		padding: 8px 12px 8px 36px;
-		border: 2px solid black;
-		border-radius: 25px;
+		border: none !important;
+		background: transparent !important;
+		color: white !important;
 		font-size: 16px;
-		color: #000;
-		background-color: white;
+		padding: 8px 0;
 	}
 
-	.suggestions-dropdown {
-		position: absolute;
-		top: 100%;
-		left: 0;
-		right: 0;
-		background-color: white;
-		border: 1px solid #ccc;
-		border-radius: 0 0 12px 12px;
-		box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	.ios-search-input::placeholder {
+		color: rgba(255, 255, 255, 0.5);
+	}
+
+	.ios-search-input:focus {
+		outline: none;
+	}
+
+	/* iOS Suggestions */
+	.ios-suggestions {
+		background: rgba(255, 255, 255, 0.9);
+		backdrop-filter: blur(20px);
+		border-radius: 16px;
+		box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+		overflow: hidden;
 		z-index: 9999;
-		max-height: 200px;
-		overflow-y: auto;
 	}
 
-	.suggestion-item {
-		padding: 8px 12px;
+	.ios-suggestion-item {
+		padding: 12px 20px;
 		cursor: pointer;
-		transition: background-color 0.2s ease;
+		font-size: 15px;
+		color: #333;
+		transition: background 0.2s;
 	}
 
-	.suggestion-item:hover {
-		background-color: #f0f0f0;
+	.ios-suggestion-item:hover {
+		background: rgba(0, 122, 255, 0.1);
+	}
+
+	/* iOS Buttons */
+	.ios-btn-primary {
+		background: var(--ios-cyan) !important;
+		color: white !important;
+		border-radius: 12px !important;
+		text-transform: none !important;
+		font-weight: 600 !important;
+		padding: 0 24px !important;
+		transition: transform 0.2s var(--spring-easing) !important;
+	}
+
+	.ios-btn-primary:active {
+		transform: scale(0.95);
+	}
+
+	.ios-btn-ghost {
+		color: white !important;
+		transition: opacity 0.2s !important;
+	}
+
+	.ios-btn-ghost:hover {
+		opacity: 0.7;
+	}
+
+	/* Transitions */
+	.ios-page-enter-active,
+	.ios-page-leave-active {
+		transition: opacity 0.4s var(--spring-easing), transform 0.4s var(--spring-easing);
+	}
+
+	.ios-page-enter-from {
+		opacity: 0;
+		transform: translateY(20px) scale(0.98);
+	}
+
+	.ios-page-leave-to {
+		opacity: 0;
+		transform: translateY(-20px) scale(1.02);
+	}
+
+	.fade-enter-active, .fade-leave-active {
+		transition: opacity 0.3s;
+	}
+	.fade-enter-from, .fade-leave-to {
+		opacity: 0;
 	}
 </style>

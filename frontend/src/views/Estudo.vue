@@ -1,168 +1,87 @@
 <template>
-	<div class="mx-auto mt-8">
-		<v-container class="pa-0" fluid>
-			<v-card min-width="100%" rounded="xl" style="background-color: rgba(36, 36, 36, 0.50);">
-				<v-row dense>
-					<!-- div a esquerda com as informações do conteúdo renderizado -->
-					<v-col cols="4">
-						<div>
-							<!-- Titulo -->
-							<div>
-								<v-row dense class="mt-4">
-									<v-col cols="2"><v-icon color="white" class="pt-4">mdi-file-document-multiple</v-icon></v-col>
-									<v-col cols="10" class="text-left">
-										<h3 class="titulo">Estrutura de Dados e Algoritmos</h3>
-									</v-col>
-								</v-row>
+	<div class="estudo-container mt-8">
+		<v-container fluid class="pa-4">
+			<v-row>
+				<!-- Sidebar: Book Info -->
+				<v-col cols="12" lg="4" class="pa-4">
+					<v-card class="ios-card-premium pa-6 sticky-sidebar" elevation="12">
+						<v-btn class="ios-btn-back mb-6" variant="text" @click="$router.push('/dashboard')">
+							<v-icon class="mr-2">mdi-chevron-left</v-icon> Voltar
+						</v-btn>
+
+						<div class="text-center mb-6">
+							<div class="book-cover-wrapper mx-auto mb-4">
+								<img :src="livros[0].link" :alt="livros[0].nome" class="book-cover" />
 							</div>
+							<h1 class="text-white text-h5 font-weight-bold leading-tight">{{ livros[0].nome }}</h1>
+						</div>
 
-							<!-- div com as informações do livro -->
-							<div class="mt-8">
-								<v-row dense>
-									<v-col cols="4">
-										<div class="ml-4" style="height: 300px; overflow: hidden; position: relative;">
-											<img
-												:src="livros[0].link"
-												style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;"
-											/>
-										</div>
-									</v-col>
+						<v-divider class="opacity-20 mb-6"></v-divider>
 
-									<v-col cols="8">
-										<div class="pa-2" style="height: 300px; overflow: auto;">
-											<ul style="list-style: none; padding: 0; margin: 0;">
-												<li class="custom-item"><strong>Publicado em:</strong> 05/10/2022</li>
-												<li class="custom-item">
-													<strong>Páginas:</strong> 220 |
-													<strong>Capítulos:</strong> 5
-												</li>
-												<li class="custom-item"><strong>Volume:</strong> 1</li>
-												<li class="custom-item"><strong>Edição:</strong> 1</li>
-												<li class="custom-item"><strong>Organizadores:</strong> Hélio Lemes Costa Jr</li>
-											</ul>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Avaliar -->
-								<v-row no-gutters class="mt-4">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4" align-self="center">
-													<p class="rating-text text-left">Avaliar: </p>
-												</v-col>
-												<v-col cols="8" align-self="center">
-													<v-rating
-														hover
-														:length="5"
-														:size="50"
-														:model-value="3"
-														active-color="yellow"
-													/>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
-
-								<!-- Compartilhar -->
-								<v-row no-gutters class="mb-8 mt-4">
-									<v-col cols="12">
-										<div class="ml-8">
-											<v-row>
-												<v-col cols="4">
-													<p class="rating-text text-left" style="padding-right: 5px;">Compartilhar: </p>
-												</v-col>
-												<v-col cols="8">
-													<v-row>
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-instagram
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-facebook
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-reddit
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-
-														<v-col cols="3">
-															<v-hover>
-																<template v-slot:default="{ isHovering, props }">
-																	<a href="">
-																		<v-icon
-																			size="x-large"
-																			v-bind="props"
-																			:color="isHovering ? 'purple' : 'white'"
-																		>
-																			mdi-whatsapp
-																		</v-icon>
-																	</a>
-																</template>
-															</v-hover>
-														</v-col>
-													</v-row>
-												</v-col>
-											</v-row>
-										</div>
-									</v-col>
-								</v-row>
+						<div class="item-details text-white">
+							<div class="detail-row mb-3 d-flex justify-space-between">
+								<span class="opacity-60">Publicado</span>
+								<span class="font-weight-bold">05/10/2022</span>
+							</div>
+							<div class="detail-row mb-3 d-flex justify-space-between">
+								<span class="opacity-60">Páginas</span>
+								<span class="font-weight-bold">220</span>
+							</div>
+							<div class="detail-row mb-3 d-flex justify-space-between">
+								<span class="opacity-60">Volume</span>
+								<span class="font-weight-bold">1</span>
+							</div>
+							<div class="detail-row mb-3 d-flex justify-space-between">
+								<span class="opacity-60">Autor</span>
+								<span class="font-weight-bold">Michael T. Goodrich</span>
 							</div>
 						</div>
-					</v-col>
 
-					<v-divider
-						class="border-opacity-50"
-						color="white"
-						vertical
-					></v-divider>
+						<v-divider class="opacity-20 my-6"></v-divider>
 
-					<!-- div a direita com o conteúdo renderizado -->
-					<v-col cols="8">
-						<div class="modelo-conteudo">
-							<div id="embed-doc" v-html="iframeHTML" class="embed-doc"></div>
+						<div class="rating-section mb-6">
+							<label class="text-white opacity-60 text-caption d-block mb-2">Avalie este conteúdo</label>
+							<v-rating
+								hover
+								:length="5"
+								:model-value="4"
+								active-color="amber"
+								color="grey-lighten-1"
+								density="comfortable"
+							></v-rating>
 						</div>
-					</v-col>
-				</v-row>
-			</v-card>
+
+						<div class="share-section">
+							<label class="text-white opacity-60 text-caption d-block mb-3">Compartilhar</label>
+							<div class="d-flex justify-space-between">
+								<v-btn icon="mdi-instagram" variant="tonal" color="white" density="comfortable"></v-btn>
+								<v-btn icon="mdi-facebook" variant="tonal" color="white" density="comfortable"></v-btn>
+								<v-btn icon="mdi-reddit" variant="tonal" color="white" density="comfortable"></v-btn>
+								<v-btn icon="mdi-whatsapp" variant="tonal" color="white" density="comfortable"></v-btn>
+							</div>
+						</div>
+					</v-card>
+				</v-col>
+
+				<!-- Main Content: PDF Viewer -->
+				<v-col cols="12" lg="8" class="pa-4">
+					<v-card class="ios-viewer-card" elevation="12">
+						<div class="viewer-header pa-4 d-flex justify-space-between align-center">
+							<div class="d-flex align-center">
+								<v-icon color="cyan" class="mr-2">mdi-file-pdf-box</v-icon>
+								<span class="text-white font-weight-medium">Modo de Leitura</span>
+							</div>
+							<div class="viewer-actions">
+								<v-btn icon="mdi-fullscreen" variant="text" color="white" size="small"></v-btn>
+								<v-btn icon="mdi-download" variant="text" color="white" size="small"></v-btn>
+							</div>
+						</div>
+						<div class="content-body">
+							<div id="embed-doc" class="embed-doc"></div>
+						</div>
+					</v-card>
+				</v-col>
+			</v-row>
 		</v-container>
 	</div>
 </template>
@@ -173,69 +92,97 @@ import livros from '../../../livros.json'
 export default {
 	name: 'EstudoPage',
 	data: () => ({
-		pack: require('../../package.json'),
 		livros: livros
 	}),
 	methods: {
 		embedDocumento(pdfUrl) {
 			const container = document.getElementById('embed-doc');
+			if (!container) return;
 
 			container.innerHTML = '';
-
 			const iframe = document.createElement('iframe');
-			iframe.setAttribute('src', pdfUrl);
+			iframe.setAttribute('src', pdfUrl + '#toolbar=0&navpanes=0&scrollbar=0');
 			iframe.setAttribute('width', '100%');
 			iframe.setAttribute('height', '100%');
 			iframe.style.border = 'none';
-
 			container.appendChild(iframe);
 		}
 	},
 	mounted() {
-		console.log('livro: ', this.livros[0]);
-		// const exemploPDF = '/pdfs/exemplo.pdf';
 		const exemploPDF = 'https://dn790006.ca.archive.org/0/items/estruturas-de-dados-e-algoritmos-em-java-pdfdrive/Estruturas%20de%20dados%20e%20algoritmos%20em%20JAVA%20(%20PDFDrive%20).pdf'
 		this.embedDocumento(exemploPDF);
 	}
 }
 </script>
 
-<style>
-	.border {
-		border: 1px solid black;
+<style scoped>
+	.estudo-container {
+		min-height: 100vh;
+		padding-bottom: 40px;
 	}
 
-	#embed-doc {
+	.ios-card-premium {
+		background: rgba(58, 99, 145, 0.6) !important;
+		backdrop-filter: blur(20px);
+		border-radius: 32px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.sticky-sidebar {
+		position: sticky;
+		top: 100px;
+	}
+
+	.ios-btn-back {
+		color: rgba(255, 255, 255, 0.8) !important;
+		text-transform: none !important;
+		font-weight: 600 !important;
+	}
+
+	.book-cover-wrapper {
+		width: 160px;
+		height: 220px;
+		border-radius: 16px;
+		overflow: hidden;
+		background: rgba(0,0,0,0.2);
+		box-shadow: 0 12px 24px rgba(0,0,0,0.4);
+	}
+
+	.book-cover {
 		width: 100%;
-		height: 700px;
+		height: 100%;
+		object-fit: contain;
 	}
 
-	#embed-doc iframe {
+	.opacity-60 { opacity: 0.6; }
+	.opacity-20 { opacity: 0.2; }
+
+	.ios-viewer-card {
+		background: #2a2a2a !important;
+		border-radius: 32px !important;
+		overflow: hidden;
+		height: 850px;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		display: flex;
+		flex-direction: column;
+	}
+
+	.viewer-header {
+		background: rgba(0,0,0,0.3);
+		border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+	}
+
+	.content-body {
+		flex: 1;
+		background: #1a1a1a;
+	}
+
+	.embed-doc {
 		width: 100%;
-		overflow-y: initial;
+		height: 100%;
 	}
 
-	.titulo {
-		font-weight: bolder;
-		font-size: 1.5rem;
-		color: white;
-	}
-
-	.custom-item {
-		color: white;
-		font-size: 15px;
-		line-height: 2.5;
-	}
-
-	li {
-		text-align: left;
-		padding-top: 16px;
-	}
-
-	.rating-text {
-		color: white;
-		font-size: 1.3rem;
-		font-family: Avenir, Helvetica, Arial, sans-serif;
-		font-weight: bolder;
+	:deep(.v-rating__item) {
+		padding: 0 4px !important;
 	}
 </style>

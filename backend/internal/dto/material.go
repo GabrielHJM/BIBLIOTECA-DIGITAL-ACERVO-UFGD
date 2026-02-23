@@ -1,6 +1,13 @@
 package dto
 
 type MaterialResponse struct {
-    ID     int    `json:"id"`
-    Titulo string `json:"titulo"`
+	ID            int    `json:"id"`
+	Titulo        string `json:"titulo"`
+	Autor         string `json:"autor"`
+	ISBN          string `json:"isbn"`
+	Categoria     string `json:"categoria"`
+	AnoPublicacao int    `json:"ano_publicacao"`
+	Descricao     string `json:"descricao"`
+	CapaURL       string `json:"capa_url"`
+	Disponivel    bool   `json:"disponivel"`
 }
