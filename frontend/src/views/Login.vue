@@ -94,7 +94,7 @@ export default {
 				})
 
 				if (response.data && response.data.token) {
-					auth.login({ email: this.email, token: response.data.token })
+					auth.login(response.data)
 					this.$router.push('/dashboard')
 				} else {
 					throw new Error("Token não recebido")

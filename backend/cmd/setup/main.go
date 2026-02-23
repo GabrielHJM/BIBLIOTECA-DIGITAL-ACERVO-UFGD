@@ -11,17 +11,27 @@ import (
 )
 
 const schema = `
+-- Drop existing tables for a clean start
+DROP TABLE IF EXISTS emprestimos CASCADE;
+DROP TABLE IF EXISTS historico_leitura CASCADE;
+DROP TABLE IF EXISTS avaliacoes CASCADE;
+DROP TABLE IF EXISTS favoritos CASCADE;
+DROP TABLE IF EXISTS interesses_usuario CASCADE;
+DROP TABLE IF EXISTS materiais CASCADE;
+DROP TABLE IF EXISTS usuarios CASCADE;
+
 -- Tabela de Usuários
-CREATE TABLE IF NOT EXISTS usuarios (
+CREATE TABLE usuarios (
     id SERIAL PRIMARY KEY,
     nome TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     senha TEXT NOT NULL,
-    tipo TEXT NOT NULL DEFAULT 'estudante'
+    tipo TEXT NOT NULL DEFAULT 'estudante',
+    foto_url TEXT
 );
 
 -- Tabela de Materiais (Livros/Artigos)
-CREATE TABLE IF NOT EXISTS materiais (
+CREATE TABLE materiais (
     id SERIAL PRIMARY KEY,
     titulo TEXT NOT NULL,
     autor TEXT NOT NULL,
@@ -37,21 +47,21 @@ CREATE TABLE IF NOT EXISTS materiais (
 );
 
 -- Tabela de Interesses do Usuário
-CREATE TABLE IF NOT EXISTS interesses_usuario (
+CREATE TABLE interesses_usuario (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     interesse TEXT NOT NULL
 );
 
 -- Tabela de Favoritos
-CREATE TABLE IF NOT EXISTS favoritos (
+CREATE TABLE favoritos (
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
     PRIMARY KEY (usuario_id, material_id)
 );
 
 -- Tabela de Avaliações
-CREATE TABLE IF NOT EXISTS avaliacoes (
+CREATE TABLE avaliacoes (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
@@ -61,7 +71,7 @@ CREATE TABLE IF NOT EXISTS avaliacoes (
 );
 
 -- Tabela de Empréstimos
-CREATE TABLE IF NOT EXISTS emprestimos (
+CREATE TABLE emprestimos (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
@@ -71,7 +81,7 @@ CREATE TABLE IF NOT EXISTS emprestimos (
 );
 
 -- Tabela de Histórico de Leitura
-CREATE TABLE IF NOT EXISTS historico_leitura (
+CREATE TABLE historico_leitura (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
@@ -80,8 +90,9 @@ CREATE TABLE IF NOT EXISTS historico_leitura (
 `
 
 func main() {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Fatalf("Erro ao carregar arquivo .env: %v", err)
+	// tenta carregar o .env da raiz do backend ou de dois niveis acima
+	if err := godotenv.Load(".env", "../../.env"); err != nil {
+		log.Printf("Aviso: Erro ao carregar arquivo .env: %v. Continuando com variáveis de ambiente.", err)
 	}
 
 	dbUrl := os.Getenv("DATABASE_URL")

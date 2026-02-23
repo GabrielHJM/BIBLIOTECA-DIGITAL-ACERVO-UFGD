@@ -14,5 +14,10 @@ export default {
 	// Redefinir senha
 	redefinirSenha(dados) {
 		return api.post('/redefinir-senha', dados);
+	},
+
+	// Atualizar perfil
+	atualizar(id, dados) {
+		return api.put(`/usuarios/${id}`, dados);
 	}
 };

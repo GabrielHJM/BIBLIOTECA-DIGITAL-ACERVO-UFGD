@@ -15,14 +15,14 @@ func NewUsuarioPG(db *sql.DB) *UsuarioPostgres {
 }
 
 func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error {
-	query := "INSERT INTO usuarios (nome, email, senha, tipo) VALUES ($1, $2, $3, $4) RETURNING id"
-	return r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo).Scan(&u.ID)
+	query := "INSERT INTO usuarios (nome, email, senha, tipo, foto_url) VALUES ($1, $2, $3, $4, $5) RETURNING id"
+	return r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo, u.FotoURL).Scan(&u.ID)
 }
 
 func (r *UsuarioPostgres) BuscarPorEmail(ctx context.Context, email string) (*usuario.Usuario, error) {
-	query := "SELECT id, nome, email, senha, tipo FROM usuarios WHERE email = $1"
+	query := "SELECT id, nome, email, senha, tipo, foto_url FROM usuarios WHERE email = $1"
 	u := &usuario.Usuario{}
-	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo)
+	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL)
 	if err != nil {
 		return nil, err
 	}
@@ -51,5 +51,11 @@ func (r *UsuarioPostgres) ListarInteresses(ctx context.Context, id int) ([]strin
 func (r *UsuarioPostgres) AtualizarSenha(ctx context.Context, email string, novaSenha string) error {
 	query := "UPDATE usuarios SET senha = $1 WHERE email = $2"
 	_, err := r.DB.ExecContext(ctx, query, novaSenha, email)
+	return err
+}
+
+func (r *UsuarioPostgres) Atualizar(ctx context.Context, u *usuario.Usuario) error {
+	query := "UPDATE usuarios SET nome = $1, email = $2, foto_url = $3 WHERE id = $4"
+	_, err := r.DB.ExecContext(ctx, query, u.Nome, u.Email, u.FotoURL, u.ID)
 	return err
 }

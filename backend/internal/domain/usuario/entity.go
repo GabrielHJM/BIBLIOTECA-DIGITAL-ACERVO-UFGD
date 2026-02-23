@@ -7,4 +7,5 @@ type Usuario struct {
 	Senha      string
 	Tipo       int
 	Interesses []string
+	FotoURL    string
 }

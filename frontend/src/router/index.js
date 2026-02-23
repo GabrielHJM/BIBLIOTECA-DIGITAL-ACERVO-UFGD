@@ -47,6 +47,14 @@ const routes = [
 		}
 	},
 	{
+		path: '/perfil',
+		name: 'perfil',
+		component: () => import('@/views/ProfileEdit.vue'),
+		beforeEnter: (to, from, next) => {
+			auth.isAuthenticated() ? next() : next('/login')
+		}
+	},
+	{
 		path: '/estudo/:id',
 		name: 'estudo',
 		component: () => import('@/views/Estudo.vue'),

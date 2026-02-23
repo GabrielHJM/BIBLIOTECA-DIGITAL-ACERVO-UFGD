@@ -62,10 +62,11 @@
 						<div class="user-trigger d-flex align-center" v-bind="props" style="cursor:pointer; gap: 10px;">
 							<div class="text-right hidden-sm-and-down">
 								<div class="welcome-text">{{ isLoggedIn ? 'Bem-vindo,' : 'Olá,' }}</div>
-								<div class="username-text">{{ isLoggedIn ? userEmail : 'Visitante' }}</div>
+								<div class="username-text">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
 							</div>
 							<v-avatar size="44" class="header-avatar-glass">
-								<v-icon color="white" size="26">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
+								<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
+								<v-icon v-else color="white" size="26">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
 							</v-avatar>
 						</div>
 					</template>
@@ -76,10 +77,11 @@
 						<div class="dropdown-header pa-4 pb-3">
 							<div class="dropdown-avatar-row d-flex align-center mb-2" style="gap: 10px;">
 								<v-avatar size="38" color="rgba(0,184,212,0.15)">
-									<v-icon color="#00B8D4" size="22">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
+									<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
+									<v-icon v-else color="#00B8D4" size="22">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
 								</v-avatar>
 								<div>
-									<div class="dropdown-user-name">{{ isLoggedIn ? userEmail : 'Visitante' }}</div>
+									<div class="dropdown-user-name">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
 									<div class="dropdown-user-role">{{ isLoggedIn ? 'Usuário autenticado' : 'Não autenticado' }}</div>
 								</div>
 							</div>
@@ -129,6 +131,17 @@
 						<!-- Opções para usuário logado -->
 						<template v-else>
 							<v-list class="dropdown-list py-2">
+								<v-list-item
+									prepend-icon="mdi-account-edit-outline"
+									title="Editar Perfil"
+									subtitle="Mude seu nome e foto"
+									class="dropdown-item"
+									@click="$router.push('/perfil')"
+								>
+									<template v-slot:append>
+										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
+									</template>
+								</v-list-item>
 								<v-list-item
 									prepend-icon="mdi-view-dashboard"
 									title="Meu Painel"
@@ -229,9 +242,13 @@ export default {
 		isLoggedIn() {
 			return auth.isAuthenticated()
 		},
-		userEmail() {
+		userDisplayName() {
 			const user = auth.getUser()
-			return user?.email || 'Usuário'
+			return user?.nome || user?.email || 'Usuário'
+		},
+		userAvatar() {
+			const user = auth.getUser()
+			return user?.foto_url || null
 		}
 	},
 	watch: {

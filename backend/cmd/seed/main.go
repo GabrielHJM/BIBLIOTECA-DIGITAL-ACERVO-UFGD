@@ -19,8 +19,8 @@ type LivroMock struct {
 }
 
 func main() {
-	if err := godotenv.Load("../../.env"); err != nil {
-		log.Fatal("Erro ao carregar arquivo .env")
+	if err := godotenv.Load(".env", "../../.env"); err != nil {
+		log.Printf("Aviso: Erro ao carregar arquivo .env: %v", err)
 	}
 
 	dbUrl := os.Getenv("DATABASE_URL")
@@ -30,8 +30,15 @@ func main() {
 	}
 	defer db.Close()
 
-	// Ler JSON
-	data, err := os.ReadFile("../../../livros.json")
+	// tenta ler livros.json de varios locais relativos
+	data, err := os.ReadFile("livros.json")
+	if err != nil {
+		data, err = os.ReadFile("../livros.json")
+	}
+	if err != nil {
+		data, err = os.ReadFile("../../../livros.json")
+	}
+
 	if err != nil {
 		log.Fatalf("Erro ao ler livros.json: %v", err)
 	}
