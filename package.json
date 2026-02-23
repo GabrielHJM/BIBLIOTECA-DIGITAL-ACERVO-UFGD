@@ -1,0 +1,14 @@
+{
+	"name": "biblioteca-digital-root",
+	"version": "1.0.0",
+	"description": "Sistema de Biblioteca Digital",
+	"main": "index.js",
+	"scripts": {
+		"server": "cd backend && go run cmd/server/main.go",
+		"client": "cd frontend && npm run serve",
+		"install-all": "npm install --prefix frontend && cd backend && go mod download"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC"
+}

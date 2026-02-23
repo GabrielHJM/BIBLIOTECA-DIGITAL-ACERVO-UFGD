@@ -33,6 +33,12 @@ const routes = [
 		meta: { requiresAuth: false }
 	},
 	{
+		path: '/explorar',
+		name: 'explorar',
+		component: () => import('@/views/Explore.vue'),
+		meta: { requiresAuth: false }
+	},
+	{
 		path: '/dashboard',
 		name: 'dashboard',
 		component: () => import('@/views/Dashboard.vue'),
@@ -41,7 +47,7 @@ const routes = [
 		}
 	},
 	{
-		path: '/estudo',
+		path: '/estudo/:id',
 		name: 'estudo',
 		component: () => import('@/views/Estudo.vue'),
 		meta: { requiresAuth: false }

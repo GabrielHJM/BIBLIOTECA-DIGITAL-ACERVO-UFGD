@@ -9,6 +9,7 @@ type Material struct {
 	AnoPublicacao   int      `json:"ano_publicacao"`
 	Descricao       string   `json:"descricao"`
 	CapaURL         string   `json:"capa_url"`
+	PDFURL          string   `json:"pdf_url"`
 	Disponivel      bool     `json:"disponivel"`
 	Tags            []string `json:"tags"`
 	MediaNota       float64  `json:"media_nota"`

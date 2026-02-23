@@ -1,5 +1,6 @@
 <template>
 	<v-footer class="ios-floating-footer-wrapper">
+		<div class="footer-hover-trigger"></div>
 		<div class="ios-floating-footer pa-4">
 			<div class="footer-links-container">
 				<v-btn
@@ -15,9 +16,7 @@
 			</div>
 
 			<div class="footer-bottom-info mt-2">
-				<span class="copyright">Biblioteca Digital © {{ new Date().getFullYear() }}</span>
-				<v-divider vertical class="mx-3 opacity-20"></v-divider>
-				<span class="version">Versão {{ pack.version || '1.0' }}</span>
+				<span class="copyright">Biblioteca Digital (Projeto de Sistemas de Informação SI - UFGD) | Copyright {{ new Date().getFullYear() }} - Todos os Direitos Reservados ©</span>
 			</div>
 		</div>
 	</v-footer>
@@ -45,13 +44,17 @@ export default {
 		left: 0;
 		right: 0;
 		width: 100%;
-		height: 80px; /* Area de detecção do mouse */
+		height: 40px; /* Área de detecção reduzida para não bloquear links */
 		display: flex;
 		justify-content: center;
 		align-items: flex-end;
-		pointer-events: auto;
+		pointer-events: none; /* Não bloqueia cliques nos elementos de baixo */
 		z-index: 1000;
 		padding-bottom: 20px;
+	}
+
+	.ios-floating-footer-wrapper * {
+		pointer-events: auto; /* Reativa cliques para os botões internos */
 	}
 
 	.ios-floating-footer {
@@ -75,11 +78,22 @@ export default {
 		pointer-events: none;
 	}
 
-	/* Mostrar ao passar o mouse na wrapper */
-	.ios-floating-footer-wrapper:hover .ios-floating-footer {
-		opacity: 1;
-		transform: translateY(0) scale(1);
+	.ios-floating-footer-wrapper:hover .ios-floating-footer,
+	.ios-floating-footer-wrapper:active .ios-floating-footer,
+	.ios-floating-footer:hover {
+		opacity: 1 !important;
+		transform: translateY(0) scale(1) !important;
+		pointer-events: auto !important;
+	}
+
+	.footer-hover-trigger {
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 60px; /* Sensibilidade do gatilho */
 		pointer-events: auto;
+		z-index: -1;
 	}
 
 	.footer-links-container {
@@ -130,9 +144,17 @@ export default {
 		.ios-floating-footer {
 			min-width: 300px;
 			padding: 12px !important;
+			opacity: 1 !important; /* Force visible on mobile */
+			transform: translateY(0) scale(1) !important;
+			pointer-events: auto !important;
+			bottom: 10px;
 		}
 		.ios-footer-link {
 			font-size: 13px;
+		}
+		.ios-floating-footer-wrapper {
+			height: auto;
+			padding-bottom: 10px;
 		}
 	}
 </style>

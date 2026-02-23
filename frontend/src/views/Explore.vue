@@ -1,16 +1,16 @@
 <template>
-	<div class="dashboard-container mt-8">
+	<div class="explore-container mt-8">
 		<v-container fluid class="pa-4">
 			<!-- Header Section -->
 			<v-row align="center" class="mb-6 px-4">
 				<v-col cols="12" sm="4" md="4" class="py-2">
-					<h1 class="text-white text-h4 text-sm-h3 font-weight-bold tracking-tight">Recentes</h1>
+					<h1 class="text-white text-h4 text-sm-h3 font-weight-bold tracking-tight">Explorar</h1>
 				</v-col>
 				<v-col cols="12" sm="5" md="5" class="py-2">
 					<v-text-field
 						v-model="searchQuery"
 						prepend-inner-icon="mdi-magnify"
-						placeholder="Pesquisar..."
+						placeholder="Busque por título, autor ou categoria..."
 						variant="solo"
 						class="ios-search-bar"
 						hide-details
@@ -18,7 +18,7 @@
 					></v-text-field>
 				</v-col>
 				<v-col cols="12" sm="3" md="3" class="text-right py-2">
-					<v-btn class="ios-filter-btn w-100 w-sm-auto" elevation="2" @click="buscar">
+					<v-btn class="ios-filter-btn w-100 w-sm-auto" elevation="2" @click="buscar" :loading="loading">
 						<span>Buscar</span>
 						<v-icon class="ml-2">mdi-magnify</v-icon>
 					</v-btn>
@@ -35,12 +35,12 @@
 					lg="4"
 					class="pa-4"
 				>
-					<v-card class="ios-item-card" elevation="8" :style="{ animationDelay: `${index * 100}ms` }">
+					<v-card class="ios-item-card" elevation="8" :style="{ animationDelay: `${index * 100}ms` }" @click="$router.push('/estudo/' + livro.id)">
 						<v-row no-gutters>
 							<!-- Image Section -->
 							<v-col cols="5" class="pa-3">
 								<div class="book-cover-wrapper">
-									<img :src="livro.capa_url" :alt="livro.titulo" class="book-cover" />
+									<img :src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'" :alt="livro.titulo" class="book-cover" />
 								</div>
 							</v-col>
 
@@ -48,7 +48,6 @@
 							<v-col cols="7" class="pa-4 text-left">
 								<h3 class="item-title mb-2">{{ livro.titulo }}</h3>
 								<div class="item-details">
-									<p><strong>Publicado:</strong> {{ livro.ano_publicacao }}</p>
 									<p><strong>Autor:</strong> {{ livro.autor }}</p>
 									<p><strong>Categoria:</strong> {{ livro.categoria }}</p>
 								</div>
@@ -66,18 +65,19 @@
 							</v-col>
 						</v-row>
 
-						<!-- Actions Footer -->
 						<v-divider class="mx-4 opacity-50"></v-divider>
-						<v-card-actions class="pa-3 justify-space-between">
-							<v-btn icon="mdi-heart-outline" variant="text" color="white" size="small"></v-btn>
-							<div class="share-actions">
-								<v-btn icon="mdi-share-variant" variant="text" color="white" size="small"></v-btn>
-								<v-btn class="ios-btn-open" variant="flat" size="small" @click="$router.push('/estudo/' + livro.id)">
-									Ler Agora
-								</v-btn>
-							</div>
+						<v-card-actions class="pa-3 justify-end">
+							<v-btn class="ios-btn-open" variant="flat" size="small">
+								Ver Detalhes
+							</v-btn>
 						</v-card-actions>
 					</v-card>
+				</v-col>
+
+				<v-col cols="12" v-if="livros.length === 0" class="text-center mt-12">
+					<v-icon size="64" color="white" class="opacity-20 mb-4">mdi-book-search-outline</v-icon>
+					<h2 class="text-white opacity-60">Nenhum material encontrado</h2>
+					<p class="text-white opacity-40">Tente buscar por termos diferentes ou navegue por categorias.</p>
 				</v-col>
 			</v-row>
 
@@ -90,30 +90,43 @@
 
 <script>
 import MaterialService from '@/services/MaterialService'
-import auth from '@/auth'
 
 export default {
-	name: 'DashboardPage',
+	name: 'ExplorePage',
 	data: () => ({
 		livros: [],
 		searchQuery: '',
-		loading: false,
-		user: {}
+		loading: false
 	}),
+	watch: {
+		'$route.query.q': {
+			immediate: true,
+			handler(val) {
+				if (val) {
+					this.searchQuery = val
+					this.buscar()
+				}
+			}
+		},
+		'$route.query.categoria': {
+			immediate: true,
+			handler(val) {
+				if (val) {
+					this.buscarPorCategoria(val)
+				}
+			}
+		}
+	},
 	created() {
-		this.user = auth.getUser()
-		this.buscar()
+		if (!this.$route.query.q && !this.$route.query.categoria) {
+			this.buscar()
+		}
 	},
 	methods: {
 		async buscar() {
 			this.loading = true
 			try {
-				let response;
-				if (this.searchQuery) {
-					response = await MaterialService.pesquisar(this.searchQuery)
-				} else {
-					response = await MaterialService.listar(9, 0)
-				}
+				const response = await MaterialService.pesquisar(this.searchQuery)
 				this.livros = response.data || []
 			} catch (error) {
 				console.error('Erro ao buscar materiais:', error)
@@ -121,16 +134,23 @@ export default {
 				this.loading = false
 			}
 		},
-		logout() {
-			auth.logout()
-			this.$router.push('/login')
+		async buscarPorCategoria(cat) {
+			this.loading = true
+			try {
+				const response = await MaterialService.pesquisar('', cat)
+				this.livros = response.data || []
+			} catch (error) {
+				console.error('Erro ao buscar por categoria:', error)
+			} finally {
+				this.loading = false
+			}
 		}
 	}
 }
 </script>
 
 <style scoped>
-	.dashboard-container {
+	.explore-container {
 		min-height: 100vh;
 		padding-bottom: 80px;
 	}
@@ -159,45 +179,39 @@ export default {
 		color: white !important;
 	}
 
-	/* Item Card Style */
 	.ios-item-card {
-		background: rgba(45, 45, 45, 0.6) !important;
+		background: rgba(45, 78, 115, 0.5) !important;
 		backdrop-filter: blur(20px);
 		border-radius: 24px !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		overflow: hidden;
-		transition: all 0.4s var(--spring-easing);
+		transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 		opacity: 0;
-		animation: ios-reveal 0.6s var(--spring-easing) forwards;
+		animation: ios-reveal 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+		cursor: pointer;
 	}
 
 	.ios-item-card:hover {
-		transform: translateY(-8px) scale(1.02);
-		background: rgba(55, 55, 55, 0.8) !important;
+		transform: translateY(-8px);
+		background: rgba(45, 78, 115, 0.7) !important;
 		box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
 	}
 
 	.book-cover-wrapper {
 		width: 100%;
-		height: 180px;
+		height: 160px;
 		border-radius: 12px;
 		overflow: hidden;
 		background: rgba(0,0,0,0.2);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 	}
 
 	.book-cover {
 		max-width: 100%;
 		max-height: 100%;
 		object-fit: contain;
-		transition: transform 0.5s ease;
-	}
-
-	.ios-item-card:hover .book-cover {
-		transform: scale(1.1) rotate(2deg);
 	}
 
 	.item-title {
@@ -209,6 +223,7 @@ export default {
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 
@@ -217,63 +232,20 @@ export default {
 		font-size: 13px;
 	}
 
-	.item-details p {
-		margin: 2px 0;
-	}
-
 	.ios-btn-open {
-		background: var(--ios-cyan) !important;
+		background: #00B8D4 !important;
 		color: white !important;
 		border-radius: 10px !important;
 		text-transform: none !important;
 		font-weight: 600 !important;
-		margin-left: 8px;
 	}
 
-	.share-actions {
-		display: flex;
-		align-items: center;
-	}
+	.opacity-20 { opacity: 0.2; }
+	.opacity-40 { opacity: 0.4; }
+	.opacity-60 { opacity: 0.6; }
 
-	/* Animations */
 	@keyframes ios-reveal {
-		from {
-			opacity: 0;
-			transform: scale(0.9) translateY(30px);
-		}
-		to {
-			opacity: 1;
-			transform: scale(1) translateY(0);
-		}
-	}
-
-	@media (max-width: 600px) {
-		.dashboard-container {
-			padding-bottom: 40px;
-		}
-
-		.tracking-tight {
-			letter-spacing: -1px !important;
-		}
-
-		.ios-item-card {
-			border-radius: 20px !important;
-		}
-
-		.item-title {
-			font-size: 1rem;
-		}
-
-		.book-cover-wrapper {
-			height: 140px;
-		}
-
-		.item-details {
-			font-size: 12px;
-		}
-	}
-
-	:deep(.v-rating__item) {
-		padding: 0 !important;
+		from { opacity: 0; transform: scale(0.95) translateY(20px); }
+		to { opacity: 1; transform: scale(1) translateY(0); }
 	}
 </style>

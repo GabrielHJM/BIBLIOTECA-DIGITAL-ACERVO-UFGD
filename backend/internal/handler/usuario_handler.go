@@ -11,7 +11,6 @@ import (
 )
 
 func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
-	// Aqui usaríamos um repository real, simulando agora:
 	repo := repository.NewUsuarioPG(db)
 	cadastrarUC := usuario.NewCadastrarUsuario(repo)
 	loginUC := usuario.NewLoginUseCase(repo)
@@ -19,47 +18,56 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 
 	mux.HandleFunc("/usuarios", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
+			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
 			return
 		}
 		var req dto.UsuarioRequest
-		json.NewDecoder(r.Body).Decode(&req)
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			JSONError(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
 		u := domain.Usuario{Nome: req.Nome, Email: req.Email, Senha: req.Senha, Tipo: req.Tipo}
 		err := cadastrarUC.Execute(r.Context(), u)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+			JSONError(w, "Erro ao cadastrar usuário: "+err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
+		JSONSuccess(w, nil, http.StatusCreated)
 	})
 
 	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
+			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
 			return
 		}
 		var req dto.LoginRequest
-		json.NewDecoder(r.Body).Decode(&req)
-		token, err := loginUC.Execute(r.Context(), req.Email, req.Senha)
-		if err != nil {
-			http.Error(w, "Login inválido", http.StatusUnauthorized)
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-		json.NewEncoder(w).Encode(map[string]string{"token": token})
+		token, err := loginUC.Execute(r.Context(), req.Email, req.Senha)
+		if err != nil {
+			JSONError(w, "Login inválido: credenciais incorretas", http.StatusUnauthorized)
+			return
+		}
+		JSONSuccess(w, map[string]string{"token": token}, http.StatusOK)
 	})
 
 	mux.HandleFunc("/redefinir-senha", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
-			http.Error(w, "Método inválido", http.StatusMethodNotAllowed)
+			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
 			return
 		}
 		var req dto.RedefinirSenhaRequest
-		json.NewDecoder(r.Body).Decode(&req)
-		err := redefinirSenhaUC.Execute(r.Context(), req.Email, req.Senha)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusUnprocessableEntity)
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+		err := redefinirSenhaUC.Execute(r.Context(), req.Email, req.Senha)
+		if err != nil {
+			JSONError(w, "Erro ao redefinir senha: "+err.Error(), http.StatusUnprocessableEntity)
+			return
+		}
+		JSONSuccess(w, nil, http.StatusOK)
 	})
 }

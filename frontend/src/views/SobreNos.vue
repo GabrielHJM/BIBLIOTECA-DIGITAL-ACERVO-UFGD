@@ -30,7 +30,7 @@
 					<v-col cols="12">
 						<h2 class="text-cyan text-h5 font-weight-bold mb-4">O Projeto</h2>
 						<p class="text-body-1 text-white opacity-90 leading-relaxed text-justify">
-							Este sistema é fruto de dedicação acadêmica e técnica, projetado e desenvolvido por Gabriel e Harcyldo. A plataforma representa a culminação do Trabalho de Conclusão de Curso (TCC) em Sistemas de Informação pela Universidade Federal da Grande Dourados (UFGD). A iniciativa reflete o compromisso genuíno em aplicar os fundamentos consolidados da computação para resolver problemas reais de gestão de acervos.
+							Este sistema é fruto de dedicação acadêmica e técnica, projetado e desenvolvido por Gabriel. A plataforma representa a culminação do Trabalho de Conclusão de Curso (TCC) em Sistemas de Informação pela Universidade Federal da Grande Dourados (UFGD). A iniciativa reflete o compromisso genuíno em aplicar os fundamentos consolidados da computação para resolver problemas reais de gestão de acervos.
 						</p>
 					</v-col>
 				</v-row>

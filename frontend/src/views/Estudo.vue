@@ -1,5 +1,5 @@
 <template>
-	<div class="estudo-container mt-8">
+	<div class="estudo-container mt-8" v-if="!loading && material">
 		<v-container fluid class="pa-4">
 			<v-row>
 				<!-- Sidebar: Book Info -->
@@ -11,9 +11,9 @@
 
 						<div class="text-center mb-6">
 							<div class="book-cover-wrapper mx-auto mb-4">
-								<img :src="livros[0].link" :alt="livros[0].nome" class="book-cover" />
+								<img :src="material.capa_url" :alt="material.titulo" class="book-cover" />
 							</div>
-							<h1 class="text-white text-h5 font-weight-bold leading-tight">{{ livros[0].nome }}</h1>
+							<h1 class="text-white text-h5 font-weight-bold leading-tight">{{ material.titulo }}</h1>
 						</div>
 
 						<v-divider class="opacity-20 mb-6"></v-divider>
@@ -21,19 +21,19 @@
 						<div class="item-details text-white">
 							<div class="detail-row mb-3 d-flex justify-space-between">
 								<span class="opacity-60">Publicado</span>
-								<span class="font-weight-bold">05/10/2022</span>
+								<span class="font-weight-bold">{{ material.ano_publicacao }}</span>
 							</div>
 							<div class="detail-row mb-3 d-flex justify-space-between">
-								<span class="opacity-60">Páginas</span>
-								<span class="font-weight-bold">220</span>
+								<span class="opacity-60">ISBN</span>
+								<span class="font-weight-bold">{{ material.isbn || 'N/A' }}</span>
 							</div>
 							<div class="detail-row mb-3 d-flex justify-space-between">
-								<span class="opacity-60">Volume</span>
-								<span class="font-weight-bold">1</span>
+								<span class="opacity-60">Categoria</span>
+								<span class="font-weight-bold">{{ material.categoria }}</span>
 							</div>
 							<div class="detail-row mb-3 d-flex justify-space-between">
 								<span class="opacity-60">Autor</span>
-								<span class="font-weight-bold">Michael T. Goodrich</span>
+								<span class="font-weight-bold">{{ material.autor }}</span>
 							</div>
 						</div>
 
@@ -44,7 +44,7 @@
 							<v-rating
 								hover
 								:length="5"
-								:model-value="4"
+								:model-value="material.media_nota || 0"
 								active-color="amber"
 								color="grey-lighten-1"
 								density="comfortable"
@@ -71,51 +71,117 @@
 								<v-icon color="cyan" class="mr-2">mdi-file-pdf-box</v-icon>
 								<span class="text-white font-weight-medium">Modo de Leitura</span>
 							</div>
-							<div class="viewer-actions">
-								<v-btn icon="mdi-fullscreen" variant="text" color="white" size="small"></v-btn>
-								<v-btn icon="mdi-download" variant="text" color="white" size="small"></v-btn>
+							<div class="viewer-actions" v-if="material.pdf_url">
+								<v-btn icon="mdi-fullscreen" variant="text" color="white" size="small" @click="toggleFullscreen"></v-btn>
+								<v-btn icon="mdi-download" variant="text" color="white" size="small" :href="material.pdf_url" target="_blank"></v-btn>
 							</div>
 						</div>
 						<div class="content-body">
-							<div id="embed-doc" class="embed-doc"></div>
+							<div id="embed-doc" class="embed-doc" v-if="isAuthenticated"></div>
+							<div v-else class="login-cta-container d-flex flex-column align-center justify-center pa-8 text-center fill-height">
+								<v-icon size="80" color="cyan" class="mb-4 opacity-20">mdi-lock-outline</v-icon>
+								<h2 class="text-h5 font-weight-bold text-white mb-2">Conteúdo Restrito</h2>
+								<p class="text-white opacity-60 mb-6">
+									Crie uma conta ou faça login para acessar este material completo e utilizar as ferramentas de estudo.
+								</p>
+								<div class="d-flex flex-column w-100" style="gap: 12px; max-width: 280px;">
+									<v-btn color="cyan" size="large" rounded="pill" block @click="$router.push('/login')">
+										Login
+									</v-btn>
+									<v-btn variant="outlined" color="white" size="large" rounded="pill" block @click="$router.push('/cadastro')">
+										Cadastre-se Grátis
+									</v-btn>
+								</div>
+							</div>
+							<div v-if="isAuthenticated && !material.pdf_url" class="text-center mt-12 text-white opacity-60">
+								PDF não disponível para este material.
+							</div>
 						</div>
 					</v-card>
 				</v-col>
 			</v-row>
 		</v-container>
 	</div>
+
+	<div v-else-if="loading" class="d-flex justify-center align-center" style="height: 80vh">
+		<v-progress-circular indeterminate color="cyan" size="64"></v-progress-circular>
+	</div>
+
+	<div v-else class="text-center mt-12 text-white">
+		<h2>Material não encontrado</h2>
+		<v-btn class="mt-4" @click="goBack">Voltar</v-btn>
+	</div>
 </template>
 
 <script>
-import livros from '../../../livros.json'
+import MaterialService from '@/services/MaterialService'
+import auth from '@/auth'
 
 export default {
 	name: 'EstudoPage',
 	data: () => ({
-		livros: livros
+		material: null,
+		loading: true,
+		isAuthenticated: false
 	}),
 	methods: {
+		goBack() {
+			if (this.isAuthenticated) {
+				this.$router.push('/dashboard')
+			} else {
+				this.$router.push('/explorar')
+			}
+		},
 		embedDocumento(pdfUrl) {
-			const container = document.getElementById('embed-doc');
-			if (!container) return;
+			this.$nextTick(() => {
+				const container = document.getElementById('embed-doc');
+				if (!container) return;
 
-			container.innerHTML = '';
-			const iframe = document.createElement('iframe');
-			iframe.setAttribute('src', pdfUrl + '#toolbar=0&navpanes=0&scrollbar=0');
-			iframe.setAttribute('width', '100%');
-			iframe.setAttribute('height', '100%');
-			iframe.style.border = 'none';
-			container.appendChild(iframe);
+				container.innerHTML = '';
+				const iframe = document.createElement('iframe');
+				iframe.setAttribute('src', pdfUrl + '#toolbar=0&navpanes=0&scrollbar=0');
+				iframe.setAttribute('width', '100%');
+				iframe.setAttribute('height', '100%');
+				iframe.style.border = 'none';
+				container.appendChild(iframe);
+			});
+		},
+		toggleFullscreen() {
+			if (!this.isAuthenticated) return
+			const elem = document.getElementById('embed-doc');
+			if (elem && elem.requestFullscreen) {
+				elem.requestFullscreen();
+			}
 		}
 	},
-	mounted() {
-		const exemploPDF = 'https://dn790006.ca.archive.org/0/items/estruturas-de-dados-e-algoritmos-em-java-pdfdrive/Estruturas%20de%20dados%20e%20algoritmos%20em%20JAVA%20(%20PDFDrive%20).pdf'
-		this.embedDocumento(exemploPDF);
+	async mounted() {
+		this.isAuthenticated = auth.isAuthenticated();
+		const id = this.$route.params.id;
+		if (!id) {
+			this.loading = false;
+			return;
+		}
+
+		try {
+			const response = await MaterialService.obterDetalhes(id);
+			this.material = response.data;
+			if (this.isAuthenticated && this.material && this.material.pdf_url) {
+				this.embedDocumento(this.material.pdf_url);
+			}
+		} catch (error) {
+			console.error('Erro ao buscar detalhes do material:', error);
+		} finally {
+			this.loading = false;
+		}
 	}
 }
 </script>
 
 <style scoped>
+	.login-cta-container {
+		background: rgba(0,0,0,0.2);
+		border-radius: 20px;
+	}
 	.estudo-container {
 		min-height: 100vh;
 		padding-bottom: 40px;
@@ -131,6 +197,14 @@ export default {
 	.sticky-sidebar {
 		position: sticky;
 		top: 100px;
+	}
+
+	@media (max-width: 1264px) {
+		.sticky-sidebar {
+			position: relative;
+			top: 0;
+			margin-bottom: 20px;
+		}
 	}
 
 	.ios-btn-back {
@@ -180,6 +254,27 @@ export default {
 	.embed-doc {
 		width: 100%;
 		height: 100%;
+	}
+
+	@media (max-width: 600px) {
+		.ios-card-premium {
+			border-radius: 24px !important;
+			padding: 20px !important;
+		}
+
+		.book-cover-wrapper {
+			width: 120px;
+			height: 160px;
+		}
+
+		.ios-viewer-card {
+			height: 500px;
+			border-radius: 24px !important;
+		}
+
+		.viewer-header {
+			padding: 12px !important;
+		}
 	}
 
 	:deep(.v-rating__item) {

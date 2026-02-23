@@ -105,7 +105,7 @@ export default {
                 }, 2000)
 			} catch (error) {
 				console.error(error)
-				this.snackbarText = error.response?.data || "Falha ao redefinir senha. Verifique o email."
+				this.snackbarText = typeof error === 'string' ? error : "Falha ao redefinir senha. Verifique o email."
 				this.snackbarColor = "error"
 				this.snackbar = true
 			} finally {

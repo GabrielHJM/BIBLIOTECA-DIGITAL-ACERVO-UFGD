@@ -4,6 +4,8 @@ import (
 	"biblioteca-digital-api/internal/domain/usuario"
 	"biblioteca-digital-api/pkg/hash"
 	"context"
+	"errors"
+	"regexp"
 )
 
 type CadastrarUsuarioUseCase struct {
@@ -15,6 +17,12 @@ func NewCadastrarUsuario(repo usuario.UsuarioRepository) *CadastrarUsuarioUseCas
 }
 
 func (uc *CadastrarUsuarioUseCase) Execute(ctx context.Context, u usuario.Usuario) error {
+	// Validação simples de email
+	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	if !emailRegex.MatchString(u.Email) {
+		return errors.New("formato de email inválido")
+	}
+
 	hashedPassword, err := hash.GerarHash(u.Senha)
 	if err != nil {
 		return err

@@ -1,11 +1,17 @@
 <template>
 	<v-container class="d-flex justify-center align-center min-vh-100">
-		<v-card class="ios-card-premium pa-8" elevation="12">
-			<v-row justify="center" class="mb-6">
+		<v-card class="ios-card-premium" elevation="12">
+			<div class="d-flex justify-start mb-2">
+				<v-btn icon variant="text" color="white" @click="$router.push('/')" size="small">
+					<v-icon>mdi-arrow-left</v-icon>
+				</v-btn>
+			</div>
+
+			<v-row justify="center" class="mb-4">
 				<v-img
 					:src="caminho"
 					alt="Avatar"
-					max-width="120"
+					max-width="100"
 					class="drop-shadow"
 					contain
 				></v-img>
@@ -103,6 +109,22 @@ export default {
 				return
 			}
 
+			// Validação simples de email no frontend
+			const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+			if (!emailRegex.test(this.email)) {
+				this.snackbarText = "Por favor, insira um email válido."
+				this.snackbarColor = "warning"
+				this.snackbar = true
+				return
+			}
+
+			if (this.senha.length < 6) {
+				this.snackbarText = "A senha deve ter pelo menos 6 caracteres."
+				this.snackbarColor = "warning"
+				this.snackbar = true
+				return
+			}
+
 			this.loading = true
 			try {
 				let tipo = 0
@@ -131,7 +153,8 @@ export default {
 
 			} catch (error) {
 				console.error(error)
-				this.snackbarText = error.response?.data || "Erro ao realizar cadastro. Tente outro email."
+				// Agora o interceptor retorna o erro como string
+				this.snackbarText = typeof error === 'string' ? error : "Erro ao realizar cadastro. Tente outro email."
 				this.snackbarColor = "error"
 				this.snackbar = true
 			} finally {
@@ -148,13 +171,14 @@ export default {
 	}
 
 	.ios-card-premium {
-		width: 100%;
-		max-width: 800px;
-		background: rgba(58, 99, 145, 0.8) !important;
+		width: 95%;
+		max-width: 700px;
+		background: rgba(45, 78, 115, 0.85) !important;
 		backdrop-filter: blur(20px);
-		border-radius: 32px !important;
+		border-radius: 24px !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		transition: transform 0.3s var(--spring-easing);
+		padding: 24px !important;
 	}
 
 	.ios-card-premium:hover {

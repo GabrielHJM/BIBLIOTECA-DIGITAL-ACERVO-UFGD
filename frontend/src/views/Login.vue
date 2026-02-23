@@ -1,19 +1,25 @@
 <template>
 	<v-container class="d-flex justify-center align-center min-vh-100">
-		<v-card class="ios-card-premium pa-8" elevation="12">
-			<v-row justify="center" class="mb-6">
+		<v-card class="ios-card-premium" elevation="12">
+			<div class="d-flex justify-start mb-2">
+				<v-btn icon variant="text" color="white" @click="$router.push('/')" size="small">
+					<v-icon>mdi-arrow-left</v-icon>
+				</v-btn>
+			</div>
+
+			<v-row justify="center" class="mb-4">
 				<v-img
 					:src="caminho"
 					alt="Login"
-					max-width="140"
+					max-width="100"
 					class="drop-shadow"
 					contain
 				></v-img>
 			</v-row>
 
 			<v-row>
-				<v-col cols="12" class="text-center mb-4">
-					<h2 class="text-white font-weight-bold">BEM-VINDO</h2>
+				<v-col cols="12" class="text-center mb-2">
+					<h2 class="text-white text-h5 font-weight-bold">BEM-VINDO</h2>
 				</v-col>
 			</v-row>
 
@@ -95,7 +101,7 @@ export default {
 				}
 			} catch (error) {
 				console.error(error)
-				this.snackbarText = error.response?.data || "Falha no login. Verifique suas credenciais."
+				this.snackbarText = typeof error === 'string' ? error : "Falha no login. Verifique suas credenciais."
 				this.snackbarColor = "error"
 				this.snackbar = true
 			} finally {
@@ -112,13 +118,14 @@ export default {
 	}
 
 	.ios-card-premium {
-		width: 100%;
-		max-width: 420px;
-		background: rgba(58, 99, 145, 0.8) !important;
+		width: 90%;
+		max-width: 380px;
+		background: rgba(45, 78, 115, 0.85) !important;
 		backdrop-filter: blur(20px);
-		border-radius: 32px !important;
+		border-radius: 24px !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		transition: transform 0.3s var(--spring-easing);
+		padding: 24px !important;
 	}
 
 	.ios-card-premium:hover {

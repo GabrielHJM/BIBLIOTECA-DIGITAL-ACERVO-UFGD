@@ -10,7 +10,10 @@ type MaterialPostgres struct {
 }
 
 func (r *MaterialPostgres) Listar(limit, offset int) ([]material.Material, error) {
-	query := "SELECT id, titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, disponivel, media_nota, total_avaliacoes FROM materiais LIMIT $1 OFFSET $2"
+	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
+	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
+	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
+	          FROM materiais LIMIT $1 OFFSET $2`
 	rows, err := r.DB.Query(query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -20,7 +23,7 @@ func (r *MaterialPostgres) Listar(limit, offset int) ([]material.Material, error
 	var materiais []material.Material
 	for rows.Next() {
 		var m material.Material
-		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
+		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
 			return nil, err
 		}
 		materiais = append(materiais, m)
@@ -30,8 +33,12 @@ func (r *MaterialPostgres) Listar(limit, offset int) ([]material.Material, error
 
 func (r *MaterialPostgres) BuscarPorID(id int) (*material.Material, error) {
 	var m material.Material
-	err := r.DB.QueryRow("SELECT id, titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, disponivel, media_nota, total_avaliacoes FROM materiais WHERE id = $1", id).
-		Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes)
+	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
+	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
+	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
+	          FROM materiais WHERE id = $1`
+	err := r.DB.QueryRow(query, id).
+		Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes)
 	if err != nil {
 		return nil, err
 	}
@@ -39,9 +46,11 @@ func (r *MaterialPostgres) BuscarPorID(id int) (*material.Material, error) {
 }
 
 func (r *MaterialPostgres) Pesquisar(termo string, categoria string, tags []string, limit, offset int) ([]material.Material, error) {
-	query := `SELECT id, titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, disponivel, media_nota, total_avaliacoes
+	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
+	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
+	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
 			  FROM materiais
-			  WHERE (titulo ILIKE $1 OR autor ILIKE $2 OR descricao ILIKE $3)`
+			  WHERE (titulo ILIKE $1 OR autor ILIKE $2 OR COALESCE(descricao, '') ILIKE $3)`
 
 	args := []interface{}{"%" + termo + "%", "%" + termo + "%", "%" + termo + "%"}
 	argCount := 4
@@ -66,7 +75,7 @@ func (r *MaterialPostgres) Pesquisar(termo string, categoria string, tags []stri
 	var materiais []material.Material
 	for rows.Next() {
 		var m material.Material
-		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
+		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
 			return nil, err
 		}
 		materiais = append(materiais, m)
@@ -76,15 +85,15 @@ func (r *MaterialPostgres) Pesquisar(termo string, categoria string, tags []stri
 
 func (r *MaterialPostgres) Criar(m *material.Material) error {
 	return r.DB.QueryRow(
-		"INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, disponivel) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id",
-		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.Disponivel,
+		"INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id",
+		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel,
 	).Scan(&m.ID)
 }
 
 func (r *MaterialPostgres) Atualizar(m *material.Material) error {
 	_, err := r.DB.Exec(
-		"UPDATE materiais SET titulo=$1, autor=$2, isbn=$3, categoria=$4, ano_publicacao=$5, descricao=$6, capa_url=$7, disponivel=$8 WHERE id=$9",
-		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.Disponivel, m.ID,
+		"UPDATE materiais SET titulo=$1, autor=$2, isbn=$3, categoria=$4, ano_publicacao=$5, descricao=$6, capa_url=$7, pdf_url=$8, disponivel=$9 WHERE id=$10",
+		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ID,
 	)
 	return err
 }
@@ -155,7 +164,8 @@ func (r *MaterialPostgres) RemoverFavorito(usuarioID, materialID int) error {
 
 func (r *MaterialPostgres) ListarFavoritosPorUsuario(usuarioID int) ([]material.Material, error) {
 	query := `
-		SELECT m.id, m.titulo, m.autor, m.isbn, m.categoria, m.ano_publicacao, m.descricao, m.capa_url, m.disponivel
+		SELECT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
+		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), m.disponivel
 		FROM materiais m
 		JOIN favoritos f ON m.id = f.material_id
 		WHERE f.usuario_id = $1`
@@ -185,7 +195,9 @@ func (r *MaterialPostgres) RegistrarLeitura(h *material.HistoricoLeitura) error 
 
 func (r *MaterialPostgres) ListarHistoricoPorUsuario(usuarioID int) ([]material.Material, error) {
 	query := `
-		SELECT DISTINCT m.id, m.titulo, m.autor, m.isbn, m.categoria, m.ano_publicacao, m.descricao, m.capa_url, m.disponivel, m.media_nota, m.total_avaliacoes
+		SELECT DISTINCT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
+		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), COALESCE(m.pdf_url, ''),
+		       m.disponivel, COALESCE(m.media_nota, 0.0), COALESCE(m.total_avaliacoes, 0)
 		FROM materiais m
 		JOIN historico_leitura h ON m.id = h.material_id
 		WHERE h.usuario_id = $1
@@ -199,7 +211,7 @@ func (r *MaterialPostgres) ListarHistoricoPorUsuario(usuarioID int) ([]material.
 	var materiais []material.Material
 	for rows.Next() {
 		var m material.Material
-		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
+		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
 			return nil, err
 		}
 		materiais = append(materiais, m)
@@ -210,11 +222,13 @@ func (r *MaterialPostgres) ListarHistoricoPorUsuario(usuarioID int) ([]material.
 func (r *MaterialPostgres) ObterRecomendacoes(usuarioID int, limit int) ([]material.Material, error) {
 	// Simple recommendation: match user interests (categories) or just top rated if no interests
 	query := `
-		SELECT DISTINCT m.id, m.titulo, m.autor, m.isbn, m.categoria, m.ano_publicacao, m.descricao, m.capa_url, m.disponivel, m.media_nota, m.total_avaliacoes
+		SELECT DISTINCT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
+		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), COALESCE(m.pdf_url, ''),
+		       m.disponivel, COALESCE(m.media_nota, 0.0), COALESCE(m.total_avaliacoes, 0)
 		FROM materiais m
 		WHERE m.categoria IN (SELECT interesse FROM interesses_usuario WHERE usuario_id = $1)
-		OR m.media_nota >= 4.0
-		ORDER BY m.media_nota DESC, m.total_avaliacoes DESC
+		OR COALESCE(m.media_nota, 0.0) >= 4.0
+		ORDER BY COALESCE(m.media_nota, 0.0) DESC, COALESCE(m.total_avaliacoes, 0) DESC
 		LIMIT $2`
 	rows, err := r.DB.Query(query, usuarioID, limit)
 	if err != nil {
@@ -225,7 +239,7 @@ func (r *MaterialPostgres) ObterRecomendacoes(usuarioID int, limit int) ([]mater
 	var materiais []material.Material
 	for rows.Next() {
 		var m material.Material
-		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
+		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes); err != nil {
 			return nil, err
 		}
 		materiais = append(materiais, m)
