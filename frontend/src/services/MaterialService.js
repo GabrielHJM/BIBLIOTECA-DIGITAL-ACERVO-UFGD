@@ -6,11 +6,15 @@ export default {
 		return api.get(`/materiais?limit=${limit}&offset=${offset}`);
 	},
 
-	// Pesquisar materiais por termo ou categoria
-	pesquisar(termo = '', categoria = '', limit = 10, offset = 0) {
+	// Pesquisar materiais por termo ou categoria com filtros avançados
+	pesquisar(termo = '', categoria = '', fonte = '', anoInicio = 0, anoFim = 0, limit = 10, offset = 0, sort = '') {
 		let url = `/materiais?limit=${limit}&offset=${offset}`;
 		if (termo) url += `&q=${encodeURIComponent(termo)}`;
 		if (categoria) url += `&categoria=${encodeURIComponent(categoria)}`;
+		if (fonte) url += `&fonte=${encodeURIComponent(fonte)}`;
+		if (anoInicio) url += `&ano_inicio=${anoInicio}`;
+		if (anoFim) url += `&ano_fim=${anoFim}`;
+		if (sort) url += `&sort=${encodeURIComponent(sort)}`;
 		return api.get(url);
 	},
 
@@ -46,5 +50,31 @@ export default {
 			nota: nota,
 			comentario: comentario
 		});
+	},
+
+	// Realizar empréstimo de um material
+	emprestar(usuarioId, materialId) {
+		return api.post('/materiais/emprestar', {
+			usuario_id: usuarioId,
+			material_id: materialId
+		});
+	},
+
+	// Registrar leitura no histórico
+	registrarLeitura(usuarioId, materialId) {
+		return api.post('/materiais/historico', {
+			usuario_id: usuarioId,
+			material_id: materialId
+		});
+	},
+
+	// Listar histórico de leitura do usuário
+	listarHistorico(usuarioId) {
+		return api.get(`/materiais/historico?usuario_id=${usuarioId}`);
+	},
+
+	// Listar avaliações de um material
+	listarAvaliacoes(materialId) {
+		return api.get(`/materiais/avaliacoes?id=${materialId}`);
 	}
 };

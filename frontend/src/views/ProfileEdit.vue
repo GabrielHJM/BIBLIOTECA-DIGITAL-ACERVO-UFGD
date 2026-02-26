@@ -58,13 +58,6 @@
 						<v-list-item-title class="text-white">Arquivos Locais</v-list-item-title>
 					</v-list-item>
 
-					<v-list-item @click="simulateCloud('Google Drive')" class="modal-item">
-						<template v-slot:prepend>
-							<v-icon color="#4285F4">mdi-google-drive</v-icon>
-						</template>
-						<v-list-item-title class="text-white">Google Drive</v-list-item-title>
-					</v-list-item>
-
 					<v-list-item @click="simulateCloud('Dropbox')" class="modal-item">
 						<template v-slot:prepend>
 							<v-icon color="#0061FF">mdi-dropbox</v-icon>

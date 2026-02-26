@@ -4,7 +4,7 @@
 		<div class="ios-floating-footer pa-4">
 			<div class="footer-links-container">
 				<v-btn
-					v-for="link in links"
+					v-for="link in displayLinks"
 					:key="link.title"
 					:to="link.link"
 					variant="text"
@@ -23,16 +23,27 @@
 </template>
 
 <script>
+import { state as authState } from '@/auth'
+
 export default {
 	name: 'Footer-Vue',
 	data: () => ({
-		links: [
-			{title: "Início", link: "/"},
-			{title: "Sobre Nós", link: "/sobre-nos"},
-			{title: "Login", link: "/login"}
-		],
 		pack: require('../../package.json')
-	})
+	}),
+	computed: {
+		displayLinks() {
+			const links = [
+				{title: "Início", link: "/"},
+				{title: "Sobre Nós", link: "/sobre-nos"}
+			];
+
+			if (!authState.isAuthenticated) {
+				links.push({title: "Login", link: "/login"});
+			}
+
+			return links;
+		}
+	}
 }
 </script>
 
@@ -144,9 +155,6 @@ export default {
 		.ios-floating-footer {
 			min-width: 300px;
 			padding: 12px !important;
-			opacity: 1 !important; /* Force visible on mobile */
-			transform: translateY(0) scale(1) !important;
-			pointer-events: auto !important;
 			bottom: 10px;
 		}
 		.ios-footer-link {

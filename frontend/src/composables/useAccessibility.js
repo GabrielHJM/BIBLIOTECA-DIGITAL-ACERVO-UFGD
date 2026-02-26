@@ -84,14 +84,25 @@ function stopSpeaking() {
 
 // ─── Reading guide (follows mouse vertically) ─────────────────────────────────
 let guideEl = null
+
+function updateGuidePosition(e) {
+	if (guideEl) guideEl.style.top = e.clientY + 'px'
+}
+
 function initReadingGuide() {
 	if (guideEl) return
 	guideEl = document.createElement('div')
 	guideEl.id = 'a11y-reading-guide-bar'
 	document.body.appendChild(guideEl)
-	document.addEventListener('mousemove', e => {
-		if (guideEl) guideEl.style.top = e.clientY + 'px'
-	})
+	document.addEventListener('mousemove', updateGuidePosition)
+}
+
+function cleanupReadingGuide() {
+	if (guideEl) {
+		document.removeEventListener('mousemove', updateGuidePosition)
+		guideEl.remove()
+		guideEl = null
+	}
 }
 
 // ─── Toggle helpers ───────────────────────────────────────────────────────────
@@ -136,5 +147,10 @@ export function useAccessibility() {
 		}
 	}
 
-	return { state, toggle, resetAll, speakPage, stopSpeaking, init }
+	function cleanup() {
+		cleanupReadingGuide()
+		stopSpeaking()
+	}
+
+	return { state, toggle, resetAll, speakPage, stopSpeaking, init, cleanup }
 }

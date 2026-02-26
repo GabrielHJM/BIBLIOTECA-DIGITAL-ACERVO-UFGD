@@ -1,10 +1,13 @@
 <template>
-	<div class="dashboard-container mt-8">
+	<div class="dashboard-container mt-8 position-relative">
+		<v-snackbar v-model="snackbar" :timeout="3000" color="cyan darken-2" location="top right">
+			{{ snackbarMsg }}
+		</v-snackbar>
 		<v-container fluid class="pa-4">
 			<!-- Header Section -->
 			<v-row align="center" class="mb-6 px-4">
 				<v-col cols="12" sm="4" md="4" class="py-2">
-					<h1 class="text-white text-h4 text-sm-h3 font-weight-bold tracking-tight">Recentes</h1>
+					<h1 class="text-h4 text-sm-h3 font-weight-bold tracking-tight" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-primary'">Recentes</h1>
 				</v-col>
 				<v-col cols="12" sm="5" md="5" class="py-2">
 					<v-text-field
@@ -25,6 +28,66 @@
 				</v-col>
 			</v-row>
 
+			<!-- Histórico de Leitura Section -->
+			<div v-if="historico.length > 0 && !loading" class="mb-10 mt-4">
+				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">
+					<v-icon color="cyan" class="mr-2">mdi-history</v-icon>
+					Continuar Lendo
+				</h2>
+				<v-slide-group show-arrows class="pa-0">
+					<v-slide-group-item
+						v-for="(livro, index) in historico"
+						:key="'hist-'+index"
+					>
+						<v-card
+							class="ios-history-card ma-2"
+							elevation="4"
+							@click="$router.push('/estudo/' + livro.id)"
+						>
+							<v-img
+								:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'"
+								cover
+								height="150"
+							></v-img>
+							<div class="pa-2">
+								<div class="text-caption font-weight-bold history-title" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
+								<div class="opacity-60 ultra-caption" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-2'">{{ livro.autor }}</div>
+							</div>
+						</v-card>
+					</v-slide-group-item>
+				</v-slide-group>
+			</div>
+
+			<!-- Meus Favoritos Section -->
+			<div v-if="favoritos.length > 0 && !loading" class="mb-10 mt-4">
+				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">
+					<v-icon color="pink" class="mr-2">mdi-heart</v-icon>
+					Meus Favoritos
+				</h2>
+				<v-slide-group show-arrows class="pa-0">
+					<v-slide-group-item
+						v-for="(livro, index) in favoritos"
+						:key="'fav-'+index"
+					>
+						<v-card
+							class="ios-history-card ma-2"
+							elevation="4"
+							@click="$router.push('/estudo/' + livro.id)"
+						>
+							<v-img
+								:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'"
+								cover
+								height="150"
+							></v-img>
+							<div class="pa-2">
+								<div class="text-caption font-weight-bold history-title" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
+								<div class="opacity-60 ultra-caption" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-2'">{{ livro.autor }}</div>
+							</div>
+						</v-card>
+					</v-slide-group-item>
+				</v-slide-group>
+			</div>
+
 			<!-- Content Grid -->
 			<v-row class="px-2" v-if="!loading">
 				<v-col
@@ -40,7 +103,7 @@
 							<!-- Image Section -->
 							<v-col cols="5" class="pa-3">
 								<div class="book-cover-wrapper">
-									<img :src="livro.capa_url" :alt="livro.titulo" class="book-cover" />
+									<img :src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'" :alt="livro.titulo" class="book-cover" />
 								</div>
 							</v-col>
 
@@ -69,9 +132,11 @@
 						<!-- Actions Footer -->
 						<v-divider class="mx-4 opacity-50"></v-divider>
 						<v-card-actions class="pa-3 justify-space-between">
-							<v-btn icon="mdi-heart-outline" variant="text" color="white" size="small"></v-btn>
+							<v-btn icon="" variant="text" :color="isFavorited(livro.id) ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'grey-darken-1')" size="small" @click="toggleFavorite(livro)">
+								<v-icon>{{ isFavorited(livro.id) ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+							</v-btn>
 							<div class="share-actions">
-								<v-btn icon="mdi-share-variant" variant="text" color="white" size="small"></v-btn>
+								<v-btn icon="mdi-share-variant" variant="text" :color="$vuetify.theme.current.dark ? 'white' : 'grey-darken-1'" size="small" @click="shareBook(livro.id)"></v-btn>
 								<v-btn class="ios-btn-open" variant="flat" size="small" @click="$router.push('/estudo/' + livro.id)">
 									Ler Agora
 								</v-btn>
@@ -96,13 +161,21 @@ export default {
 	name: 'DashboardPage',
 	data: () => ({
 		livros: [],
+		historico: [],
+		favoritos: [],
 		searchQuery: '',
 		loading: false,
-		user: {}
+		user: {},
+		snackbar: false,
+		snackbarMsg: ''
 	}),
 	created() {
 		this.user = auth.getUser()
 		this.buscar()
+		if (this.user && this.user.id) {
+			this.buscarHistorico()
+			this.buscarFavoritos()
+		}
 	},
 	methods: {
 		async buscar() {
@@ -120,6 +193,58 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+		async buscarHistorico() {
+			try {
+				const response = await MaterialService.listarHistorico(this.user.id)
+				this.historico = response.data || []
+			} catch (error) {
+				console.error('Erro ao buscar histórico:', error)
+			}
+		},
+		async buscarFavoritos() {
+			try {
+				const response = await MaterialService.listarFavoritos(this.user.id)
+				this.favoritos = response.data || []
+			} catch (error) {
+				console.error('Erro ao buscar favoritos:', error)
+			}
+		},
+		isFavorited(materialId) {
+			return this.favoritos.some(f => f.id === materialId)
+		},
+		async toggleFavorite(livro) {
+			if (!this.user || !this.user.id) return
+
+			const currentlyFavorited = this.isFavorited(livro.id)
+			const novoStatus = !currentlyFavorited
+
+			try {
+				await MaterialService.favoritar(this.user.id, livro.id, novoStatus)
+				if (novoStatus) {
+					this.favoritos.unshift(livro)
+					this.showSnackbar('Adicionado aos favoritos!')
+				} else {
+					this.favoritos = this.favoritos.filter(f => f.id !== livro.id)
+					this.showSnackbar('Removido dos favoritos.')
+				}
+			} catch (err) {
+				console.error('Erro ao favoritar/desfavoritar:', err)
+				this.showSnackbar('Erro ao atualizar favorito.')
+			}
+		},
+		shareBook(id) {
+			const link = `${window.location.origin}/estudo/${id}`
+			navigator.clipboard.writeText(link).then(() => {
+				this.showSnackbar('Link copiado para a área de transferência!')
+			}).catch(err => {
+				console.error('Erro ao copiar link: ', err)
+				this.showSnackbar('Não foi possível copiar o link.')
+			})
+		},
+		showSnackbar(msg) {
+			this.snackbarMsg = msg
+			this.snackbar = true
 		},
 		logout() {
 			auth.logout()
@@ -161,20 +286,47 @@ export default {
 
 	/* Item Card Style */
 	.ios-item-card {
-		background: rgba(45, 45, 45, 0.6) !important;
-		backdrop-filter: blur(20px);
-		border-radius: 24px !important;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: rgba(var(--v-theme-surface), 0.8) !important;
+		backdrop-filter: blur(30px) saturate(120%);
+		border-radius: 28px !important;
+		border: 1px solid rgba(128, 128, 128, 0.2);
 		overflow: hidden;
-		transition: all 0.4s var(--spring-easing);
+		transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 		opacity: 0;
-		animation: ios-reveal 0.6s var(--spring-easing) forwards;
+		animation: ios-reveal 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 	}
 
 	.ios-item-card:hover {
-		transform: translateY(-8px) scale(1.02);
-		background: rgba(55, 55, 55, 0.8) !important;
-		box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+		transform: translateY(-10px) scale(1.02);
+		background: rgba(var(--v-theme-surface), 0.95) !important;
+		box-shadow: 0 30px 60px rgba(0,0,0,0.2) !important;
+		border-color: rgba(128, 128, 128, 0.4) !important;
+	}
+
+	.ios-history-card {
+		width: 130px;
+		background: rgba(var(--v-theme-surface), 0.8) !important;
+		backdrop-filter: blur(10px);
+		border-radius: 16px !important;
+		border: 1px solid rgba(128, 128, 128, 0.2);
+		overflow: hidden;
+		cursor: pointer;
+		transition: transform 0.3s ease;
+	}
+
+	.ios-history-card:hover {
+		transform: scale(1.05);
+		background: rgba(var(--v-theme-surface), 0.95) !important;
+	}
+
+	.history-title {
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.ultra-caption {
+		font-size: 10px;
 	}
 
 	.book-cover-wrapper {
@@ -201,7 +353,7 @@ export default {
 	}
 
 	.item-title {
-		color: white;
+		color: var(--v-theme-on-surface);
 		font-size: 1.1rem;
 		font-weight: 700;
 		line-height: 1.2;
@@ -213,7 +365,8 @@ export default {
 	}
 
 	.item-details {
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--v-theme-on-surface);
+		opacity: 0.7;
 		font-size: 13px;
 	}
 

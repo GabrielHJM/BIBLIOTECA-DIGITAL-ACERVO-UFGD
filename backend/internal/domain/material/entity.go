@@ -14,4 +14,6 @@ type Material struct {
 	Tags            []string `json:"tags"`
 	MediaNota       float64  `json:"media_nota"`
 	TotalAvaliacoes int      `json:"total_avaliacoes"`
+	ExternoID       string   `json:"externo_id"`
+	Fonte           string   `json:"fonte"`
 }

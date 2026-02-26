@@ -126,4 +126,18 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		log.Printf("Usuário %d atualizado com sucesso", id)
 		JSONSuccess(w, nil, http.StatusOK)
 	})
+
+	mux.HandleFunc("DELETE /usuarios/{id}", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			JSONError(w, "ID inválido", http.StatusBadRequest)
+			return
+		}
+		if err := repo.Deletar(r.Context(), id); err != nil {
+			JSONError(w, "Erro ao deletar usuário: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		JSONSuccess(w, nil, http.StatusOK)
+	})
 }

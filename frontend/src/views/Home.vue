@@ -1,5 +1,5 @@
 <template>
-	<div class="home-wrapper">
+	<div class="home-wrapper" :class="{ 'light-theme': !isDarkTheme }">
 		<!-- Atmospheric background orbs -->
 		<div class="bg-orb bg-orb-1"></div>
 		<div class="bg-orb bg-orb-2"></div>
@@ -14,14 +14,22 @@
 				<h1 class="hero-title">Explore o Conhecimento<br><span class="hero-title-accent">Sem Fronteiras</span></h1>
 				<p class="hero-subtitle">Acesse milhares de livros, artigos e materiais acadêmicos de forma gratuita e instantânea.</p>
 				<div class="hero-cta-group">
-					<button class="btn-primary" @click="$router.push('/cadastro')">
-						<v-icon size="18" class="mr-2">mdi-account-plus</v-icon>
-						Criar Conta Grátis
-					</button>
-					<button class="btn-ghost" @click="$router.push('/login')">
-						<v-icon size="18" class="mr-2">mdi-login</v-icon>
-						Entrar
-					</button>
+					<template v-if="!isLoggedIn">
+						<button class="btn-primary" @click="$router.push('/cadastro')">
+							<v-icon size="18" class="mr-2">mdi-account-plus</v-icon>
+							Criar Conta Grátis
+						</button>
+						<button class="btn-ghost" @click="$router.push('/login')">
+							<v-icon size="18" class="mr-2">mdi-login</v-icon>
+							Entrar
+						</button>
+					</template>
+					<template v-else>
+						<button class="btn-primary" @click="$router.push('/dashboard')">
+							<v-icon size="18" class="mr-2">mdi-view-dashboard</v-icon>
+							Acessar Meu Dashboard
+						</button>
+					</template>
 				</div>
 			</div>
 			<!-- Stats row -->
@@ -38,6 +46,25 @@
 			<div class="section-header">
 				<h2 class="section-title">COMECE SEUS ESTUDOS</h2>
 				<div class="title-underline"></div>
+
+				<div class="acervos-filter mt-8 d-flex justify-center">
+					<v-select
+						v-model="selectedAcervo"
+						:items="acervosList"
+						item-title="title"
+						item-value="value"
+						variant="outlined"
+						rounded="pill"
+						density="compact"
+						hide-details
+						class="acervo-select"
+						@update:modelValue="fetchMateriais"
+					>
+						<template v-slot:prepend-inner>
+							<v-icon color="#00B8D4" class="mr-2">mdi-bookshelf</v-icon>
+						</template>
+					</v-select>
+				</div>
 			</div>
 
 			<div class="categories-grid">
@@ -47,12 +74,12 @@
 					class="category-card animate-fade-in"
 					:style="{ animationDelay: (idx * 0.08) + 's' }"
 				>
-					<div class="category-card-header">
+					<div class="category-card-header" @click="$router.push({ name: 'explorar', query: { categoria: cat.nome } })">
 						<div class="category-icon-wrap">
 							<v-icon :color="cat.iconColor" size="20">{{ cat.icon }}</v-icon>
 						</div>
 						<h3 class="category-name">{{ cat.nome }}</h3>
-						<button class="ver-tudo-btn" @click="$router.push({ name: 'explorar', query: { categoria: cat.nome } })">
+						<button class="ver-tudo-btn">
 							Ver Tudo <v-icon size="14">mdi-chevron-right</v-icon>
 						</button>
 					</div>
@@ -72,27 +99,32 @@
 								<div class="book-cover">
 									<v-img
 										:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=100'"
-										width="44"
-										height="62"
+										width="48"
+										height="68"
 										cover
-										class="rounded"
-									></v-img>
+										class="rounded-lg shadow-sm"
+									>
+										<template v-slot:placeholder>
+											<div class="d-flex align-center justify-center fill-height bg-glass-dark">
+												<v-icon color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
+											</div>
+										</template>
+									</v-img>
 								</div>
 								<div class="book-info">
 									<div class="book-title">{{ livro.titulo }}</div>
 									<div class="book-author">
-										<v-icon size="10" class="mr-1" style="color:#00B8D4">mdi-account</v-icon>
 										{{ livro.autor }}
 									</div>
 									<div class="book-meta-row">
 										<span class="book-tag">{{ livro.ano_publicacao }}</span>
 										<span v-if="livro.media_nota" class="book-rating">
-											<v-icon size="10" color="amber-darken-1" class="mr-1">mdi-star</v-icon>
+											<v-icon size="10" color="amber" class="mr-1">mdi-star</v-icon>
 											{{ livro.media_nota.toFixed(1) }}
 										</span>
 									</div>
 								</div>
-								<v-icon size="16" class="book-arrow">mdi-chevron-right</v-icon>
+								<v-icon size="18" class="book-arrow">mdi-chevron-right</v-icon>
 							</div>
 						</template>
 						<div v-else class="empty-state">
@@ -140,10 +172,15 @@
 			<div class="cta-inner">
 				<v-icon size="40" color="white" class="mb-4">mdi-book-open-page-variant</v-icon>
 				<h2 class="cta-title">Pronto para explorar?</h2>
-				<p class="cta-subtitle">Junte-se a estudantes e profissionais que já utilizam a plataforma.</p>
-				<div class="cta-btn-group">
-					<button class="btn-white" @click="$router.push('/cadastro')">Criar Conta Grátis</button>
-					<button class="btn-outline-white" @click="$router.push('/login')">Já tenho conta</button>
+				<p class="cta-subtitle">Junte-se a milhares de estudantes e profissionais que já utilizam nossa plataforma de forma gratuita.</p>
+				<div class="cta-actions">
+					<template v-if="!isLoggedIn">
+						<button class="btn-white" @click="$router.push('/cadastro')">Criar Conta Grátis</button>
+						<button class="btn-outline-white" @click="$router.push('/login')">Já tenho conta</button>
+					</template>
+					<template v-else>
+						<button class="btn-white" @click="$router.push('/dashboard')">Acessar Meu Dashboard</button>
+					</template>
 				</div>
 			</div>
 		</section>
@@ -153,50 +190,79 @@
 
 <script>
 import MaterialService from '../services/MaterialService';
+import { state as authState } from '@/auth';
+import { useTheme } from 'vuetify';
+import { computed } from 'vue';
 
 export default {
 	name: 'HomePagePremium',
-	data: () => ({
-		loading: true,
-		stats: [
-			{ value: '10K+', label: 'Livros' },
-			{ value: '50+', label: 'Categorias' },
-			{ value: 'Grátis', label: 'Acesso' },
-			{ value: '24/7', label: 'Disponível' }
-		],
-		categoriasMock: [
-			{ nome: 'TECNOLOGIA', livros: [], icon: 'mdi-laptop', iconColor: '#00B8D4' },
-			{ nome: 'SAÚDE', livros: [], icon: 'mdi-heart-pulse', iconColor: '#FF6B9D' },
-			{ nome: 'MATEMÁTICA', livros: [], icon: 'mdi-calculator-variant', iconColor: '#FFD60A' },
-			{ nome: 'CIÊNCIAS', livros: [], icon: 'mdi-flask', iconColor: '#39FF14' },
-			{ nome: 'HISTÓRIA', livros: [], icon: 'mdi-castle', iconColor: '#BF5AF2' },
-			{ nome: 'CONTABILIDADE', livros: [], icon: 'mdi-currency-usd', iconColor: '#FF9F0A' }
-		],
-		features: [
-			{ title: 'Sem Limites', desc: 'Acesse quantos livros quiser, sem restrições.', icon: 'mdi-infinity', iconColor: '#00F2FE', bg: 'rgba(0,242,254,0.12)' },
-			{ title: 'Acesso Instantâneo', desc: 'Leitura online sem necessidade de download.', icon: 'mdi-timer-outline', iconColor: '#39FF14', bg: 'rgba(57,255,20,0.12)' },
-			{ title: 'Personalização', desc: 'Favoritos, histórico e recomendações.', icon: 'mdi-palette-outline', iconColor: '#BF5AF2', bg: 'rgba(191,90,242,0.12)' },
-			{ title: 'Sem Taxas Ocultas', desc: '100% gratuito, sempre e para todos.', icon: 'mdi-currency-usd-off', iconColor: '#FF6B6B', bg: 'rgba(255,107,107,0.12)' },
-			{ title: 'Global', desc: 'Acesse de qualquer lugar do mundo.', icon: 'mdi-earth', iconColor: '#FFD60A', bg: 'rgba(255,214,10,0.12)' }
-		]
-	}),
+	setup() {
+		const theme = useTheme();
+		const isDarkTheme = computed(() => theme.global.current.value.dark);
+		return { isDarkTheme };
+	},
+	computed: {
+		isLoggedIn() {
+			return authState.isAuthenticated;
+		}
+	},
+	data() {
+		return {
+			loading: true,
+			selectedAcervo: '',
+			acervosList: [
+				{ title: 'Todos os Acervos', value: '' },
+				{ title: 'SciELO', value: 'SciELO' },
+				{ title: 'CAPES', value: 'CAPES' },
+				{ title: 'IEEE', value: 'IEEE' },
+				{ title: 'OpenAlex', value: 'OpenAlex' }
+			],
+			stats: [
+				{ value: '5K+', label: 'Materiais Livres' },
+				{ value: '50+', label: 'Categorias' },
+				{ value: 'Grátis', label: 'Acesso' },
+				{ value: '24/7', label: 'Disponível' }
+			],
+			categoriasMock: [
+				{ nome: 'TECNOLOGIA', livros: [], icon: 'mdi-laptop', iconColor: '#00B8D4' },
+				{ nome: 'SAÚDE', livros: [], icon: 'mdi-heart-pulse', iconColor: '#FF6B9D' },
+				{ nome: 'MATEMÁTICA', livros: [], icon: 'mdi-calculator-variant', iconColor: '#FFD60A' },
+				{ nome: 'CIÊNCIAS', livros: [], icon: 'mdi-flask', iconColor: '#39FF14' },
+				{ nome: 'HISTÓRIA', livros: [], icon: 'mdi-castle', iconColor: '#BF5AF2' },
+				{ nome: 'CONTABILIDADE', livros: [], icon: 'mdi-currency-usd', iconColor: '#FF9F0A' }
+			],
+			features: [
+				{ title: 'Sem Limites', desc: 'Acesse quantos livros quiser, sem restrições.', icon: 'mdi-infinity', iconColor: '#00F2FE', bg: 'rgba(0,242,254,0.12)' },
+				{ title: 'Acesso Instantâneo', desc: 'Leitura online sem necessidade de download.', icon: 'mdi-timer-outline', iconColor: '#39FF14', bg: 'rgba(57,255,20,0.12)' },
+				{ title: 'Personalização', desc: 'Favoritos, histórico e recomendações.', icon: 'mdi-palette-outline', iconColor: '#BF5AF2', bg: 'rgba(191,90,242,0.12)' },
+				{ title: 'Sem Taxas Ocultas', desc: '100% gratuito, sempre e para todos.', icon: 'mdi-currency-usd-off', iconColor: '#FF6B6B', bg: 'rgba(255,107,107,0.12)' },
+				{ title: 'Global', desc: 'Acesse de qualquer lugar do mundo.', icon: 'mdi-earth', iconColor: '#FFD60A', bg: 'rgba(255,214,10,0.12)' }
+			]
+		}
+	},
 	async mounted() {
-		this.loading = true;
-		try {
-			// Simula um pequeno delay para mostrar os esqueletos (UX mais "smooth")
-			await new Promise(resolve => setTimeout(resolve, 800));
+		await this.fetchMateriais();
+	},
+	methods: {
+		async fetchMateriais() {
+			this.loading = true;
+			try {
+				// Simula um pequeno delay para mostrar os esqueletos (UX mais "smooth")
+				await new Promise(resolve => setTimeout(resolve, 800));
 
-			const promises = this.categoriasMock.map(async (cat) => {
-				const response = await MaterialService.pesquisar('', cat.nome, 3);
-				// Com o novo interceptor, response já contém o array de materiais
-				cat.livros = Array.isArray(response.data) ? response.data : [];
-			});
-			await Promise.all(promises);
-		} catch (err) {
-			console.error("Erro ao carregar dados da Home:", err);
-			// Aqui poderíamos emitir um alerta global ou local
-		} finally {
-			this.loading = false;
+				const promises = this.categoriasMock.map(async (cat) => {
+					// Usa o nome da categoria usando filtro correto 'categoria' em vez de busca livre, exigindo 3 aleatórios locais
+					const response = await MaterialService.pesquisar('', cat.nome, this.selectedAcervo, 0, 0, 3, 0, 'random');
+					// Com o novo interceptor, response já contém o array de materiais
+					cat.livros = Array.isArray(response.data) ? response.data : [];
+				});
+				await Promise.all(promises);
+			} catch (err) {
+				console.error("Erro ao carregar dados da Home:", err);
+				// Aqui poderíamos emitir um alerta global ou local
+			} finally {
+				this.loading = false;
+			}
 		}
 	}
 }
@@ -212,6 +278,112 @@ export default {
 	position: relative;
 	overflow-x: hidden;
 	font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+	transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light Theme Overrides */
+.home-wrapper.light-theme {
+	background-color: #f5f7fa;
+	color: #1a3a5c;
+}
+
+.home-wrapper.light-theme .hero-title,
+.home-wrapper.light-theme .hero-subtitle,
+.home-wrapper.light-theme .section-title,
+.home-wrapper.light-theme .category-name,
+.home-wrapper.light-theme .book-title,
+.home-wrapper.light-theme .features-headline,
+.home-wrapper.light-theme .features-desc,
+.home-wrapper.light-theme .feature-pill-title,
+.home-wrapper.light-theme .cta-title,
+.home-wrapper.light-theme .cta-subtitle {
+	color: #1a3a5c !important;
+}
+
+.home-wrapper.light-theme .stat-number {
+	color: #00B8D4 !important;
+}
+
+.home-wrapper.light-theme .stat-label,
+.home-wrapper.light-theme .book-author,
+.home-wrapper.light-theme .book-rating,
+.home-wrapper.light-theme .book-tag,
+.home-wrapper.light-theme .feature-pill-desc {
+	color: #4a6a8c !important;
+}
+
+.home-wrapper.light-theme .stats-row,
+.home-wrapper.light-theme .category-card,
+.home-wrapper.light-theme .book-row,
+.home-wrapper.light-theme .feature-pill {
+	background: rgba(255, 255, 255, 0.8) !important;
+	border-color: rgba(0, 0, 0, 0.08) !important;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+}
+
+.home-wrapper.light-theme .features-section {
+	background: rgba(255, 255, 255, 0.6) !important;
+	border-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+.home-wrapper.light-theme .category-icon-wrap,
+.home-wrapper.light-theme .book-tag {
+	background: rgba(0, 184, 212, 0.1) !important;
+}
+
+.home-wrapper.light-theme .book-arrow,
+.home-wrapper.light-theme .empty-state i {
+	color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.home-wrapper.light-theme .cta-inner {
+	background: rgba(255, 255, 255, 0.9) !important;
+	border-color: rgba(0, 184, 212, 0.2) !important;
+	box-shadow: 0 10px 40px rgba(0,184,212,0.15) !important;
+}
+
+.home-wrapper.light-theme .btn-ghost {
+	color: #1a3a5c !important;
+	border-color: rgba(0, 0, 0, 0.1) !important;
+	background: rgba(0, 0, 0, 0.02) !important;
+}
+
+.home-wrapper.light-theme .btn-outline-white {
+	color: #1a3a5c !important;
+	border-color: #00B8D4 !important;
+}
+
+.home-wrapper.light-theme .cta-inner .v-icon.mb-4 {
+	color: #00B8D4 !important;
+}
+
+/* Acervos Select styles */
+.acervos-filter {
+	width: 100%;
+}
+.acervo-select {
+	max-width: 320px;
+}
+.acervo-select :deep(.v-field) {
+	background: rgba(255, 255, 255, 0.1) !important;
+	border-color: rgba(255, 255, 255, 0.2) !important;
+	color: white;
+	border-radius: 20px !important;
+}
+.acervo-select :deep(.v-field__input) {
+	color: white;
+	font-weight: 600;
+}
+.light-theme .acervo-select :deep(.v-field) {
+	background: rgba(255, 255, 255, 0.9) !important;
+	border-color: rgba(0, 184, 212, 0.3) !important;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+}
+.light-theme .acervo-select :deep(.v-field__input) {
+	color: #1a3a5c;
+}
+.light-theme .acervo-select :deep(.v-icon) {
+	color: #00B8D4 !important;
 }
 
 /* Background orbs */
@@ -455,6 +627,7 @@ export default {
 	align-items: center;
 	margin-bottom: 16px;
 	gap: 10px;
+	cursor: pointer;
 }
 .category-icon-wrap {
 	width: 36px; height: 36px;
@@ -492,24 +665,32 @@ export default {
 .book-row {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	background: rgba(255,255,255,0.05);
-	border: 1px solid rgba(255,255,255,0.06);
-	border-radius: 14px;
-	padding: 10px 14px;
+	gap: 16px;
+	background: rgba(255,255,255,0.03);
+	border: 1px solid rgba(255,255,255,0.04);
+	border-radius: 16px;
+	padding: 12px 16px;
 	cursor: pointer;
-	transition: all 0.25s ease;
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .book-row:hover {
-	background: rgba(255,255,255,0.1);
-	border-color: rgba(0,184,212,0.25);
-	transform: translateX(4px);
+	background: rgba(255,255,255,0.08);
+	border-color: rgba(0,184,212,0.3);
+	transform: translateX(6px);
 }
 .book-cover {
-	border-radius: 6px;
+	border-radius: 10px;
 	overflow: hidden;
-	box-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+	box-shadow: 0 10px 20px rgba(0,0,0,0.4);
 	flex-shrink: 0;
+	transition: transform 0.3s ease;
+}
+.book-row:hover .book-cover {
+	transform: scale(1.05) rotate(1deg);
+}
+.bg-glass-dark {
+	background: rgba(0, 0, 0, 0.3);
+	backdrop-filter: blur(5px);
 }
 .book-info { flex: 1; overflow: hidden; }
 .book-title {

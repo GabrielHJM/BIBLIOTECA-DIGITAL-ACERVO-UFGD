@@ -12,7 +12,8 @@ type CriarEmprestimoUseCase struct {
 }
 
 func (uc *CriarEmprestimoUseCase) Execute(ctx context.Context, usuarioID, materialID int) error {
-	m, err := uc.Repo.BuscarPorID(materialID)
+	// 1. Verifica se o material existe e está disponível
+	m, err := uc.Repo.BuscarPorID(ctx, materialID)
 	if err != nil {
 		return err
 	}
@@ -20,19 +21,20 @@ func (uc *CriarEmprestimoUseCase) Execute(ctx context.Context, usuarioID, materi
 		return fmt.Errorf("material não disponível para empréstimo")
 	}
 
-	emp := &material.Emprestimo{
+	// 2. Cria o registro de empréstimo
+	emprestimo := &material.Emprestimo{
 		UsuarioID:      usuarioID,
 		MaterialID:     materialID,
 		DataEmprestimo: time.Now(),
-		DataDevolucao:  time.Now().AddDate(0, 0, 14), // 14 dias
-		Status:         "pendente",
+		DataDevolucao:  time.Now().AddDate(0, 0, 7), // 7 dias
+		Status:         "ativo",
 	}
 
-	if err := uc.Repo.SalvarEmprestimo(emp); err != nil {
+	if err := uc.Repo.SalvarEmprestimo(ctx, emprestimo); err != nil {
 		return err
 	}
 
-	// Atualiza disponibilidade
+	// 3. Atualiza status do material
 	m.Disponivel = false
-	return uc.Repo.Atualizar(m)
+	return uc.Repo.Atualizar(ctx, m)
 }

@@ -18,21 +18,35 @@
 			<div class="search-container-center">
 				<v-text-field
 					v-model="searchInput"
-					placeholder="Pesquise livros, autores, categorias..."
+					ref="globalSearch"
+					placeholder="Pesquise (Ctrl + K)..."
 					variant="solo"
 					rounded="pill"
 					flat
 					density="compact"
 					hide-details
 					prepend-inner-icon="mdi-magnify"
-					append-inner-icon="mdi-arrow-right-circle"
 					:loading="loading"
 					class="original-search-field"
+					:class="{ 'search-active': isSearchFocused }"
 					@focus="isSearchFocused = true"
 					@blur="isSearchFocused = false"
 					@keyup.enter="doSearch"
-					@click:append-inner="doSearch"
-				></v-text-field>
+				>
+					<template v-slot:append-inner>
+						<v-fade-transition>
+							<v-btn
+								v-if="searchInput"
+								icon="mdi-arrow-right-circle"
+								variant="text"
+								color="#00B8D4"
+								size="small"
+								class="search-submit-btn"
+								@click="doSearch"
+							></v-btn>
+						</v-fade-transition>
+					</template>
+				</v-text-field>
 			</div>
 
 			<v-spacer />
@@ -49,6 +63,11 @@
 
 			<!-- Ações do usuário -->
 			<div class="nav-actions-original d-flex align-center mr-6" style="gap: 12px;">
+
+				<!-- Theme Toggle -->
+				<v-btn icon variant="text" color="white" @click="toggleTheme" title="Alternar Tema">
+					<v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+				</v-btn>
 
 				<!-- Dropdown de Usuário -->
 				<v-menu
@@ -197,9 +216,10 @@
 <script>
 import Footer from './components/Footer.vue'
 import AccessibilityPanel from './components/AccessibilityPanel.vue'
-import { ref } from 'vue'
-import auth from '@/auth'
+import { ref, computed } from 'vue'
+import auth, { state as authState } from '@/auth'
 import { useAccessibility } from '@/composables/useAccessibility'
+import { useTheme } from 'vuetify'
 
 export default {
 	name: 'App',
@@ -207,6 +227,7 @@ export default {
 	data() {
 		return {
 			publicRoutes: ['/login', '/cadastro', '/esqueci-senha'],
+			searchInput: '',
 			isSearchFocused: false,
 			userMenuOpen: false,
 		}
@@ -233,6 +254,12 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+		handleGlobalKeydown(e) {
+			if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+				e.preventDefault();
+				this.$refs.globalSearch?.focus();
+			}
 		}
 	},
 	computed: {
@@ -240,14 +267,14 @@ export default {
 			return !this.publicRoutes.includes(this.$route.path)
 		},
 		isLoggedIn() {
-			return auth.isAuthenticated()
+			return authState.isAuthenticated
 		},
 		userDisplayName() {
-			const user = auth.getUser()
+			const user = authState.user
 			return user?.nome || user?.email || 'Usuário'
 		},
 		userAvatar() {
-			const user = auth.getUser()
+			const user = authState.user
 			return user?.foto_url || null
 		}
 	},
@@ -262,14 +289,23 @@ export default {
 		}
 	},
 	setup() {
-		const searchInput = ref('')
 		const loading = ref(false)
 		const { init } = useAccessibility()
+		const theme = useTheme()
+
+		const toggleTheme = () => {
+			theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
+		}
+
+		const isDarkTheme = computed(() => theme.global.current.value.dark)
 
 		return {
-			searchInput,
 			loading,
-			init
+			init,
+			cleanupAccessibility: useAccessibility().cleanup,
+			theme,
+			toggleTheme,
+			isDarkTheme
 		}
 	},
 	mounted() {
@@ -278,6 +314,24 @@ export default {
 		if (this.$route.query.q) {
 			this.searchInput = this.$route.query.q
 		}
+
+		// Keyboard shortcut Ctrl+K
+		window.addEventListener('keydown', this.handleGlobalKeydown);
+
+		// Router hooks for loading
+		this.$router.beforeEach((to, from, next) => {
+			this.loading = true;
+			next();
+		});
+		this.$router.afterEach(() => {
+			setTimeout(() => { this.loading = false; }, 300);
+		});
+	},
+	beforeUnmount() {
+		window.removeEventListener('keydown', this.handleGlobalKeydown);
+		if (this.cleanupAccessibility) {
+			this.cleanupAccessibility()
+		}
 	}
 }
 </script>
@@ -285,8 +339,7 @@ export default {
 <style>
 	:root {
 		--ios-blue: #007AFF;
-		--ios-cyan: #5AC8FA;
-		--ios-bg: #325178; /* Tom de azul do Login */
+		--ios-cyan: #00B8D4;
 		--ios-card: rgba(45, 78, 115, 0.85);
 		--spring-easing: cubic-bezier(0.4, 0, 0.2, 1);
 		--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
@@ -296,12 +349,7 @@ export default {
 		margin: 0;
 		padding: 0;
 		font-family: var(--apple-font);
-		background-color: var(--ios-bg);
 		overflow-x: hidden;
-	}
-
-	.ios-app {
-		background-color: var(--ios-bg) !important;
 	}
 
 	/* Glassmorphism AppBar */
@@ -336,23 +384,35 @@ export default {
 	}
 
 	.original-search-field :deep(.v-field) {
-		background: rgba(255, 255, 255, 0.1) !important;
-		backdrop-filter: blur(10px);
-		border-radius: 14px !important;
-		height: 42px !important;
-		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		background: rgba(255, 255, 255, 0.08) !important;
+		backdrop-filter: blur(15px);
+		border-radius: 12px !important;
+		height: 44px !important;
+		border: 1px solid rgba(255, 255, 255, 0.05) !important;
 		box-shadow: none !important;
-		transition: all 0.3s ease;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
-	.original-search-field :deep(.v-field--focused) {
-		background: rgba(255, 255, 255, 0.2) !important;
-		border-color: rgba(255, 255, 255, 0.3) !important;
+	.search-active :deep(.v-field) {
+		background: rgba(255, 255, 255, 0.15) !important;
+		border-color: rgba(0, 184, 212, 0.4) !important;
+		transform: scale(1.02);
+		box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
 	}
 
 	.original-search-field :deep(input) {
 		color: white !important;
 		font-weight: 400;
+		letter-spacing: 0.3px;
+	}
+
+	.search-submit-btn {
+		margin-right: -8px;
+		transition: transform 0.2s ease;
+	}
+
+	.search-submit-btn:hover {
+		transform: scale(1.1);
 	}
 
 	.original-search-field :deep(.v-field__prepend-inner) {

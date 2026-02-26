@@ -1,342 +1,342 @@
 [
-  {
-    "nome": "Estruturas de Dados e Algoritmos em Java",
-    "ano_publicacao": 2023,
-    "paginas": 1121,
-    "capitulos": 20,
-    "volume": 1,
-    "edicao": 14,
-    "autor": "Michael T. Goodrich, Roberto Tamassia",
-    "link": "https://imgv2-2-f.scribdassets.com/img/document/37661002/original/ddbb7d9b2a/1?v=1"
-  },
-  {
-    "nome": "Clean Code",
-    "ano_publicacao": 2018,
-    "paginas": 821,
-    "capitulos": 26,
-    "volume": 2,
-    "edicao": 13,
-    "autor": "Robert C. Martin",
-    "link": "https://m.media-amazon.com/images/I/71-AgQIrCwL._SL1500_.jpg"
-  },
-  {
-    "nome": "Meu primeiro livro de programação",
-    "ano_publicacao": 2024,
-    "paginas": 144,
-    "capitulos": 1,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Nestor Burlamaqui",
-    "link": "https://m.media-amazon.com/images/I/41FxrD3vUfL._SY445_SX342_.jpg"
-  },
-  {
-    "nome": "Introdução á teoria da computação",
-    "ano_publicacao": 2005,
-    "paginas": 488,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Michael Sipser",
-    "link": "https://m.media-amazon.com/images/I/610Mr7w4MlL._SL1005_.jpg"
-  },
-  {
-    "nome": "Hábitos Atômicos: um Método Fácil e Comprovado de Criar Bons Hábitos e se Livrar dos Maus",
-    "ano_publicacao": 2019,
-    "paginas": 320,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "James Clear",
-    "link": "https://m.media-amazon.com/images/I/81eT2pjx4jL._SY342_.jpg"
-  },
-  {
-    "nome": "Terapia cognitivo-comportamental: teoria e prática",
-    "ano_publicacao": 2021,
-    "paginas": 432,
-    "capitulos": 18,
-    "volume": 1,
-    "edicao": 3,
-    "autor": "Judith S. Beck",
-    "link": "https://m.media-amazon.com/images/I/71KE7JJesyL._SL1500_.jpg"
-  },
-  {
-    "nome": "Psicopatologia e Semiologia dos Transtornos Mentais",
-    "ano_publicacao": 2018,
-    "paginas": 520,
-    "capitulos": 12,
-    "volume": 1,
-    "edicao": 3,
-    "autor": "Paulo Dalgalarrondo",
-    "link": "https://m.media-amazon.com/images/I/81zP6BWQz7L._SL1500_.jpg"
-  },
-  {
-    "nome": "Princípios Básicos de Análise do Comportamento",
-    "ano_publicacao": 2018,
-    "paginas": 320,
-    "capitulos": 15,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Márcio Borges Moreira",
-    "link": "https://m.media-amazon.com/images/I/71vKqM13DiL._SL1500_.jpg"
-  },
-  {
-    "nome": "Vencendo o TDAH Adulto: Transtorno de Déficit de Atenção/Hiperatividade",
-    "ano_publicacao": 2022,
-    "paginas": 300,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Russell A. Barkley",
-    "link": "https://m.media-amazon.com/images/I/719hNi0QwOL._SL1477_.jpg"
-  },
-  {
-    "nome": "Técnicas de Terapia Cognitiva: Manual do Terapeuta",
-    "ano_publicacao": 2018,
-    "paginas": 536,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Robert L. Leahy",
-    "link": "https://m.media-amazon.com/images/I/71wrNgKikEL._SL1500_.jpg"
-  },
-  {
-    "nome": "Desenvolvimento humano",
-    "ano_publicacao": 2021,
-    "paginas": 800,
-    "capitulos": 20,
-    "volume": 1,
-    "edicao": 14,
-    "autor": "Papalia e Martorell",
-    "link": "https://m.media-amazon.com/images/I/81+YZ3OvWmL._SL1500_.jpg"
-  },
-  {
-    "nome": "Lidando com a ansiedade: estratégias de TCC e mindfulness para superar o medo e a preocupação",
-    "ano_publicacao": 2022,
-    "paginas": 192,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Stefan G. Hofmann",
-    "link": "https://m.media-amazon.com/images/I/71OuLURje9L._SL1500_.jpg"
-  },
-  {
-    "nome": "Regulação Emocional em Psicoterapia: Um Guia para o Terapeuta Cognitivo-Comportamental",
-    "ano_publicacao": 2013,
-    "paginas": 332,
-    "capitulos": 6,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Robert L. Leahy",
-    "link": "https://m.media-amazon.com/images/I/81tTjToOuGL._SL1500_.jpg"
-  },
-  {
-    "nome": "Manual Clínico dos Transtornos Psicológicos: Tratamento Passo a Passo",
-    "ano_publicacao": 2022,
-    "paginas": 776,
-    "capitulos": 16,
-    "volume": 1,
-    "edicao": 6,
-    "autor": "David H. Barlow",
-    "link": "https://m.media-amazon.com/images/I/716xzl+IdpL._SL1500_.jpg"
-  },
-{
-    "nome": "Neurociência e educação: Como o cérebro aprende",
-    "ano_publicacao": 2011,
-    "paginas": 151,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Ramon M. Cosenza",
-    "link": "https://m.media-amazon.com/images/I/81mj4JaCOzL._SL1500_.jpg"
-  },
-  {
-    "nome": "Guia para Compreensão e Manejo do TDAH da World Federation of ADHD",
-    "ano_publicacao": 2019,
-    "paginas": 142,
-    "capitulos": 6,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Luis Augusto Rohde",
-    "link": "https://m.media-amazon.com/images/I/91ien7W17UL._SL1500_.jpg"
-  },
-  {
-    "nome": "A Prática Clínica da Terapia Cognitiva com Crianças e Adolescentes",
-    "ano_publicacao": 2019,
-    "paginas": 400,
-    "capitulos": 12,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Robert D. Friedberg",
-    "link": "https://m.media-amazon.com/images/I/71Er+D6k87L._SL1500_.jpg"
-  },
-  {
-    "nome": "Livre de Ansiedade",
-    "ano_publicacao": 2011,
-    "paginas": 248,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Robert L. Leahy",
-    "link": "https://m.media-amazon.com/images/I/91CDMFk2QQL._SL1500_.jpg"
-  },
-  {
-    "nome": "Psicodiagnóstico ",
-    "ano_publicacao": 2016,
-    "paginas": 428,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Claudio Simon Hutz",
-    "link": "https://m.media-amazon.com/images/I/81CVhqr0Y1L._SL1500_.jpg"
-  },
-  {
-    "nome": "Anatomia",
-    "ano_publicacao": 2011,
-    "paginas": 4,
-    "capitulos": 1,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Vincent Perez",
-    "link": "https://m.media-amazon.com/images/I/91mgfhSVxAL._SL1500_.jpg"
-  },
-  {
-    "nome": "Neurociências: Desvendando o Sistema Nervoso",
-    "ano_publicacao": 2017,
-    "paginas": 1016,
-    "capitulos": 30,
-    "volume": 1,
-    "edicao": 4,
-    "autor": "Mark F. Bear",
-    "link": "https://m.media-amazon.com/images/I/91SaH52nWIL._SL1500_.jpg"
-  },
-  {
-    "nome": "A Mente Vencendo o Humor: Mude como Você se Sente, Mudando o Modo como Você Pensa",
-    "ano_publicacao": 2016,
-    "paginas": 352,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 2,
-    "autor": "Dennis Greenberger",
-    "link": "https://m.media-amazon.com/images/I/814Ac1EmjnL._SL1500_.jpg"
-  },
-{
-    "nome": "Fisiologia Humana: Uma Abordagem Integrada",
-    "ano_publicacao": 2017,
-    "paginas": 960,
-    "capitulos": 12,
-    "volume": 1,
-    "edicao": 7,
-    "autor": "Dee Unglaub Silverthorn",
-    "link": "https://m.media-amazon.com/images/I/81rGuAvflfL._SL1500_.jpg"
-  },
-  {
-    "nome": "O poder do hábito: Por que fazemos o que fazemos na vida e nos negócios",
-    "ano_publicacao": 2012,
-    "paginas": 408,
-    "capitulos": 6,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Charles Duhigg",
-    "link": "https://m.media-amazon.com/images/I/815iPX0SgkL._SL1500_.jpg"
-  },
-  {
-    "nome": "Essencialismo: A disciplinada busca por menos",
-    "ano_publicacao": 2015,
-    "paginas": 272,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Greg McKeown",
-    "link": "https://m.media-amazon.com/images/I/71HuZRl-XeL._SL1500_.jpg"
-  },
-  {
-    "nome": "Comece pelo porquê: Como grandes líderes inspiram pessoas e equipes a agir",
-    "ano_publicacao": 2018,
-    "paginas": 256,
-    "capitulos": 3,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Simon Sinek",
-    "link": "https://m.media-amazon.com/images/I/71M6czhxmTL._SL1500_.jpg"
-  },
-  {
-    "nome": "Storybrand: Crie Mensagens Claras e Atraia a Atenção dos Clientes Para sua Marca",
-    "ano_publicacao": 2019,
-    "paginas": 240,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Donald Miller",
-    "link": "https://m.media-amazon.com/images/I/71XYY5h8GwL._SL1500_.jpg"
-  },
-  {
-    "nome": "O Jeito Harvard de ser feliz",
-    "ano_publicacao": 2023,
-    "paginas": 216,
-    "capitulos": 4,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Shawn Achor",
-    "link": "https://m.media-amazon.com/images/I/6105anGjDEL._SL1500_.jpg"
-  },
-  {
-    "nome": "A Bíblia de Vendas",
-    "ano_publicacao": 2023,
-    "paginas": 296,
-    "capitulos": 10,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Jeffrey Gitomer",
-    "link": "https://m.media-amazon.com/images/I/51fq8QUC3RL._SL1000_.jpg"
-  },
-  {
-    "nome": "Alcançando Excelência em Vendas - Spin Selling",
-    "ano_publicacao": 2023,
-    "paginas": 204,
-    "capitulos": 5,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Neil Rackham",
-    "link": "https://m.media-amazon.com/images/I/61ZxdpZEAOL._SL1000_.jpg"
-  },
-{
-    "nome": "A vaca roxa: Como transformar o seu negócio e se destacar dos concorrentes",
-    "ano_publicacao": 2022,
-    "paginas": 182,
-    "capitulos": 4,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Seth Godin",
-    "link": "https://m.media-amazon.com/images/I/81c-KPPVLUL._SL1500_.jpg"
-  },
-  {
-    "nome": "A lógica do consumo - Verdades e mentiras sobre por que compramos",
-    "ano_publicacao": 2018,
-    "paginas": 65,
-    "capitulos": 2,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Martin Lindstrom",
-    "link": "https://m.media-amazon.com/images/I/61qHl9D3fJL._SL1500_.jpg"
-  },
-  {
-    "nome": "Contágio: Por que as Coisas Pegam",
-    "ano_publicacao": 2020,
-    "paginas": 224,
-    "capitulos": 3,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "Jonah Berger",
-    "link": "https://m.media-amazon.com/images/I/819QSnxMNXL._SL1500_.jpg"
-  },
-  {
-    "nome": "Tudo faz sentido: Conectando os pontos entre arte, ciência e inovação",
-    "ano_publicacao": 2024,
-    "paginas": 128,
-    "capitulos": 6,
-    "volume": 1,
-    "edicao": 1,
-    "autor": "João Silveira",
-    "link": "https://m.media-amazon.com/images/I/613nxYBkgOL._SL1360_.jpg"
-  }
+	{
+		"nome": "Estruturas de Dados e Algoritmos em Java",
+		"ano_publicacao": 2023,
+		"paginas": 1121,
+		"capitulos": 20,
+		"volume": 1,
+		"edicao": 14,
+		"autor": "Michael T. Goodrich, Roberto Tamassia",
+		"link": "https://www.ifsc.usp.br/~igor/teaching/fiscomp1/ood-java.pdf"
+	},
+	{
+		"nome": "Clean Code",
+		"ano_publicacao": 2018,
+		"paginas": 821,
+		"capitulos": 26,
+		"volume": 2,
+		"edicao": 13,
+		"autor": "Robert C. Martin",
+		"link": "https://m.media-amazon.com/images/I/71-AgQIrCwL._SL1500_.jpg"
+	},
+	{
+		"nome": "Meu primeiro livro de programação",
+		"ano_publicacao": 2024,
+		"paginas": 144,
+		"capitulos": 1,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Nestor Burlamaqui",
+		"link": "http://www.univasf.edu.br/~jorge.cavalcanti/Linguagem_C_v1.pdf"
+	},
+	{
+		"nome": "Introdução á teoria da computação",
+		"ano_publicacao": 2005,
+		"paginas": 488,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Michael Sipser",
+		"link": "https://m.media-amazon.com/images/I/610Mr7w4MlL._SL1005_.jpg"
+	},
+	{
+		"nome": "Hábitos Atômicos: um Método Fácil e Comprovado de Criar Bons Hábitos e se Livrar dos Maus",
+		"ano_publicacao": 2019,
+		"paginas": 320,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "James Clear",
+		"link": "https://m.media-amazon.com/images/I/81eT2pjx4jL._SY342_.jpg"
+	},
+	{
+		"nome": "Terapia cognitivo-comportamental: teoria e prática",
+		"ano_publicacao": 2021,
+		"paginas": 432,
+		"capitulos": 18,
+		"volume": 1,
+		"edicao": 3,
+		"autor": "Judith S. Beck",
+		"link": "https://m.media-amazon.com/images/I/71KE7JJesyL._SL1500_.jpg"
+	},
+	{
+		"nome": "Psicopatologia e Semiologia dos Transtornos Mentais",
+		"ano_publicacao": 2018,
+		"paginas": 520,
+		"capitulos": 12,
+		"volume": 1,
+		"edicao": 3,
+		"autor": "Paulo Dalgalarrondo",
+		"link": "https://m.media-amazon.com/images/I/81zP6BWQz7L._SL1500_.jpg"
+	},
+	{
+		"nome": "Princípios Básicos de Análise do Comportamento",
+		"ano_publicacao": 2018,
+		"paginas": 320,
+		"capitulos": 15,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Márcio Borges Moreira",
+		"link": "https://m.media-amazon.com/images/I/71vKqM13DiL._SL1500_.jpg"
+	},
+	{
+		"nome": "Vencendo o TDAH Adulto: Transtorno de Déficit de Atenção/Hiperatividade",
+		"ano_publicacao": 2022,
+		"paginas": 300,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Russell A. Barkley",
+		"link": "https://m.media-amazon.com/images/I/719hNi0QwOL._SL1477_.jpg"
+	},
+	{
+		"nome": "Técnicas de Terapia Cognitiva: Manual do Terapeuta",
+		"ano_publicacao": 2018,
+		"paginas": 536,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Robert L. Leahy",
+		"link": "https://m.media-amazon.com/images/I/71wrNgKikEL._SL1500_.jpg"
+	},
+	{
+		"nome": "Desenvolvimento humano",
+		"ano_publicacao": 2021,
+		"paginas": 800,
+		"capitulos": 20,
+		"volume": 1,
+		"edicao": 14,
+		"autor": "Papalia e Martorell",
+		"link": "https://m.media-amazon.com/images/I/81+YZ3OvWmL._SL1500_.jpg"
+	},
+	{
+		"nome": "Lidando com a ansiedade: estratégias de TCC e mindfulness para superar o medo e a preocupação",
+		"ano_publicacao": 2022,
+		"paginas": 192,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Stefan G. Hofmann",
+		"link": "https://m.media-amazon.com/images/I/71OuLURje9L._SL1500_.jpg"
+	},
+	{
+		"nome": "Regulação Emocional em Psicoterapia: Um Guia para o Terapeuta Cognitivo-Comportamental",
+		"ano_publicacao": 2013,
+		"paginas": 332,
+		"capitulos": 6,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Robert L. Leahy",
+		"link": "https://m.media-amazon.com/images/I/81tTjToOuGL._SL1500_.jpg"
+	},
+	{
+		"nome": "Manual Clínico dos Transtornos Psicológicos: Tratamento Passo a Passo",
+		"ano_publicacao": 2022,
+		"paginas": 776,
+		"capitulos": 16,
+		"volume": 1,
+		"edicao": 6,
+		"autor": "David H. Barlow",
+		"link": "https://m.media-amazon.com/images/I/716xzl+IdpL._SL1500_.jpg"
+	},
+	{
+		"nome": "Neurociência e educação: Como o cérebro aprende",
+		"ano_publicacao": 2011,
+		"paginas": 151,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Ramon M. Cosenza",
+		"link": "https://m.media-amazon.com/images/I/81mj4JaCOzL._SL1500_.jpg"
+	},
+	{
+		"nome": "Guia para Compreensão e Manejo do TDAH da World Federation of ADHD",
+		"ano_publicacao": 2019,
+		"paginas": 142,
+		"capitulos": 6,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Luis Augusto Rohde",
+		"link": "https://m.media-amazon.com/images/I/91ien7W17UL._SL1500_.jpg"
+	},
+	{
+		"nome": "A Prática Clínica da Terapia Cognitiva com Crianças e Adolescentes",
+		"ano_publicacao": 2019,
+		"paginas": 400,
+		"capitulos": 12,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Robert D. Friedberg",
+		"link": "https://m.media-amazon.com/images/I/71Er+D6k87L._SL1500_.jpg"
+	},
+	{
+		"nome": "Livre de Ansiedade",
+		"ano_publicacao": 2011,
+		"paginas": 248,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Robert L. Leahy",
+		"link": "https://m.media-amazon.com/images/I/91CDMFk2QQL._SL1500_.jpg"
+	},
+	{
+		"nome": "Psicodiagnóstico ",
+		"ano_publicacao": 2016,
+		"paginas": 428,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Claudio Simon Hutz",
+		"link": "https://m.media-amazon.com/images/I/81CVhqr0Y1L._SL1500_.jpg"
+	},
+	{
+		"nome": "Anatomia",
+		"ano_publicacao": 2011,
+		"paginas": 4,
+		"capitulos": 1,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Vincent Perez",
+		"link": "https://m.media-amazon.com/images/I/91mgfhSVxAL._SL1500_.jpg"
+	},
+	{
+		"nome": "Neurociências: Desvendando o Sistema Nervoso",
+		"ano_publicacao": 2017,
+		"paginas": 1016,
+		"capitulos": 30,
+		"volume": 1,
+		"edicao": 4,
+		"autor": "Mark F. Bear",
+		"link": "https://m.media-amazon.com/images/I/91SaH52nWIL._SL1500_.jpg"
+	},
+	{
+		"nome": "A Mente Vencendo o Humor: Mude como Você se Sente, Mudando o Modo como Você Pensa",
+		"ano_publicacao": 2016,
+		"paginas": 352,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 2,
+		"autor": "Dennis Greenberger",
+		"link": "https://m.media-amazon.com/images/I/814Ac1EmjnL._SL1500_.jpg"
+	},
+	{
+		"nome": "Fisiologia Humana: Uma Abordagem Integrada",
+		"ano_publicacao": 2017,
+		"paginas": 960,
+		"capitulos": 12,
+		"volume": 1,
+		"edicao": 7,
+		"autor": "Dee Unglaub Silverthorn",
+		"link": "https://m.media-amazon.com/images/I/81rGuAvflfL._SL1500_.jpg"
+	},
+	{
+		"nome": "O poder do hábito: Por que fazemos o que fazemos na vida e nos negócios",
+		"ano_publicacao": 2012,
+		"paginas": 408,
+		"capitulos": 6,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Charles Duhigg",
+		"link": "https://m.media-amazon.com/images/I/815iPX0SgkL._SL1500_.jpg"
+	},
+	{
+		"nome": "Essencialismo: A disciplinada busca por menos",
+		"ano_publicacao": 2015,
+		"paginas": 272,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Greg McKeown",
+		"link": "https://m.media-amazon.com/images/I/71HuZRl-XeL._SL1500_.jpg"
+	},
+	{
+		"nome": "Comece pelo porquê: Como grandes líderes inspiram pessoas e equipes a agir",
+		"ano_publicacao": 2018,
+		"paginas": 256,
+		"capitulos": 3,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Simon Sinek",
+		"link": "https://m.media-amazon.com/images/I/71M6czhxmTL._SL1500_.jpg"
+	},
+	{
+		"nome": "Storybrand: Crie Mensagens Claras e Atraia a Atenção dos Clientes Para sua Marca",
+		"ano_publicacao": 2019,
+		"paginas": 240,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Donald Miller",
+		"link": "https://m.media-amazon.com/images/I/71XYY5h8GwL._SL1500_.jpg"
+	},
+	{
+		"nome": "O Jeito Harvard de ser feliz",
+		"ano_publicacao": 2023,
+		"paginas": 216,
+		"capitulos": 4,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Shawn Achor",
+		"link": "https://m.media-amazon.com/images/I/6105anGjDEL._SL1500_.jpg"
+	},
+	{
+		"nome": "A Bíblia de Vendas",
+		"ano_publicacao": 2023,
+		"paginas": 296,
+		"capitulos": 10,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Jeffrey Gitomer",
+		"link": "https://m.media-amazon.com/images/I/51fq8QUC3RL._SL1000_.jpg"
+	},
+	{
+		"nome": "Alcançando Excelência em Vendas - Spin Selling",
+		"ano_publicacao": 2023,
+		"paginas": 204,
+		"capitulos": 5,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Neil Rackham",
+		"link": "https://m.media-amazon.com/images/I/61ZxdpZEAOL._SL1000_.jpg"
+	},
+	{
+		"nome": "A vaca roxa: Como transformar o seu negócio e se destacar dos concorrentes",
+		"ano_publicacao": 2022,
+		"paginas": 182,
+		"capitulos": 4,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Seth Godin",
+		"link": "https://m.media-amazon.com/images/I/81c-KPPVLUL._SL1500_.jpg"
+	},
+	{
+		"nome": "A lógica do consumo - Verdades e mentiras sobre por que compramos",
+		"ano_publicacao": 2018,
+		"paginas": 65,
+		"capitulos": 2,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Martin Lindstrom",
+		"link": "https://m.media-amazon.com/images/I/61qHl9D3fJL._SL1500_.jpg"
+	},
+	{
+		"nome": "Contágio: Por que as Coisas Pegam",
+		"ano_publicacao": 2020,
+		"paginas": 224,
+		"capitulos": 3,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "Jonah Berger",
+		"link": "https://m.media-amazon.com/images/I/819QSnxMNXL._SL1500_.jpg"
+	},
+	{
+		"nome": "Tudo faz sentido: Conectando os pontos entre arte, ciência e inovação",
+		"ano_publicacao": 2024,
+		"paginas": 128,
+		"capitulos": 6,
+		"volume": 1,
+		"edicao": 1,
+		"autor": "João Silveira",
+		"link": "https://m.media-amazon.com/images/I/613nxYBkgOL._SL1360_.jpg"
+	}
 ]

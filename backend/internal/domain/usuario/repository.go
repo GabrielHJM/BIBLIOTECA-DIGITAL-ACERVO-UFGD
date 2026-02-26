@@ -1,6 +1,8 @@
 package usuario
 
-import "context"
+import (
+	"context"
+)
 
 type UsuarioRepository interface {
 	Salvar(ctx context.Context, usuario *Usuario) error
@@ -8,4 +10,5 @@ type UsuarioRepository interface {
 	ListarInteresses(ctx context.Context, id int) ([]string, error)
 	AtualizarSenha(ctx context.Context, email string, novaSenha string) error
 	Atualizar(ctx context.Context, u *Usuario) error
+	Deletar(ctx context.Context, id int) error
 }

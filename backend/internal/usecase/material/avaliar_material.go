@@ -2,6 +2,7 @@ package material
 
 import (
 	"biblioteca-digital-api/internal/domain/material"
+	"context"
 	"time"
 )
 
@@ -9,7 +10,7 @@ type AvaliarMaterialUseCase struct {
 	Repo material.Repository
 }
 
-func (uc *AvaliarMaterialUseCase) Execute(usuarioID, materialID, nota int, comentario string) error {
+func (uc *AvaliarMaterialUseCase) Execute(ctx context.Context, usuarioID, materialID, nota int, comentario string) error {
 	a := &material.Avaliacao{
 		UsuarioID:  usuarioID,
 		MaterialID: materialID,
@@ -17,5 +18,10 @@ func (uc *AvaliarMaterialUseCase) Execute(usuarioID, materialID, nota int, comen
 		Comentario: comentario,
 		Data:       time.Now(),
 	}
-	return uc.Repo.SalvarAvaliacao(a)
+
+	return uc.Repo.SalvarAvaliacao(ctx, a)
+}
+
+func (uc *AvaliarMaterialUseCase) Listar(ctx context.Context, materialID int) ([]material.Avaliacao, error) {
+	return uc.Repo.ListarAvaliacoesPorMaterial(ctx, materialID)
 }

@@ -1,6 +1,6 @@
 import { reactive } from 'vue'
 
-const state = reactive({
+export const state = reactive({
 	isAuthenticated: localStorage.getItem('auth') === 'true',
 	user: JSON.parse(localStorage.getItem('user') || '{}')
 })
