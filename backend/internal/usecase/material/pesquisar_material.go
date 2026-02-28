@@ -2,16 +2,12 @@ package material
 
 import (
 	"biblioteca-digital-api/internal/domain/material"
+	"biblioteca-digital-api/internal/pkg/cache"
 	"context"
 	"fmt"
 	"sync"
 	"time"
 )
-
-type Cache interface {
-	Get(key string) (interface{}, bool)
-	Set(key string, value interface{}, duration time.Duration)
-}
 
 type Harvester interface {
 	Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error)
@@ -20,14 +16,15 @@ type Harvester interface {
 type PesquisarMaterialUseCase struct {
 	Repo      material.Repository
 	Harvester Harvester
-	Cache     Cache
+	Cache     cache.Cache
 }
 
 func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sort string) ([]material.Material, error) {
 	cacheKey := fmt.Sprintf("search:%s:%s:%s:%d:%d:%d:%d:%s", termo, categoria, fonte, anoInicio, anoFim, limit, offset, sort)
 	if uc.Cache != nil && sort != "random" {
-		if val, found := uc.Cache.Get(cacheKey); found {
-			return val.([]material.Material), nil
+		var cached []material.Material
+		if found := uc.Cache.Get(cacheKey, &cached); found {
+			return cached, nil
 		}
 	}
 

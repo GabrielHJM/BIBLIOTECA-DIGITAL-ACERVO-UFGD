@@ -1,25 +1,24 @@
 <template>
 	<v-app class="ios-app">
-		<v-app-bar v-if="showBar" :elevation="0" class="glass-app-bar" height="90">
-
-			<!-- Logo → clica e vai para home -->
-			<template v-slot:prepend>
-				<div class="header-logo-container d-flex align-center ml-4 logo-clickable" @click="$router.push('/')">
-					<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" class="logo-img-original" />
-					<div class="logo-text-stack ml-2">
-						<h1 class="original-title">BIBLIOTECA DIGITAL</h1>
-					</div>
+		<!-- Conditionally render App Bar -->
+		<v-app-bar app v-if="showBar" :elevation="0" class="glass-app-bar" height="80">
+			<!-- Logo Section -->
+			<div class="header-logo-container d-flex align-center ml-2 ml-sm-8 logo-clickable" @click="$router.push('/')">
+				<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" class="logo-img-original" />
+				<div class="logo-text-stack ml-3 hidden-sm-and-down">
+					<h1 class="original-title">BIBLIOTECA</h1>
+					<div class="subtitle-accent">DIGITAL</div>
 				</div>
-			</template>
+			</div>
 
-			<v-spacer />
+			<v-spacer></v-spacer>
 
-			<!-- Barra de Pesquisa funcional -->
-			<div class="search-container-center">
+			<!-- Central Search Bar -->
+			<div class="search-wrapper-global mx-4">
 				<v-text-field
 					v-model="searchInput"
 					ref="globalSearch"
-					placeholder="Pesquise (Ctrl + K)..."
+					placeholder="Buscar conhecimento... (Ctrl+K)"
 					variant="solo"
 					rounded="pill"
 					flat
@@ -27,46 +26,24 @@
 					hide-details
 					prepend-inner-icon="mdi-magnify"
 					:loading="loading"
-					class="original-search-field"
+					class="ios-search-field"
 					:class="{ 'search-active': isSearchFocused }"
 					@focus="isSearchFocused = true"
 					@blur="isSearchFocused = false"
 					@keyup.enter="doSearch"
 				>
 					<template v-slot:append-inner>
-						<v-fade-transition>
-							<v-btn
-								v-if="searchInput"
-								icon="mdi-arrow-right-circle"
-								variant="text"
-								color="#00B8D4"
-								size="small"
-								class="search-submit-btn"
-								@click="doSearch"
-							></v-btn>
-						</v-fade-transition>
+						<kbd class="search-kbd hidden-sm-and-down">⌘ K</kbd>
 					</template>
 				</v-text-field>
 			</div>
 
-			<v-spacer />
+			<v-spacer></v-spacer>
 
-			<!-- Barra de progresso global -->
-			<v-progress-linear
-				v-show="loading"
-				indeterminate
-				color="#00B8D4"
-				absolute
-				bottom
-				height="2"
-			></v-progress-linear>
-
-			<!-- Ações do usuário -->
-			<div class="nav-actions-original d-flex align-center mr-6" style="gap: 12px;">
-
-				<!-- Theme Toggle -->
-				<v-btn icon variant="text" color="white" @click="toggleTheme" title="Alternar Tema">
-					<v-icon>{{ isDarkTheme ? 'mdi-weather-sunny' : 'mdi-weather-night' }}</v-icon>
+			<!-- User Actions -->
+			<div class="nav-actions-wrapper d-flex align-center mr-2 mr-sm-8" style="gap: 8px;">
+				<v-btn icon variant="text" class="theme-toggle-btn" @click="toggleTheme">
+					<v-icon size="22">{{ isDarkTheme ? 'mdi-sun-side' : 'mdi-moon-waning-crescent' }}</v-icon>
 				</v-btn>
 
 				<!-- Dropdown de Usuário -->
@@ -78,7 +55,7 @@
 					transition="slide-y-transition"
 				>
 					<template v-slot:activator="{ props }">
-						<div class="user-trigger d-flex align-center" v-bind="props" style="cursor:pointer; gap: 10px;">
+						<div class="user-trigger d-flex align-center ml-2" v-bind="props" style="cursor:pointer; gap: 10px;">
 							<div class="text-right hidden-sm-and-down">
 								<div class="welcome-text">{{ isLoggedIn ? 'Bem-vindo,' : 'Olá,' }}</div>
 								<div class="username-text">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
@@ -197,11 +174,11 @@
 		</v-app-bar>
 
 		<v-main>
-			<v-container fluid class="pa-0">
+			<v-container fluid class="pa-0" :class="{ 'public-page-container': !showBar }">
 				<router-view v-slot="{ Component }">
-					<transition name="ios-page" mode="out-in">
-						<component :is="Component" />
-					</transition>
+						<transition name="ios-page" mode="out-in">
+							<component :is="Component" :key="$route.fullPath" />
+						</transition>
 				</router-view>
 			</v-container>
 		</v-main>
@@ -340,210 +317,179 @@ export default {
 	:root {
 		--ios-blue: #007AFF;
 		--ios-cyan: #00B8D4;
-		--ios-card: rgba(45, 78, 115, 0.85);
-		--spring-easing: cubic-bezier(0.4, 0, 0.2, 1);
-		--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+		--ios-bg: #F2F2F7;
+		--ios-bg-dark: #000000;
+		--ios-card: rgba(255, 255, 255, 0.7);
+		--ios-card-dark: rgba(28, 28, 30, 0.7);
+		--spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
+		--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
 	}
+
+	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 	body {
 		margin: 0;
 		padding: 0;
-		font-family: var(--apple-font);
+		font-family: 'Inter', var(--apple-font);
 		overflow-x: hidden;
+		-webkit-font-smoothing: antialiased;
+		background-color: rgb(var(--v-theme-background));
+	}
+
+	.ios-app {
+		background: transparent !important;
 	}
 
 	/* Glassmorphism AppBar */
 	.glass-app-bar {
-		background: rgba(45, 78, 115, 0.6) !important;
-		backdrop-filter: blur(25px) saturate(160%) !important;
-		-webkit-backdrop-filter: blur(25px) saturate(160%) !important;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+		background: rgba(var(--v-theme-surface), 0.7) !important;
+		backdrop-filter: blur(20px) saturate(180%) !important;
+		-webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+		border-bottom: 0.5px solid rgba(var(--v-border-color), 0.1) !important;
+		transition: all 0.4s var(--spring-easing) !important;
+		z-index: 1000 !important;
+	}
+
+	.header-logo-container {
+		transition: transform 0.3s var(--spring-easing);
+	}
+
+	.header-logo-container:hover {
+		transform: scale(1.02);
 	}
 
 	.logo-img-original {
-		height: 44px;
-		filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
-		transition: transform 0.3s ease;
+		height: 36px;
+		filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
 	}
 
-	.logo-img-original:hover {
-		transform: scale(1.05);
-	}
-
-	.original-title {
-		font-size: 22px !important;
-		font-weight: 900 !important;
-		color: white !important;
-		letter-spacing: 0.5px;
-		text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-	}
-
-	.search-container-center {
-		flex: 0 1 500px;
-		margin: 0 40px;
-	}
-
-	.original-search-field :deep(.v-field) {
-		background: rgba(255, 255, 255, 0.08) !important;
-		backdrop-filter: blur(15px);
-		border-radius: 12px !important;
-		height: 44px !important;
-		border: 1px solid rgba(255, 255, 255, 0.05) !important;
-		box-shadow: none !important;
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-
-	.search-active :deep(.v-field) {
-		background: rgba(255, 255, 255, 0.15) !important;
-		border-color: rgba(0, 184, 212, 0.4) !important;
-		transform: scale(1.02);
-		box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
-	}
-
-	.original-search-field :deep(input) {
-		color: white !important;
-		font-weight: 400;
-		letter-spacing: 0.3px;
-	}
-
-	.search-submit-btn {
-		margin-right: -8px;
-		transition: transform 0.2s ease;
-	}
-
-	.search-submit-btn:hover {
-		transform: scale(1.1);
-	}
-
-	.original-search-field :deep(.v-field__prepend-inner) {
-		color: rgba(255, 255, 255, 0.6) !important;
-	}
-
-	.header-avatar-glass {
-		background: rgba(255, 255, 255, 0.1) !important;
-		backdrop-filter: blur(10px);
-	}
-
-	.welcome-text {
-		color: white;
-		font-size: 12px;
-		opacity: 0.9;
+	.logo-text-stack {
+		display: flex;
+		flex-direction: column;
 		line-height: 1;
 	}
 
-	.username-text {
-		color: white;
-		font-size: 14px;
-		font-weight: 800;
+	.original-title {
+		font-size: 16px !important;
+		font-weight: 800 !important;
+		letter-spacing: -0.5px;
+		margin: 0;
 	}
 
-
-	/* iOS Suggestions */
-	.ios-suggestions {
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(20px);
-		border-radius: 16px;
-		box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-		overflow: hidden;
-		z-index: 9999;
+	.subtitle-accent {
+		font-size: 10px;
+		font-weight: 900;
+		color: var(--ios-cyan);
+		letter-spacing: 2px;
 	}
 
-	.ios-suggestion-item {
-		padding: 12px 20px;
-		cursor: pointer;
-		font-size: 15px;
-		color: #333;
-		transition: background 0.2s;
+	/* Enhanced Search Bar */
+	.search-wrapper-global {
+		flex: 1 1 auto;
+		max-width: 600px;
+		width: 100%;
 	}
 
-	.ios-suggestion-item:hover {
-		background: rgba(0, 122, 255, 0.1);
+	.ios-search-field :deep(.v-field) {
+		background: rgba(var(--v-theme-on-surface), 0.05) !important;
+		border-radius: 14px !important;
+		height: 42px !important;
+		transition: all 0.3s var(--spring-easing);
+		border: 1px solid transparent !important;
 	}
 
-	/* iOS Buttons */
-	.ios-btn-primary {
-		background: var(--ios-cyan) !important;
-		color: white !important;
-		border-radius: 12px !important;
-		text-transform: none !important;
-		font-weight: 600 !important;
-		padding: 0 24px !important;
-		transition: transform 0.2s var(--spring-easing) !important;
+	.search-active :deep(.v-field) {
+		background: rgba(var(--v-theme-surface), 0.9) !important;
+		border-color: var(--ios-cyan) !important;
+		box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+		transform: scale(1.02);
 	}
 
-	.ios-btn-primary:active {
-		transform: scale(0.95);
+	.search-kbd {
+		background: rgba(var(--v-theme-on-surface), 0.1);
+		padding: 2px 6px;
+		border-radius: 6px;
+		font-size: 10px;
+		font-weight: 600;
+		color: rgba(var(--v-theme-on-surface), 0.5);
+		margin-right: 8px;
 	}
 
-	.ios-btn-ghost {
-		color: white !important;
-		transition: opacity 0.2s !important;
-	}
-
-	.ios-btn-ghost:hover {
+	.theme-toggle-btn {
 		opacity: 0.7;
+		transition: opacity 0.2s;
 	}
 
-	/* Transitions */
+	.theme-toggle-btn:hover {
+		opacity: 1;
+	}
+
+	.header-avatar-glass {
+		border: 1.5px solid rgba(var(--v-theme-on-surface), 0.1);
+		transition: transform 0.2s;
+	}
+
+	.header-avatar-glass:hover {
+		transform: scale(1.05);
+	}
+
+	.welcome-text {
+		font-size: 10px;
+		opacity: 0.6;
+		font-weight: 500;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.username-text {
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	/* Transitions Style iOS 17 */
 	.ios-page-enter-active,
 	.ios-page-leave-active {
-		transition: opacity 0.4s var(--spring-easing), transform 0.4s var(--spring-easing);
+		transition: opacity 0.4s var(--spring-easing),
+					transform 0.4s var(--spring-easing);
 	}
 
 	.ios-page-enter-from {
 		opacity: 0;
-		transform: translateY(20px) scale(0.98);
+		transform: scale(0.98) translateY(10px);
 	}
 
 	.ios-page-leave-to {
 		opacity: 0;
-		transform: translateY(-20px) scale(1.02);
+		transform: scale(1.02) translateY(-10px);
 	}
 
-	.fade-enter-active, .fade-leave-active {
-		transition: opacity 0.3s;
-	}
-	.fade-enter-from, .fade-leave-to {
-		opacity: 0;
+	.public-page-container {
+		display: flex !important;
+		flex-direction: column !important;
+		align-items: center !important;
+		justify-content: center !important;
+		min-height: 100vh !important;
+		padding: 40px 20px !important;
+		overflow-y: auto !important;
 	}
 
-	/* Responsive Media Queries */
-	@media (max-width: 960px) {
-		.logo-img {
-			height: 48px;
-			margin: 0 10px;
-		}
-
-		.app-title {
-			font-size: 20px !important;
-		}
+	.public-page {
+		padding-top: 0 !important;
+		padding-left: 0 !important;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		overflow-y: auto;
 	}
 
 	@media (max-width: 600px) {
-		.glass-app-bar {
-			height: 64px !important;
+		.search-wrapper-global {
+			margin: 0 10px;
 		}
-
-		.logo-img {
-			height: 40px;
-			margin: 0 5px;
-		}
-
-		.ios-search-input {
-			font-size: 14px;
-		}
-
-		.ios-btn-primary {
-			padding: 0 12px !important;
-			font-size: 13px !important;
-		}
-
-		.search-container {
-			margin: 0 5px;
-		}
-
-		.search-wrapper {
-			padding: 2px 12px;
+		.nav-actions-wrapper .text-right {
+			display: none;
 		}
 	}
 </style>

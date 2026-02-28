@@ -2,40 +2,18 @@ import { createApp } from 'vue'
 import router from './router'
 
 // Vuetify
-import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
+import vuetify from './plugins/vuetify'
 
 // Components
 import App from './App.vue'
 
-const vuetify = createVuetify({
-	components,
-	directives,
-	theme: {
-		defaultTheme: 'dark',
-		themes: {
-			light: {
-				dark: false,
-				colors: {
-					primary: '#00B8D4',
-					secondary: '#5AC8FA',
-					background: '#f0f2f5',
-					surface: '#ffffff',
-				}
-			},
-			dark: {
-				dark: true,
-				colors: {
-					primary: '#00B8D4',
-					secondary: '#5AC8FA',
-					background: '#2d5178',
-					surface: '#1e3857',
-				}
-			}
-		}
-	}
-})
-
 createApp(App).use(router).use(vuetify).mount('#app')
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+	window.addEventListener('load', () => {
+		navigator.serviceWorker.register('/service-worker.js')
+			.then(reg => console.log('Expert PWA Service Worker registrado!', reg))
+			.catch(err => console.log('Falha ao registrar PWA Service Worker:', err));
+	});
+}

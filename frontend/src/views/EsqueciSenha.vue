@@ -1,5 +1,5 @@
 <template>
-	<v-container class="d-flex justify-center align-center min-vh-100">
+	<v-container class="d-flex justify-center align-center w-100 pa-0">
 		<v-card class="ios-card-premium pa-8" elevation="12">
 			<v-row justify="center" class="mb-6">
 				<v-img
@@ -117,10 +117,6 @@ export default {
 </script>
 
 <style scoped>
-	.min-vh-100 {
-		min-height: 100vh;
-	}
-
 	.ios-card-premium {
 		width: 100%;
 		max-width: 420px;

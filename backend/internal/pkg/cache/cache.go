@@ -1,9 +1,15 @@
 package cache
 
 import (
+	"reflect"
 	"sync"
 	"time"
 )
+
+type Cache interface {
+	Get(key string, dest interface{}) bool
+	Set(key string, value interface{}, duration time.Duration)
+}
 
 type item struct {
 	value      interface{}
@@ -53,18 +59,25 @@ func (c *MemoryCache) Set(key string, value interface{}, duration time.Duration)
 	}
 }
 
-func (c *MemoryCache) Get(key string) (interface{}, bool) {
+func (c *MemoryCache) Get(key string, dest interface{}) bool {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	item, found := c.items[key]
+	it, found := c.items[key]
 	if !found {
-		return nil, false
+		return false
 	}
 
-	if item.expiration > 0 && time.Now().UnixNano() > item.expiration {
-		return nil, false
+	if it.expiration > 0 && time.Now().UnixNano() > it.expiration {
+		return false
 	}
 
-	return item.value, true
+	// Usa reflexão para copiar o valor para o destino
+	rv := reflect.ValueOf(dest)
+	if rv.Kind() != reflect.Ptr || rv.IsNil() {
+		return false
+	}
+
+	rv.Elem().Set(reflect.ValueOf(it.value))
+	return true
 }

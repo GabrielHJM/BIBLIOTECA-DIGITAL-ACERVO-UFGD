@@ -127,7 +127,7 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 			Fonte:         "SciELO",
 			Categoria:     catName,
 			Disponivel:    true,
-			CapaURL:       "https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=400",
+			CapaURL:       "",
 		}
 
 		for _, id := range dc.Identifiers {
@@ -156,7 +156,6 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 				m.PDFURL = m.ExternoID + "&format=pdf"
 			}
 		}
-
 
 		materials = append(materials, m)
 	}

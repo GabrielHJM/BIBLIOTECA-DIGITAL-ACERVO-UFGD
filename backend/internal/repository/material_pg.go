@@ -5,17 +5,21 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 )
 
 type MaterialPostgres struct {
 	DB *sql.DB
 }
 
+const materialColumns = `id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
+                          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
+                          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0),
+                          COALESCE(paginas, 0), COALESCE(externo_id, ''), COALESCE(fonte, ''),
+                          COALESCE(status, 'aprovado'), COALESCE(curador_id, 0)`
+
 func (r *MaterialPostgres) Listar(ctx context.Context, limit, offset int) ([]material.Material, error) {
-	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
-	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
-	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
-	          FROM materiais LIMIT $1 OFFSET $2`
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'aprovado' LIMIT $1 OFFSET $2", materialColumns)
 	rows, err := r.DB.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -35,12 +39,9 @@ func (r *MaterialPostgres) Listar(ctx context.Context, limit, offset int) ([]mat
 
 func (r *MaterialPostgres) BuscarPorID(ctx context.Context, id int) (*material.Material, error) {
 	var m material.Material
-	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
-	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
-	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
-	          FROM materiais WHERE id = $1`
-	err := r.DB.QueryRowContext(ctx, query, id).
-		Scan(&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes)
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE id = $1", materialColumns)
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(
+		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes, &m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID)
 	if err != nil {
 		return nil, err
 	}
@@ -48,19 +49,25 @@ func (r *MaterialPostgres) BuscarPorID(ctx context.Context, id int) (*material.M
 }
 
 func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sort string) ([]material.Material, error) {
-	query := `SELECT id, titulo, autor, COALESCE(isbn, ''), categoria, ano_publicacao,
-	          COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
-	          disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0)
-			  FROM materiais
-			  WHERE 1=1`
+	// Base query com Ranking de Relevância FTS
+	query := fmt.Sprintf("SELECT %s", materialColumns)
 
 	args := []interface{}{}
 	argCount := 1
+	ftsQuery := ""
 
 	if termo != "" {
-		query += fmt.Sprintf(" AND (titulo ILIKE $%d OR autor ILIKE $%d OR COALESCE(descricao, '') ILIKE $%d)", argCount, argCount, argCount)
-		args = append(args, "%"+termo+"%")
+		// Busca FTS em Português
+		ftsQuery = fmt.Sprintf("plainto_tsquery('portuguese', $%d)", argCount)
+		query += fmt.Sprintf(", ts_rank(search_vector, %s) as rank", ftsQuery)
+		args = append(args, termo)
 		argCount++
+	}
+
+	query += " FROM materiais WHERE status = 'aprovado'"
+
+	if termo != "" {
+		query += fmt.Sprintf(" AND search_vector @@ %s", ftsQuery)
 	}
 
 	if categoria != "" {
@@ -87,9 +94,14 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 		argCount++
 	}
 
+	// Ordenação Inovadora: Relevância FTS -> Nota -> ID
 	orderBy := "id DESC"
-	if sort == "random" {
+	if termo != "" {
+		orderBy = "rank DESC, media_nota DESC"
+	} else if sort == "random" {
 		orderBy = "RANDOM()"
+	} else if sort == "rating" {
+		orderBy = "media_nota DESC, total_avaliacoes DESC"
 	}
 
 	query += " ORDER BY " + orderBy
@@ -98,14 +110,24 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 
 	rows, err := r.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("erro na busca FTS: %w", err)
 	}
 	defer rows.Close()
 
 	var materiais []material.Material
 	for rows.Next() {
 		var m material.Material
-		if err := scanMaterial(rows, &m); err != nil {
+		var rank float64
+		dest := []interface{}{
+			&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
+			&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
+			&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID,
+		}
+		if termo != "" {
+			dest = append(dest, &rank)
+		}
+
+		if err := rows.Scan(dest...); err != nil {
 			return nil, err
 		}
 		materiais = append(materiais, m)
@@ -114,13 +136,11 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 }
 
 func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, limit int) ([]material.Material, error) {
-	query := `SELECT m2.id, m2.titulo, m2.autor, COALESCE(m2.isbn, ''), m2.categoria, m2.ano_publicacao,
-	          COALESCE(m2.descricao, ''), COALESCE(m2.capa_url, ''), COALESCE(m2.pdf_url, ''),
-	          m2.disponivel, COALESCE(m2.media_nota, 0.0), COALESCE(m2.total_avaliacoes, 0)
+	query := fmt.Sprintf(`SELECT %s
 	          FROM materiais m1
 	          JOIN materiais m2 ON m1.categoria = m2.categoria AND m1.id != m2.id
-	          WHERE m1.id = $1
-	          LIMIT $2`
+	          WHERE m1.id = $1 AND m2.status = 'aprovado'
+	          LIMIT $2`, "m2."+replaceColumns(materialColumns, "m2."))
 	rows, err := r.DB.QueryContext(ctx, query, materialID, limit)
 	if err != nil {
 		return nil, err
@@ -157,11 +177,11 @@ func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) erro
 	}
 	defer tx.Rollback()
 
-	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte)
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
 			  RETURNING id`
 	err = tx.QueryRowContext(ctx, query,
-		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ExternoID, m.Fonte,
+		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ExternoID, m.Fonte, m.Paginas,
 	).Scan(&m.ID)
 	if err != nil {
 		return fmt.Errorf("erro ao criar material: %w", err)
@@ -174,8 +194,8 @@ func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) erro
 
 func (r *MaterialPostgres) Atualizar(ctx context.Context, m *material.Material) error {
 	_, err := r.DB.ExecContext(ctx,
-		"UPDATE materiais SET titulo=$1, autor=$2, isbn=$3, categoria=$4, ano_publicacao=$5, descricao=$6, capa_url=$7, pdf_url=$8, disponivel=$9 WHERE id=$10",
-		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ID,
+		"UPDATE materiais SET titulo=$1, autor=$2, isbn=$3, categoria=$4, ano_publicacao=$5, descricao=$6, capa_url=$7, pdf_url=$8, disponivel=$9, paginas=$10 WHERE id=$11",
+		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.Paginas, m.ID,
 	)
 	return err
 }
@@ -245,13 +265,11 @@ func (r *MaterialPostgres) RemoverFavorito(ctx context.Context, usuarioID, mater
 }
 
 func (r *MaterialPostgres) ListarFavoritosPorUsuario(ctx context.Context, usuarioID int) ([]material.Material, error) {
-	query := `
-		SELECT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
-		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), COALESCE(m.pdf_url, ''),
-		       m.disponivel, COALESCE(m.media_nota, 0.0), COALESCE(m.total_avaliacoes, 0)
+	query := fmt.Sprintf(`
+		SELECT %s
 		FROM materiais m
 		JOIN favoritos f ON m.id = f.material_id
-		WHERE f.usuario_id = $1`
+		WHERE f.usuario_id = $1`, replaceColumns(materialColumns, "m."))
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID)
 	if err != nil {
 		return nil, err
@@ -277,14 +295,12 @@ func (r *MaterialPostgres) RegistrarLeitura(ctx context.Context, h *material.His
 }
 
 func (r *MaterialPostgres) ListarHistoricoPorUsuario(ctx context.Context, usuarioID int) ([]material.Material, error) {
-	query := `
-		SELECT DISTINCT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
-		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), COALESCE(m.pdf_url, ''),
-		       m.disponivel, COALESCE(m.media_nota, 0.0), COALESCE(m.total_avaliacoes, 0)
+	query := fmt.Sprintf(`
+		SELECT DISTINCT %s
 		FROM materiais m
 		JOIN historico_leitura h ON m.id = h.material_id
 		WHERE h.usuario_id = $1
-		ORDER BY m.id DESC`
+		ORDER BY m.id DESC`, replaceColumns(materialColumns, "m."))
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID)
 	if err != nil {
 		return nil, err
@@ -303,16 +319,38 @@ func (r *MaterialPostgres) ListarHistoricoPorUsuario(ctx context.Context, usuari
 }
 
 func (r *MaterialPostgres) ObterRecomendacoes(ctx context.Context, usuarioID int, limit int) ([]material.Material, error) {
-	// Simple recommendation: match user interests (categories) or just top rated if no interests
-	query := `
-		SELECT DISTINCT m.id, m.titulo, m.autor, COALESCE(m.isbn, ''), m.categoria, m.ano_publicacao,
-		       COALESCE(m.descricao, ''), COALESCE(m.capa_url, ''), COALESCE(m.pdf_url, ''),
-		       m.disponivel, COALESCE(m.media_nota, 0.0), COALESCE(m.total_avaliacoes, 0)
+	// Recomendação Inteligente:
+	// 1. Materiais lidos por usuários que compartilham dos mesmos interesses
+	// 2. Materiais da mesma categoria de interesse do usuário
+	// 3. Materiais mais bem avaliados globalmente
+	query := fmt.Sprintf(`
+		WITH interesses AS (
+			SELECT interesse FROM interesses_usuario WHERE usuario_id = $1
+		),
+		usuarios_similares AS (
+			SELECT DISTINCT usuario_id FROM interesses_usuario
+			WHERE interesse IN (SELECT interesse FROM interesses) AND usuario_id != $1
+		),
+		recomendados AS (
+			-- Opção 1: Lidos por usuários similares
+			SELECT material_id, 3 as peso FROM historico_leitura WHERE usuario_id IN (SELECT usuario_id FROM usuarios_similares)
+			UNION ALL
+			-- Opção 2: Mesma categoria de interesse
+			SELECT id as material_id, 2 as peso FROM materiais WHERE categoria IN (SELECT interesse FROM interesses)
+			UNION ALL
+			-- Opção 3: Nota alta (Global)
+			SELECT id as material_id, 1 as peso FROM materiais WHERE media_nota >= 4.0
+		)
+		SELECT %s
 		FROM materiais m
-		WHERE m.categoria IN (SELECT interesse FROM interesses_usuario WHERE usuario_id = $1)
-		OR COALESCE(m.media_nota, 0.0) >= 4.0
-		ORDER BY COALESCE(m.media_nota, 0.0) DESC, COALESCE(m.total_avaliacoes, 0) DESC
-		LIMIT $2`
+		JOIN (
+			SELECT material_id, SUM(peso) as relevancia
+			FROM recomendados
+			GROUP BY material_id
+		) r_final ON m.id = r_final.material_id
+		WHERE m.id NOT IN (SELECT material_id FROM historico_leitura WHERE usuario_id = $1)
+		ORDER BY r_final.relevancia DESC, m.media_nota DESC
+		LIMIT $2`, replaceColumns(materialColumns, "m."))
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID, limit)
 	if err != nil {
 		return nil, err
@@ -336,5 +374,75 @@ func scanMaterial(scanner interface {
 	return scanner.Scan(
 		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
 		&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
+		&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID,
 	)
+}
+
+func replaceColumns(cols, alias string) string {
+	parts := strings.Split(cols, ",")
+	for i, p := range parts {
+		p = strings.TrimSpace(p)
+		if strings.HasPrefix(p, "COALESCE(") {
+			// replace COALESCE(field, ...) with COALESCE(alias.field, ...)
+			parts[i] = strings.Replace(p, "COALESCE(", "COALESCE("+alias, 1)
+		} else {
+			parts[i] = alias + p
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+func (r *MaterialPostgres) ListarPendentes(ctx context.Context) ([]material.Material, error) {
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'pendente' ORDER BY id DESC", materialColumns)
+	rows, err := r.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var materiais []material.Material
+	for rows.Next() {
+		var m material.Material
+		if err := scanMaterial(rows, &m); err != nil {
+			return nil, err
+		}
+		materiais = append(materiais, m)
+	}
+	return materiais, nil
+}
+
+func (r *MaterialPostgres) AtualizarStatus(ctx context.Context, id int, status string, curadorID int) error {
+	query := `UPDATE materiais SET status = $1, curador_id = $2 WHERE id = $3`
+	_, err := r.DB.ExecContext(ctx, query, status, curadorID, id)
+	return err
+}
+
+func (r *MaterialPostgres) ObterMetricasGlobais(ctx context.Context) (map[string]interface{}, error) {
+	var totalUsuarios, totalMateriais, totalLeituras int
+
+	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM usuarios").Scan(&totalUsuarios)
+	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM materiais").Scan(&totalMateriais)
+	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM historico_leitura").Scan(&totalLeituras)
+
+	rows, _ := r.DB.QueryContext(ctx, "SELECT fonte, COUNT(*) FROM materiais GROUP BY fonte")
+	defer rows.Close()
+
+	fontes := make(map[string]int)
+	for rows.Next() {
+		var fonte string
+		var count int
+		if err := rows.Scan(&fonte, &count); err == nil {
+			if fonte == "" {
+				fonte = "Local"
+			}
+			fontes[fonte] = count
+		}
+	}
+
+	return map[string]interface{}{
+		"total_usuarios":  totalUsuarios,
+		"total_materiais": totalMateriais,
+		"total_leituras":  totalLeituras,
+		"fontes":          fontes,
+	}, nil
 }

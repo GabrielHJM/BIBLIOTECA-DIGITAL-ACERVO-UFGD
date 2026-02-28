@@ -17,3 +17,7 @@ type RedefinirSenhaRequest struct {
 	Email string `json:"email"`
 	Senha string `json:"senha"`
 }
+
+type AtualizarMetaRequest struct {
+	MetaPaginasSemana int `json:"meta_paginas_semana"`
+}

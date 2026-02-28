@@ -2,6 +2,7 @@ package material
 
 import (
 	"biblioteca-digital-api/internal/domain/material"
+	"biblioteca-digital-api/internal/pkg/cache"
 	"context"
 	"fmt"
 	"time"
@@ -10,14 +11,15 @@ import (
 type ListarConteudosUseCase struct {
 	Repo      material.Repository
 	Harvester Harvester
-	Cache     Cache
+	Cache     cache.Cache
 }
 
 func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int) ([]material.Material, error) {
 	cacheKey := fmt.Sprintf("list:%d:%d", limit, offset)
 	if uc.Cache != nil {
-		if val, found := uc.Cache.Get(cacheKey); found {
-			return val.([]material.Material), nil
+		var cached []material.Material
+		if found := uc.Cache.Get(cacheKey, &cached); found {
+			return cached, nil
 		}
 	}
 

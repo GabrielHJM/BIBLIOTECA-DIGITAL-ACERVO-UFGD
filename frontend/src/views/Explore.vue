@@ -81,17 +81,19 @@
 								></v-select>
 							</v-col>
 							<v-col cols="12" sm="4">
-								<label class="filter-label">Categoria Principal</label>
+								<label class="filter-label">Ordenar Por</label>
 								<v-select
-									v-model="filters.categoria"
-									:items="categoriasMock"
-									placeholder="Todas as Categorias"
+									v-model="filters.sort"
+									:items="sortOptions"
+									item-title="label"
+									item-value="value"
+									placeholder="Relevância"
 									variant="solo-inverted"
 									density="comfortable"
 									hide-details
 									class="mt-2"
 									rounded="lg"
-									clearable
+									@update:modelValue="buscar"
 								></v-select>
 							</v-col>
 						</v-row>
@@ -125,46 +127,13 @@
 
 			<!-- Content Grid -->
 			<v-row class="px-2" v-if="!loading">
-				<v-col v-for="(livro, index) in livros" :key="index" cols="12" md="6" lg="4" class="pa-4">
-					<v-card class="ios-item-card" elevation="8" @click="$router.push('/estudo/' + livro.id)">
-						<div class="source-badge" v-if="livro.fonte">
-							{{ livro.fonte }}
-						</div>
-						<v-row no-gutters>
-							<v-col cols="5" class="pa-3">
-								<div class="book-cover-wrapper premium-shadow">
-									<img :src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'" :alt="livro.titulo" class="book-cover" />
-								</div>
-							</v-col>
-							<v-col cols="7" class="pa-4 text-left">
-								<h3 class="item-title mb-2">{{ livro.titulo }}</h3>
-								<div class="item-details mt-2">
-									<div class="d-flex align-center mb-1">
-										<v-icon size="14" class="mr-1">mdi-account-edit</v-icon>
-										<span class="text-truncate">{{ livro.autor }}</span>
-									</div>
-									<div class="d-flex align-center mb-1">
-										<v-icon size="14" class="mr-1">mdi-tag-outline</v-icon>
-										<span>{{ livro.categoria }}</span>
-									</div>
-									<div class="d-flex align-center" v-if="livro.ano_publicacao">
-										<v-icon size="14" class="mr-1">mdi-calendar-range</v-icon>
-										<span>{{ livro.ano_publicacao }}</span>
-									</div>
-								</div>
-								<div class="mt-4 d-flex align-center">
-									<v-rating :model-value="livro.media_nota || 0" density="compact" color="amber" active-color="amber" size="x-small" readonly></v-rating>
-									<span class="ml-2 text-caption opacity-60">({{ livro.total_avaliacoes || 0 }})</span>
-								</div>
-							</v-col>
-						</v-row>
-						<v-card-actions class="pa-3 justify-end">
-							<v-btn class="ios-btn-open" variant="tonal" color="cyan" size="small" rounded="pill">
-								Ler Material
-								<v-icon class="ml-1" size="14">mdi-arrow-right</v-icon>
-							</v-btn>
-						</v-card-actions>
-					</v-card>
+				<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" md="6" lg="4" class="pa-4">
+					<BookCard
+						:book="livro"
+						:animation-delay="index * 50"
+						@toggle-favorite="onToggleFavorite"
+						@share="shareBook(livro.id)"
+					/>
 				</v-col>
 
 				<v-col cols="12" v-if="livros.length === 0" class="text-center mt-12">
@@ -190,9 +159,13 @@
 
 <script>
 import MaterialService from '@/services/MaterialService'
+import BookCard from '@/components/BookCard.vue'
 
 export default {
 	name: 'ExplorePageExtended',
+	components: {
+		BookCard
+	},
 	data: () => ({
 		livros: [],
 		loading: false,
@@ -206,6 +179,12 @@ export default {
 		},
 		fontesList: ['SciELO', 'CAPES', 'IEEE'],
 		categoriasMock: ['Ciência', 'Tecnologia', 'Educação', 'Medicina', 'Engenharia', 'Filosofia'],
+		sortOptions: [
+			{ label: 'Relevância', value: '' },
+			{ label: 'Melhor Avaliados', value: 'rating' },
+			{ label: 'Recentes', value: 'id' },
+			{ label: 'Aleatório', value: 'random' }
+		],
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
 		searchTimeout: null
 	}),
@@ -238,7 +217,11 @@ export default {
 					this.filters.categoria,
 					this.filters.fonte,
 					this.filters.ano_inicio,
-					this.filters.ano_fim
+					this.filters.ano_fim,
+					null, // tags
+					20,   // limit
+					0,    // offset
+					this.filters.sort
 				)
 				this.livros = response.data || []
 			} catch (error) {
@@ -256,6 +239,26 @@ export default {
 		limparFiltros() {
 			this.filters = { q: this.filters.q, categoria: '', fonte: '', ano_inicio: null, ano_fim: null };
 			this.buscar();
+		},
+		async onToggleFavorite(livro) {
+			// Simples implementação de feedback, já que favoritos exigem login
+			// Esta view pode ser acessada por visitantes
+			try {
+				const user = JSON.parse(localStorage.getItem('user'))
+				if (!user) {
+					alert('Faça login para favoritar materiais!')
+					return
+				}
+				await MaterialService.favoritar(user.id, livro.id, true)
+			} catch (err) {
+				console.error(err)
+			}
+		},
+		shareBook(id) {
+			const link = `${window.location.origin}/estudo/${id}`
+			navigator.clipboard.writeText(link).then(() => {
+				alert('Link copiado!')
+			})
 		}
 	}
 }
@@ -301,59 +304,38 @@ export default {
 	}
 
 	.ios-item-card {
-		background: rgba(255, 255, 255, 0.06) !important;
-		backdrop-filter: blur(20px);
+		background: rgba(var(--v-theme-surface), 0.7) !important;
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
 		border-radius: 24px !important;
-		border: 1px solid rgba(255, 255, 255, 0.08);
-		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+		border: 1px solid rgba(var(--v-border-color), 0.1);
+		transition: all 0.4s var(--spring-easing);
 		position: relative;
 		overflow: hidden;
+		opacity: 0;
+		animation: revealCard 0.6s var(--spring-easing) forwards;
 	}
 	.ios-item-card:hover {
-		transform: translateY(-8px);
-		background: rgba(255, 255, 255, 0.1) !important;
-		border-color: rgba(0, 184, 212, 0.4);
-		box-shadow: 0 20px 40px rgba(0,0,0,0.3) !important;
+		transform: translateY(-8px) scale(1.02);
+		background: rgba(var(--v-theme-surface), 0.9) !important;
+		border-color: var(--ios-cyan);
+		box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
 	}
-
-	.source-badge {
-		position: absolute;
-		top: 12px;
-		right: 12px;
-		background: rgba(0, 184, 212, 0.2);
-		color: #00D4E8;
-		font-size: 9px;
-		font-weight: 800;
-		padding: 3px 8px;
-		border-radius: 20px;
-		border: 1px solid rgba(0, 184, 212, 0.3);
-		text-transform: uppercase;
-		z-index: 2;
-	}
-
-	.book-cover-wrapper {
-		width: 100%;
-		height: 180px;
-		border-radius: 12px;
-		overflow: hidden;
-		background: rgba(0,0,0,0.2);
-	}
-	.book-cover { width: 100%; height: 100%; object-fit: contain; padding: 4px; }
-	.premium-shadow { box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
 
 	.item-title {
-		font-size: 1rem;
-		font-weight: 700;
-		color: white;
-		line-height: 1.3;
-		height: 2.6em;
+		font-size: 1.1rem;
+		font-weight: 800;
+		letter-spacing: -0.5px;
+		color: rgb(var(--v-theme-on-surface));
+		line-height: 1.2;
+		height: 2.4em;
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 
-	.item-details { color: rgba(255,255,255,0.6); font-size: 12px; }
+	.item-details { color: rgba(var(--v-theme-on-surface), 0.6); font-size: 13px; font-weight: 500; }
 
 	.ios-btn-open { font-size: 11px !important; font-weight: 700 !important; }
 

@@ -12,6 +12,10 @@ import (
 
 const schema = `
 -- Drop existing tables for a clean start
+DROP TABLE IF EXISTS mensagens CASCADE;
+DROP TABLE IF EXISTS amizades CASCADE;
+DROP TABLE IF EXISTS comentarios CASCADE;
+DROP TABLE IF EXISTS curtidas CASCADE;
 DROP TABLE IF EXISTS emprestimos CASCADE;
 DROP TABLE IF EXISTS historico_leitura CASCADE;
 DROP TABLE IF EXISTS avaliacoes CASCADE;
@@ -85,6 +89,44 @@ CREATE TABLE historico_leitura (
     id SERIAL PRIMARY KEY,
     usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
     material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Curtidas
+CREATE TABLE curtidas (
+    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (usuario_id, material_id)
+);
+
+-- Tabela de Comentários
+CREATE TABLE comentarios (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+    texto TEXT NOT NULL,
+    data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Amizades
+CREATE TABLE amizades (
+    usuario_id1 INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    usuario_id2 INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    status TEXT DEFAULT 'pendente', -- "pendente", "aceito"
+    data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (usuario_id1, usuario_id2),
+    CHECK (usuario_id1 != usuario_id2)
+);
+
+-- Tabela de Mensagens
+CREATE TABLE mensagens (
+    id SERIAL PRIMARY KEY,
+    remetente_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    destinatario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+    material_id INTEGER REFERENCES materiais(id) ON DELETE SET NULL,
+    conteudo TEXT,
+    lida BOOLEAN DEFAULT FALSE,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 `

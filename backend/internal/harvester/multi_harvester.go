@@ -3,6 +3,7 @@ package harvester
 import (
 	"biblioteca-digital-api/internal/domain/material"
 	"biblioteca-digital-api/internal/pkg/logger"
+	"biblioteca-digital-api/internal/pkg/metadata"
 	"context"
 	"fmt"
 	"strings"
@@ -16,6 +17,7 @@ type MultiSourceHarvester struct {
 	scielo *SciELOHarvester
 	capes  *CAPESHarvester
 	ieee   *IEEEHarvester
+	meta   *metadata.MetadataService
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
@@ -23,6 +25,7 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 		scielo: NewSciELOHarvester(),
 		capes:  NewCAPESHarvester(),
 		ieee:   NewIEEEHarvester(),
+		meta:   metadata.NewMetadataService(),
 	}
 }
 
@@ -75,6 +78,16 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				}
 				if !seen[id] {
 					seen[id] = true
+					// Tenta enriquecer se faltar capa ou descrição
+					if m.CapaURL == "" || m.Descricao == "" {
+						cover, desc := h.meta.FetchEnrichment(m.Titulo, m.Autor, m.ISBN)
+						if m.CapaURL == "" && cover != "" {
+							m.CapaURL = cover
+						}
+						if m.Descricao == "" && desc != "" {
+							m.Descricao = desc
+						}
+					}
 					allMaterials = append(allMaterials, m)
 				}
 			}

@@ -1,5 +1,5 @@
 <template>
-	<v-container class="d-flex justify-center align-center min-vh-100">
+	<v-container class="d-flex justify-center w-100 pa-0" style="margin: auto;">
 		<v-card class="ios-card-premium" elevation="12">
 			<div class="d-flex justify-start mb-2">
 				<v-btn icon variant="text" color="white" @click="$router.push('/')" size="small">
@@ -166,12 +166,8 @@ export default {
 </script>
 
 <style scoped>
-	.min-vh-100 {
-		min-height: 100vh;
-	}
-
 	.ios-card-premium {
-		width: 95%;
+		width: 100%;
 		max-width: 700px;
 		background: rgba(45, 78, 115, 0.85) !important;
 		backdrop-filter: blur(20px);

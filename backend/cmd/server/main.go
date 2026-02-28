@@ -1,26 +1,54 @@
 package main
 
+// @title Biblioteca Digital API
+// @version 1.3.0
+// @description API para o sistema de Biblioteca Digital.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Gabriel
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:8080
+// @BasePath /
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
+
 import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"runtime"
 	"time"
 
 	"biblioteca-digital-api/config"
 	"biblioteca-digital-api/internal/handler"
 	"biblioteca-digital-api/internal/handler/middleware"
 	"biblioteca-digital-api/internal/harvester"
+	"biblioteca-digital-api/internal/pkg/ai"
+	"biblioteca-digital-api/internal/pkg/cache"
 	"biblioteca-digital-api/internal/pkg/logger"
 	"biblioteca-digital-api/internal/repository"
+	"biblioteca-digital-api/internal/usecase/social"
+	"sync"
 
-	"runtime"
+	_ "biblioteca-digital-api/docs"
 
 	"github.com/joho/godotenv"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"go.uber.org/zap"
 )
 
-var startTime = time.Now()
+var (
+	startTime = time.Now()
+	syncMu    sync.Mutex
+)
 
 func main() {
 	if err := godotenv.Load(); err != nil {
@@ -30,6 +58,44 @@ func main() {
 	cfg := config.Load()
 	db := config.InitDB(cfg)
 	defer db.Close()
+
+	// Gamification Migration
+	_, _ = db.Exec(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS meta_paginas_semana INTEGER DEFAULT 100;`)
+
+	// Study Tools Migrations
+	_, _ = db.Exec(`ALTER TABLE materiais ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'aprovado';`)
+	_, _ = db.Exec(`ALTER TABLE materiais ADD COLUMN IF NOT EXISTS curador_id INTEGER REFERENCES usuarios(id);`)
+
+	// Optimization Indexes
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;`)
+
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS anotacoes (
+			id SERIAL PRIMARY KEY,
+			usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
+			material_id INTEGER NOT NULL REFERENCES materiais(id),
+			conteudo TEXT NOT NULL,
+			pagina INTEGER,
+			cor TEXT DEFAULT 'yellow',
+			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS flashcards (
+			id SERIAL PRIMARY KEY,
+			usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
+			material_id INTEGER REFERENCES materiais(id),
+			pergunta TEXT NOT NULL,
+			resposta TEXT NOT NULL,
+			dificuldade INTEGER DEFAULT 0,
+			proxima_revisao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
+
+	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey)
 
 	// Inicia o worker de sincronização em segundo plano
 	go startBackgroundSync(db)
@@ -70,8 +136,27 @@ func main() {
 		})
 	})
 
+	var c cache.Cache
+	if cfg.RedisURL != "" {
+		fmt.Printf("Usando Cache Redis em: %s\n", cfg.RedisURL)
+		c = cache.NewRedisCache(cfg.RedisURL, cfg.RedisPassword)
+	} else {
+		fmt.Println("Usando Cache em Memória")
+		c = cache.NewMemoryCache()
+	}
+
 	handler.RegisterUsuarioRoutes(mux, db)
-	handler.RegisterMaterialRoutes(mux, db)
+	handler.RegisterMaterialRoutes(mux, db, geminiClient, c)
+
+	socialRepo := repository.NewSocialPG(db)
+	socialUC := social.NewSocialUseCase(socialRepo, socialRepo, socialRepo, socialRepo)
+	handler.RegisterSocialRoutes(mux, socialUC, socialRepo, socialRepo)
+
+	handler.RegisterStatsRoutes(mux, db)
+	handler.RegisterEstudoRoutes(mux, db, geminiClient)
+	handler.RegisterAdminRoutes(mux, db)
+
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// Apply Logger and CORS middleware
 	handlerWithLogger := middleware.Logger(mux)
@@ -101,6 +186,12 @@ func startBackgroundSync(db *sql.DB) {
 }
 
 func syncBooks(repo *repository.MaterialPostgres, mh *harvester.MultiSourceHarvester) {
+	if !syncMu.TryLock() {
+		logger.Warn("Background synchronization already in progress, skipping this run")
+		return
+	}
+	defer syncMu.Unlock()
+
 	categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
 	for _, cat := range categories {
 		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 5)

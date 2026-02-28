@@ -76,5 +76,26 @@ export default {
 	// Listar avaliações de um material
 	listarAvaliacoes(materialId) {
 		return api.get(`/materiais/avaliacoes?id=${materialId}`);
+	},
+
+	// Obter URL do proxy de PDF
+	getProxyPdfUrl(pdfUrl) {
+		const baseURL = api.defaults.baseURL || 'http://localhost:8080/api';
+		return `${baseURL}/materiais/pdf/proxy?url=${encodeURIComponent(pdfUrl)}`;
+	},
+
+	// Obter estatísticas do usuário
+	obterEstatisticas(usuarioId) {
+		return api.get(`/usuario/estatisticas?usuario_id=${usuarioId}`);
+	},
+
+	// Chatbot IA com o livro
+	perguntar(id, pergunta) {
+		return api.post(`/materiais/${id}/chat`, { pergunta });
+	},
+
+	// Gerar resumo IA do livro
+	obterResumo(id) {
+		return api.get(`/materiais/${id}/resumo`);
 	}
 };

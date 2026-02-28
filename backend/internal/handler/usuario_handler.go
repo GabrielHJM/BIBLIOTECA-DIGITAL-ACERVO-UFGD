@@ -3,13 +3,15 @@ package handler
 import (
 	domain "biblioteca-digital-api/internal/domain/usuario"
 	"biblioteca-digital-api/internal/dto"
+	"biblioteca-digital-api/internal/pkg/logger"
 	"biblioteca-digital-api/internal/repository"
 	"biblioteca-digital-api/internal/usecase/usuario"
 	"database/sql"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 )
 
 func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
@@ -18,12 +20,18 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 	loginUC := usuario.NewLoginUseCase(repo)
 	redefinirSenhaUC := usuario.NewRedefinirSenhaUseCase(repo)
 	atualizarUC := usuario.NewAtualizarUsuario(repo)
+	atualizarMetaUC := usuario.NewAtualizarMeta(repo)
 
-	mux.HandleFunc("/usuarios", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
-			return
-		}
+	// @Summary Cadastrar usuário
+	// @Description Cria um novo usuário no sistema
+	// @Tags usuários
+	// @Accept json
+	// @Produce json
+	// @Param usuário body dto.UsuarioRequest true "Dados do usuário"
+	// @Success 201 {object} Response
+	// @Failure 400 {object} Response
+	// @Router /usuarios [post]
+	mux.HandleFunc("POST /usuarios", func(w http.ResponseWriter, r *http.Request) {
 		var req dto.UsuarioRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
@@ -38,31 +46,43 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		JSONSuccess(w, nil, http.StatusCreated)
 	})
 
-	mux.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
-			return
-		}
+	// @Summary Login de usuário
+	// @Description Autentica um usuário e retorna um token JWT
+	// @Tags usuários
+	// @Accept json
+	// @Produce json
+	// @Param login body dto.LoginRequest true "Credenciais de login"
+	// @Success 200 {object} Response{data=map[string]interface{}}
+	// @Failure 401 {object} Response
+	// @Router /login [post]
+	mux.HandleFunc("POST /login", func(w http.ResponseWriter, r *http.Request) {
 		var req dto.LoginRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Printf("Login: Erro ao decodificar JSON")
+			logger.Error("Login: Erro ao decodificar JSON", zap.Error(err))
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
 
-		log.Printf("Tentativa de login para: %s", req.Email)
+		logger.Info("Tentativa de login", zap.String("email", req.Email))
 
+		// O loginUC.Execute já deve validar a senha. Idealmente retornaria o usuário também.
 		token, err := loginUC.Execute(r.Context(), req.Email, req.Senha)
 		if err != nil {
-			log.Printf("Login falhou para %s: %v", req.Email, err)
+			logger.Warn("Login falhou", zap.String("email", req.Email), zap.Error(err))
 			JSONError(w, "Login inválido: credenciais incorretas", http.StatusUnauthorized)
 			return
 		}
 
-		// Buscar dados do usuário para retornar ao frontend
-		u, _ := repo.BuscarPorEmail(r.Context(), req.Email)
+		// Otimização: Buscar dados apenas se o login UC não retornar.
+		// Se o Repository suportar busca por email (como já suporta), usamos aqui.
+		u, err := repo.BuscarPorEmail(r.Context(), req.Email)
+		if err != nil {
+			logger.Error("Erro ao recuperar dados do usuário após login", zap.String("email", req.Email), zap.Error(err))
+			JSONError(w, "Erro interno ao processar login", http.StatusInternalServerError)
+			return
+		}
 
-		log.Printf("Login bem-sucedido: %s (ID: %d)", req.Email, u.ID)
+		logger.Info("Login bem-sucedido", zap.String("email", req.Email), zap.Int("id", u.ID))
 
 		JSONSuccess(w, map[string]interface{}{
 			"token":    token,
@@ -73,11 +93,7 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		}, http.StatusOK)
 	})
 
-	mux.HandleFunc("/redefinir-senha", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
-			return
-		}
+	mux.HandleFunc("POST /redefinir-senha", func(w http.ResponseWriter, r *http.Request) {
 		var req dto.RedefinirSenhaRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
@@ -93,22 +109,17 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 
 	mux.HandleFunc("PUT /usuarios/{id}", func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.PathValue("id")
-		log.Printf("Recebido pedido de atualização para ID: %s", idStr)
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			log.Printf("Erro: ID inválido %s", idStr)
 			JSONError(w, "ID inválido", http.StatusBadRequest)
 			return
 		}
 
 		var req dto.UsuarioRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Printf("Erro: JSON inválido")
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-
-		log.Printf("Dados recebidos: Nome=%s, Email=%s", req.Nome, req.Email)
 
 		u := domain.Usuario{
 			ID:      id,
@@ -119,11 +130,33 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 
 		err = atualizarUC.Execute(r.Context(), u)
 		if err != nil {
-			log.Printf("Erro ao atualizar no banco: %v", err)
+			logger.Error("Erro ao atualizar usuário", zap.Int("id", id), zap.Error(err))
 			JSONError(w, "Erro ao atualizar usuário: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Usuário %d atualizado com sucesso", id)
+		JSONSuccess(w, nil, http.StatusOK)
+	})
+
+	mux.HandleFunc("PUT /usuarios/{id}/meta", func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.PathValue("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			JSONError(w, "ID inválido", http.StatusBadRequest)
+			return
+		}
+
+		var req dto.AtualizarMetaRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			JSONError(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		err = atualizarMetaUC.Execute(r.Context(), id, req.MetaPaginasSemana)
+		if err != nil {
+			logger.Error("Erro ao atualizar meta do usuário", zap.Int("id", id), zap.Error(err))
+			JSONError(w, "Erro ao atualizar meta: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
 		JSONSuccess(w, nil, http.StatusOK)
 	})
 

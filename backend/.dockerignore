@@ -1,0 +1,15 @@
+.git
+.env
+*.exe
+*.test
+bin/
+tmp/
+vendor/
+node_modules/
+dist/
+build/
+.vscode/
+.idea/
+*.log
+docker-compose*
+Dockerfile*

@@ -7,6 +7,7 @@ type Material struct {
 	ISBN            string   `json:"isbn"`
 	Categoria       string   `json:"categoria"`
 	AnoPublicacao   int      `json:"ano_publicacao"`
+	Paginas         int      `json:"paginas"`
 	Descricao       string   `json:"descricao"`
 	CapaURL         string   `json:"capa_url"`
 	PDFURL          string   `json:"pdf_url"`
@@ -16,4 +17,6 @@ type Material struct {
 	TotalAvaliacoes int      `json:"total_avaliacoes"`
 	ExternoID       string   `json:"externo_id"`
 	Fonte           string   `json:"fonte"`
+	Status          string   `json:"status"`     // 'pendente', 'aprovado', 'rejeitado'
+	CuradorID       int      `json:"curador_id"` // ID do curador que aprovou
 }

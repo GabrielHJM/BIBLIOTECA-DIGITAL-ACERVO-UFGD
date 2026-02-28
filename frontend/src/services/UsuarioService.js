@@ -19,5 +19,10 @@ export default {
 	// Atualizar perfil
 	atualizar(id, dados) {
 		return api.put(`/usuarios/${id}`, dados);
+	},
+
+	// Atualizar meta de leitura
+	atualizarMeta(id, meta) {
+		return api.put(`/usuarios/${id}/meta`, { meta_paginas_semana: meta });
 	}
 };

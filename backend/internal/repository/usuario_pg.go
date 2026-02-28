@@ -60,6 +60,12 @@ func (r *UsuarioPostgres) Atualizar(ctx context.Context, u *usuario.Usuario) err
 	return err
 }
 
+func (r *UsuarioPostgres) AtualizarMeta(ctx context.Context, id int, meta int) error {
+	query := "UPDATE usuarios SET meta_paginas_semana = $1 WHERE id = $2"
+	_, err := r.DB.ExecContext(ctx, query, meta, id)
+	return err
+}
+
 func (r *UsuarioPostgres) Deletar(ctx context.Context, id int) error {
 	query := "DELETE FROM usuarios WHERE id = $1"
 	_, err := r.DB.ExecContext(ctx, query, id)

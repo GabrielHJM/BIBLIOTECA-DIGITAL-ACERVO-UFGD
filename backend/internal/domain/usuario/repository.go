@@ -10,5 +10,6 @@ type UsuarioRepository interface {
 	ListarInteresses(ctx context.Context, id int) ([]string, error)
 	AtualizarSenha(ctx context.Context, email string, novaSenha string) error
 	Atualizar(ctx context.Context, u *Usuario) error
+	AtualizarMeta(ctx context.Context, id int, meta int) error
 	Deletar(ctx context.Context, id int) error
 }
