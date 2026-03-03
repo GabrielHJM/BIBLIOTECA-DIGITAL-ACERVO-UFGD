@@ -11,6 +11,9 @@ import (
 	"net/http"
 	"strconv"
 
+	"biblioteca-digital-api/internal/pkg/validation"
+	"biblioteca-digital-api/pkg/auth"
+
 	"go.uber.org/zap"
 )
 
@@ -37,13 +40,46 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-		u := domain.Usuario{Nome: req.Nome, Email: req.Email, Senha: req.Senha, Tipo: req.Tipo}
-		err := cadastrarUC.Execute(r.Context(), u)
-		if err != nil {
-			JSONError(w, "Erro ao cadastrar usuário: "+err.Error(), http.StatusUnprocessableEntity)
+		if err := validation.ValidateName(req.Nome); err != nil {
+			JSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-		JSONSuccess(w, nil, http.StatusCreated)
+		if err := validation.ValidateEmail(req.Email); err != nil {
+			JSONError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if err := validation.ValidatePassword(req.Senha); err != nil {
+			JSONError(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		u := domain.Usuario{Nome: req.Nome, Email: req.Email, Senha: req.Senha, Tipo: req.Tipo}
+		err := cadastrarUC.Execute(r.Context(), &u)
+		if err != nil {
+			logger.Error("Erro ao cadastrar usuário", zap.Error(err))
+			JSONError(w, "Não foi possível completar o cadastro. Verifique os dados ou tente novamente mais tarde.", http.StatusUnprocessableEntity)
+			return
+		}
+
+		logger.Info("Usuário cadastrado com sucesso", zap.Int("id", u.ID), zap.String("email", u.Email))
+
+		// Auto-login: Gerar token após cadastro bem sucedido
+		token, err := auth.GerarToken(u.ID)
+		if err != nil {
+			logger.Error("Erro ao gerar token pós-cadastro", zap.Error(err))
+			// Cadastro funcionou, mas token falhou. Retornamos sucesso do cadastro sem o token.
+			// O usuário terá que fazer login manualmente.
+			JSONSuccess(w, nil, http.StatusCreated)
+			return
+		}
+
+		JSONSuccess(w, map[string]interface{}{
+			"token":    token,
+			"id":       u.ID,
+			"nome":     u.Nome,
+			"email":    u.Email,
+			"foto_url": u.FotoURL,
+		}, http.StatusCreated)
 	})
 
 	// @Summary Login de usuário
@@ -119,6 +155,19 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
+		}
+
+		if req.Nome != "" {
+			if err := validation.ValidateName(req.Nome); err != nil {
+				JSONError(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		}
+		if req.Email != "" {
+			if err := validation.ValidateEmail(req.Email); err != nil {
+				JSONError(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 		}
 
 		u := domain.Usuario{

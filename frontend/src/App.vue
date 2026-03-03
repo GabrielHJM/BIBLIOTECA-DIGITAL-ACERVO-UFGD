@@ -200,6 +200,23 @@
 
 		<!-- Global Accessibility Panel -->
 		<AccessibilityPanel />
+
+		<!-- Global Notifications (Snackbar) -->
+		<v-snackbar
+			v-model="snackbar.show"
+			:color="snackbar.color"
+			:timeout="snackbar.timeout"
+			rounded="pill"
+			class="premium-snackbar"
+		>
+			<div class="d-flex align-center">
+				<v-icon start size="20" class="mr-2">{{ snackbar.icon }}</v-icon>
+				<span class="font-weight-bold">{{ snackbar.text }}</span>
+			</div>
+			<template v-slot:actions>
+				<v-btn variant="text" @click="snackbar.show = false" icon="mdi-close" size="small"></v-btn>
+			</template>
+		</v-snackbar>
 	</v-app>
 </template>
 
@@ -220,9 +237,36 @@ export default {
 			searchInput: '',
 			isSearchFocused: false,
 			userMenuOpen: false,
+			snackbar: {
+				show: false,
+				text: '',
+				color: 'surface',
+				icon: 'mdi-information',
+				timeout: 4000
+			}
+		}
+	},
+	provide() {
+		return {
+			notify: this.notify
 		}
 	},
 	methods: {
+		notify(text, type = 'info') {
+			this.snackbar.text = text
+			this.snackbar.show = true
+
+			const types = {
+				success: { color: 'success', icon: 'mdi-check-circle' },
+				error: { color: 'error', icon: 'mdi-alert-circle' },
+				warning: { color: 'warning', icon: 'mdi-alert' },
+				info: { color: 'info', icon: 'mdi-information' }
+			}
+
+			const config = types[type] || types.info
+			this.snackbar.color = config.color
+			this.snackbar.icon = config.icon
+		},
 		logout() {
 			auth.logout()
 			this.$router.push('/')
@@ -515,11 +559,40 @@ export default {
 	}
 
 	@media (max-width: 600px) {
+		.glass-app-bar {
+			height: 64px !important;
+		}
+		.logo-img-original {
+			height: 28px;
+		}
 		.search-wrapper-global {
-			margin: 0 10px;
+			margin: 0 8px;
+			max-width: 180px;
+		}
+		.ios-search-field :deep(.v-field) {
+			height: 36px !important;
+			font-size: 13px !important;
+		}
+		.responsive-container {
+			padding-left: 16px !important;
+			padding-right: 16px !important;
+			padding-top: 16px !important;
 		}
 		.nav-actions-wrapper .text-right {
 			display: none;
 		}
+		.header-avatar-glass {
+			size: 36px !important;
+		}
+	}
+
+	/* Premium Snackbar Styling */
+	.premium-snackbar :deep(.v-snackbar__wrapper) {
+		background: rgba(var(--v-theme-surface), 0.8) !important;
+		backdrop-filter: blur(15px) saturate(150%) !important;
+		-webkit-backdrop-filter: blur(15px) saturate(150%) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2) !important;
+		color: rgb(var(--v-theme-on-surface)) !important;
 	}
 </style>

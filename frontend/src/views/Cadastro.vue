@@ -38,7 +38,25 @@
 						</v-col>
 						<v-col cols="12" sm="6" class="px-2 mb-2">
 							<label class="ios-label">SENHA</label>
-							<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-modern" />
+							<div class="password-wrapper">
+								<input
+									v-model="senha"
+									:type="mostrarSenha ? 'text' : 'password'"
+									placeholder="Mínimo 6 caracteres"
+									class="ios-input-modern pr-12"
+								/>
+								<v-btn
+									icon
+									variant="text"
+									class="password-toggle-btn"
+									@click="mostrarSenha = !mostrarSenha"
+									tabindex="-1"
+								>
+									<v-icon color="white" size="20">
+										{{ mostrarSenha ? 'mdi-eye-off' : 'mdi-eye' }}
+									</v-icon>
+								</v-btn>
+							</div>
 						</v-col>
 					</v-row>
 
@@ -88,6 +106,7 @@ export default {
 		instituicao: '',
 		email: '',
 		senha: '',
+		mostrarSenha: false,
 		loading: false,
 		snackbar: false,
 		snackbarText: '',
@@ -129,7 +148,7 @@ export default {
 					default: tipo = 1;
 				}
 
-				await UsuarioService.cadastrar({
+				const response = await UsuarioService.cadastrar({
 					nome: this.nome,
 					email: this.email,
 					senha: this.senha,
@@ -140,9 +159,21 @@ export default {
 				this.snackbarColor = "success"
 				this.snackbar = true
 
-				setTimeout(() => {
-					this.$router.push('/login')
-				}, 1500)
+				// Auto-login se o backend retornar token
+				if (response.data && response.data.token) {
+					setTimeout(() => {
+						const auth = require('@/auth').default
+						auth.login(response.data)
+						this.$router.push('/dashboard').catch(err => {
+							console.error("Erro no redirecionamento:", err)
+							this.$router.push('/login')
+						})
+					}, 800)
+				} else {
+					setTimeout(() => {
+						this.$router.push('/login')
+					}, 1500)
+				}
 
 			} catch (error) {
 				console.error(error)
@@ -209,10 +240,35 @@ export default {
 		-webkit-backdrop-filter: blur(40px) saturate(180%);
 		border-radius: clamp(24px, 4vw, 32px) !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px) !important;
+		padding: clamp(20px, 5vw, 40px) clamp(16px, 5vw, 36px) !important;
 		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
 		overflow-y: auto;
-		max-height: calc(100vh - 48px);
+		max-height: calc(100vh - 32px);
+	}
+
+	/* Mobile Specific Adjustments */
+	@media (max-width: 600px) {
+		.login-absolute-center {
+			padding: 12px;
+			align-items: flex-start;
+			overflow-y: auto;
+		}
+		.content-wrapper {
+			padding: 0;
+			height: auto;
+		}
+		.ios-login-card {
+			margin: 16px 0;
+			border-radius: 20px !important;
+			max-height: none;
+			padding: 24px 20px !important;
+		}
+		.login-title {
+			font-size: 26px;
+		}
+		.ios-input-modern {
+			padding: 12px 16px;
+		}
 	}
 
 	.card-header-actions {
@@ -286,6 +342,27 @@ export default {
 	}
 	.ios-select-modern :deep(.v-select__selection-text) {
 		color: #ffffff !important;
+	}
+
+	.password-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.password-toggle-btn {
+		position: absolute;
+		right: 8px;
+		opacity: 0.5;
+		transition: opacity 0.2s;
+	}
+
+	.password-toggle-btn:hover {
+		opacity: 1;
+	}
+
+	.pr-12 {
+		padding-right: 48px !important;
 	}
 
 	.ios-primary-btn {

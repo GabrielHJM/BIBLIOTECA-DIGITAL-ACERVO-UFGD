@@ -25,9 +25,27 @@
 						<input v-model="email" type="email" placeholder="exemplo@email.com" class="ios-input-modern" />
 					</div>
 
-					<div class="input-group mb-4">
+					<div class="input-group mb-4 position-relative">
 						<label class="ios-label">SENHA</label>
-						<input v-model="senha" type="password" placeholder="••••••••" class="ios-input-modern" />
+						<div class="password-wrapper">
+							<input
+								v-model="senha"
+								:type="mostrarSenha ? 'text' : 'password'"
+								placeholder="••••••••"
+								class="ios-input-modern pr-12"
+							/>
+							<v-btn
+								icon
+								variant="text"
+								class="password-toggle-btn"
+								@click="mostrarSenha = !mostrarSenha"
+								tabindex="-1"
+							>
+								<v-icon color="white" size="20">
+									{{ mostrarSenha ? 'mdi-eye-off' : 'mdi-eye' }}
+								</v-icon>
+							</v-btn>
+						</div>
 					</div>
 
 					<div class="text-right mt-2 mb-8">
@@ -64,6 +82,7 @@ export default {
 		loading: false,
 		email: '',
 		senha: '',
+		mostrarSenha: false,
 		snackbar: false,
 		snackbarText: '',
 		snackbarColor: 'error'
@@ -86,7 +105,12 @@ export default {
 
 				if (response.data && response.data.token) {
 					auth.login(response.data)
-					this.$router.push('/dashboard')
+					// Garantir redirecionamento mais robusto
+					this.$router.push('/dashboard').catch(err => {
+						console.error("Erro no redirecionamento do login:", err)
+						// Fallback: tentar recarregar se o router falhar silenciosamente
+						window.location.href = '/dashboard'
+					})
 				} else {
 					throw new Error("Token não recebido")
 				}
@@ -154,10 +178,32 @@ export default {
 		-webkit-backdrop-filter: blur(40px) saturate(180%);
 		border-radius: clamp(24px, 4vw, 32px) !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px) !important;
+		padding: clamp(20px, 5vw, 40px) clamp(16px, 5vw, 36px) !important;
 		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
-		max-height: calc(100vh - 48px);
+		max-height: calc(100vh - 32px);
 		overflow-y: auto;
+	}
+
+	/* Mobile Specific Adjustments */
+	@media (max-width: 600px) {
+		.login-absolute-center {
+			padding: 16px;
+			align-items: flex-start; /* Better for long forms with keyboard */
+			overflow-y: auto;
+		}
+		.content-wrapper {
+			padding: 0;
+			height: auto;
+			min-height: 100%;
+		}
+		.ios-login-card {
+			margin: 20px 0;
+			border-radius: 24px !important;
+			max-height: none;
+		}
+		.login-title {
+			font-size: 24px;
+		}
 	}
 
 	.card-header-actions {
@@ -223,6 +269,27 @@ export default {
 		transition: opacity 0.2s;
 	}
 	.forgot-link:hover { opacity: 0.8; }
+
+	.password-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.password-toggle-btn {
+		position: absolute;
+		right: 8px;
+		opacity: 0.5;
+		transition: opacity 0.2s;
+	}
+
+	.password-toggle-btn:hover {
+		opacity: 1;
+	}
+
+	.pr-12 {
+		padding-right: 48px !important;
+	}
 
 	.ios-primary-btn {
 		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;

@@ -1,0 +1,74 @@
+:root {
+	/* iOS / macOS Color Palette */
+	--ios-blue: #007AFF;
+	--ios-blue-rgb: 0, 122, 255;
+	--ios-cyan: #00B8D4;
+	--ios-cyan-rgb: 0, 184, 212;
+	--ios-pink: #FF2D55;
+	--ios-orange: #FF9500;
+
+	/* Glassmorphism Tokens */
+	--glass-bg: rgba(255, 255, 255, 0.7);
+	--glass-bg-dark: rgba(28, 28, 30, 0.75);
+	--glass-border: rgba(255, 255, 255, 0.3);
+	--glass-border-dark: rgba(255, 255, 255, 0.1);
+	--glass-blur: blur(20px) saturate(180%);
+
+	/* Shadows */
+	--ios-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+	--ios-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
+	--ios-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
+
+	/* Typography */
+	--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Global Transitions */
+.v-enter-active,
+.v-leave-active {
+	transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.v-enter-from {
+	opacity: 0;
+	transform: translateY(10px) scale(0.98);
+}
+
+.v-leave-to {
+	opacity: 0;
+	transform: translateY(-10px) scale(1.02);
+}
+
+/* Premium Card Utility */
+.premium-glass-card {
+	background: var(--glass-bg) !important;
+	backdrop-filter: var(--glass-blur) !important;
+	-webkit-backdrop-filter: var(--glass-blur) !important;
+	border: 1px solid var(--glass-border) !important;
+	box-shadow: var(--ios-shadow-md) !important;
+	border-radius: 20px !important;
+	transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.v-theme--dark .premium-glass-card {
+	background: var(--glass-bg-dark) !important;
+	border-color: var(--glass-border-dark) !important;
+}
+
+.premium-glass-card:hover {
+	transform: translateY(-4px) scale(1.01) !important;
+	box-shadow: var(--ios-shadow-lg) !important;
+}
+
+/* Button Refinement */
+.v-btn--variant-elevated {
+	letter-spacing: -0.2px !important;
+	font-weight: 600 !important;
+	box-shadow: 0 4px 14px 0 rgba(var(--ios-blue-rgb), 0.3) !important;
+	border-radius: 12px !important;
+	text-transform: none !important;
+}
+
+.v-btn--variant-elevated:active {
+	transform: scale(0.96);
+}

@@ -57,20 +57,52 @@ func main() {
 
 	cfg := config.Load()
 	db := config.InitDB(cfg)
+
+	// Otimização do Pool de Conexões do Banco de Dados
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(25)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	defer db.Close()
 
-	// Gamification Migration
-	_, _ = db.Exec(`ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS meta_paginas_semana INTEGER DEFAULT 100;`)
+	// Core Migrations
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS usuarios (
+			id SERIAL PRIMARY KEY,
+			nome TEXT NOT NULL,
+			email TEXT UNIQUE NOT NULL,
+			senha TEXT NOT NULL,
+			tipo INTEGER DEFAULT 1,
+			foto_url TEXT,
+			meta_paginas_semana INTEGER DEFAULT 100,
+			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
 
-	// Study Tools Migrations
-	_, _ = db.Exec(`ALTER TABLE materiais ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'aprovado';`)
-	_, _ = db.Exec(`ALTER TABLE materiais ADD COLUMN IF NOT EXISTS curador_id INTEGER REFERENCES usuarios(id);`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS materiais (
+			id SERIAL PRIMARY KEY,
+			titulo TEXT NOT NULL,
+			autor TEXT NOT NULL,
+			isbn TEXT,
+			categoria TEXT NOT NULL,
+			ano_publicacao INTEGER,
+			descricao TEXT,
+			capa_url TEXT,
+			pdf_url TEXT,
+			disponivel BOOLEAN DEFAULT TRUE,
+			media_nota NUMERIC(3,2) DEFAULT 0.0,
+			total_avaliacoes INTEGER DEFAULT 0,
+			paginas INTEGER DEFAULT 0,
+			externo_id TEXT UNIQUE,
+			fonte TEXT,
+			status TEXT DEFAULT 'aprovado',
+			curador_id INTEGER REFERENCES usuarios(id),
+			search_vector tsvector
+		);
+	`)
 
-	// Optimization Indexes
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;`)
-
+	// Study & Social Tables
 	_, _ = db.Exec(`
 		CREATE TABLE IF NOT EXISTS anotacoes (
 			id SERIAL PRIMARY KEY,
@@ -94,6 +126,74 @@ func main() {
 			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS favoritos (
+			usuario_id INTEGER REFERENCES usuarios(id),
+			material_id INTEGER REFERENCES materiais(id),
+			PRIMARY KEY (usuario_id, material_id)
+		);
+	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS historico_leitura (
+			id SERIAL PRIMARY KEY,
+			usuario_id INTEGER REFERENCES usuarios(id),
+			material_id INTEGER REFERENCES materiais(id),
+			data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS interesses_usuario (
+			usuario_id INTEGER REFERENCES usuarios(id),
+			interesse TEXT,
+			PRIMARY KEY (usuario_id, interesse)
+		);
+	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS avaliacoes (
+			id SERIAL PRIMARY KEY,
+			usuario_id INTEGER REFERENCES usuarios(id),
+			material_id INTEGER REFERENCES materiais(id),
+			nota INTEGER,
+			comentario TEXT,
+			data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);
+	`)
+	_, _ = db.Exec(`
+		CREATE TABLE IF NOT EXISTS emprestimos (
+			id SERIAL PRIMARY KEY,
+			usuario_id INTEGER REFERENCES usuarios(id),
+			material_id INTEGER REFERENCES materiais(id),
+			data_emprestimo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			data_devolucao TIMESTAMP,
+			status TEXT DEFAULT 'ativo'
+		);
+	`)
+
+	// FTS Trigger & Index
+	_, _ = db.Exec(`
+		CREATE INDEX IF NOT EXISTS idx_materiais_search_vector ON materiais USING gin(search_vector);
+	`)
+	_, _ = db.Exec(`
+		CREATE OR REPLACE FUNCTION materiais_search_trigger() RETURNS trigger AS $$
+		begin
+		  new.search_vector :=
+			setweight(to_tsvector('portuguese', coalesce(new.titulo,'')), 'A') ||
+			setweight(to_tsvector('portuguese', coalesce(new.autor,'')), 'B') ||
+			setweight(to_tsvector('portuguese', coalesce(new.descricao,'')), 'C');
+		  return new;
+		end
+		$$ LANGUAGE plpgsql;
+	`)
+	_, _ = db.Exec(`
+		DROP TRIGGER IF EXISTS tsvectorupdate ON materiais;
+		CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
+		ON materiais FOR EACH ROW EXECUTE FUNCTION materiais_search_trigger();
+	`)
+
+	// Additional Indexes for Performance
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;`)
 
 	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey)
 
@@ -158,9 +258,10 @@ func main() {
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
-	// Apply Logger and CORS middleware
+	// Apply Logger, Rate Limiter, and CORS middleware
 	handlerWithLogger := middleware.Logger(mux)
-	handlerWithCORS := middleware.CORS(handlerWithLogger)
+	handlerWithRateLimit := middleware.RateLimit(handlerWithLogger)
+	handlerWithCORS := middleware.CORS(handlerWithRateLimit)
 
 	logger.Info("Starting server", zap.String("port", cfg.Port))
 	if err := http.ListenAndServe(":"+cfg.Port, handlerWithCORS); err != nil {

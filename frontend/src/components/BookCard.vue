@@ -106,37 +106,23 @@ const cardStyle = computed(() => ({
 </script>
 
 <style scoped>
-.ios-item-card {
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-  overflow: hidden;
-  height: 100%;
-}
-
-.dark .ios-item-card {
-  background: rgba(30, 30, 30, 0.7);
-  border-color: rgba(255, 255, 255, 0.1);
-}
-
 .book-cover-wrapper {
-  perspective: 1000px;
-  height: 140px;
+  perspective: 1200px;
+  height: 150px;
 }
 
 .book-cover {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 16px;
-  box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
-  transition: transform 0.5s ease;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.ios-item-card:hover .book-cover {
-  transform: rotateY(-10deg) scale(1.05);
+.premium-glass-card:hover .book-cover {
+  transform: rotateY(-12deg) translateY(-5px) scale(1.08);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .item-title {

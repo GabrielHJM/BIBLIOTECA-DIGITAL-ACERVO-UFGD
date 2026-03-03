@@ -795,9 +795,56 @@ export default {
 	max-width: 1100px;
 	margin: 0 auto;
 	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 60px;
-	align-items: center;
+	@media (max-width: 600px) {
+		.hero-section {
+			padding: 80px 20px 40px;
+		}
+		.hero-title-modern {
+			font-size: 2.2rem;
+			line-height: 1.1;
+		}
+		.hero-description {
+			font-size: 0.95rem;
+		}
+		.hero-actions {
+			display: flex;
+			flex-direction: column;
+			gap: 12px;
+		}
+		.ios-btn-main, .ios-btn-secondary {
+			width: 100%;
+			margin-right: 0 !important;
+		}
+		.stats-glass-bar {
+			width: 100%;
+			border-radius: 16px;
+			margin-top: 40px;
+		}
+		.stat-unit {
+			padding: 12px 20px;
+			flex: 1 1 45%;
+			border-right: none;
+			border-bottom: 1px solid rgba(var(--v-border-color), 0.1);
+		}
+		.stat-unit:nth-child(even) {
+			border-left: 1px solid rgba(var(--v-border-color), 0.1);
+		}
+		.stat-val {
+			font-size: 20px;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.features-inner {
+			grid-template-columns: 1fr;
+			gap: 32px;
+		}
+		.features-section {
+			padding: 40px 20px;
+			margin: 40px 16px;
+		}
+	}
+
 }
 .features-headline {
 	font-size: 1.9rem;

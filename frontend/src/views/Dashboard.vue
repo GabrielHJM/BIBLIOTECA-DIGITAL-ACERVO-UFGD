@@ -85,7 +85,7 @@
 				</v-col>
 			</v-row>
 
-			<!-- Study Hub Section (New) -->
+			<!-- Study Hub Section -->
 			<v-row class="mb-8 px-4">
 				<v-col cols="12">
 					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center text-white">
@@ -122,6 +122,69 @@
 							<v-chip color="cyan" size="small" class="font-weight-bold">Em breve</v-chip>
 						</div>
 					</v-card>
+				</v-col>
+			</v-row>
+
+			<!-- Insights Section (New) -->
+			<v-row v-if="stats && !loading" class="mb-8 px-4 fade-in">
+				<v-col cols="12">
+					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center text-white">
+						<v-icon color="cyan" class="mr-2">mdi-chart-areaspline</v-icon>
+						Insights de Estudo
+					</h2>
+				</v-col>
+
+				<!-- Top Categorias -->
+				<v-col cols="12" md="6">
+					<PremiumCard title="Áreas Mais Estudadas" icon="mdi-shape-outline" icon-color="cyan">
+						<div v-if="Object.keys(stats.categorias).length > 0" class="mt-4">
+							<div v-for="(count, cat) in stats.categorias" :key="cat" class="mb-4">
+								<div class="d-flex justify-space-between mb-1">
+									<span class="text-body-2 font-weight-bold text-white">{{ cat }}</span>
+									<span class="text-caption opacity-60">{{ count }} sessões</span>
+								</div>
+								<div class="stat-progress-premium">
+									<div class="progress-fill" :style="{ width: Math.min((count / maxCategoryCount) * 100, 100) + '%', background: 'linear-gradient(90deg, #00B8D4, #00E5FF)' }"></div>
+								</div>
+							</div>
+						</div>
+						<div v-else class="text-center py-6 opacity-40">
+							<v-icon size="40">mdi-chart-bubble</v-icon>
+							<p>Nenhum dado de categoria ainda</p>
+						</div>
+					</PremiumCard>
+				</v-col>
+
+				<!-- Top Livros -->
+				<v-col cols="12" md="6">
+					<PremiumCard title="Livros Mais Vistos" icon="mdi-trophy-outline" icon-color="amber">
+						<v-list bg-color="transparent" class="pa-0">
+							<v-list-item
+								v-for="(livro, idx) in stats.top_livros"
+								:key="livro.id"
+								class="px-0 mb-3 top-book-item"
+								@click="$router.push('/estudo/' + livro.id)"
+							>
+								<template v-slot:prepend>
+									<div class="top-book-rank mr-4" :class="'rank-' + (idx + 1)">
+										{{ idx + 1 }}
+									</div>
+									<v-avatar size="48" rounded="lg" class="mr-4">
+										<v-img :src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=100'"></v-img>
+									</v-avatar>
+								</template>
+								<v-list-item-title class="text-body-2 font-weight-bold text-white">{{ livro.titulo }}</v-list-item-title>
+								<v-list-item-subtitle class="text-caption opacity-60">{{ livro.qtd }} acessos</v-list-item-subtitle>
+								<template v-slot:append>
+									<v-icon size="18" class="opacity-20">mdi-chevron-right</v-icon>
+								</template>
+							</v-list-item>
+							<div v-if="!stats.top_livros || stats.top_livros.length === 0" class="text-center py-6 opacity-40">
+								<v-icon size="40">mdi-book-off-outline</v-icon>
+								<p>Inicie uma leitura para ver métricas</p>
+							</div>
+						</v-list>
+					</PremiumCard>
 				</v-col>
 			</v-row>
 
@@ -338,6 +401,11 @@ export default {
 			return Object.fromEntries(
 				Object.entries(this.stats.categorias).slice(0, 3)
 			);
+		},
+		maxCategoryCount() {
+			if (!this.stats || !this.stats.categorias) return 1;
+			const counts = Object.values(this.stats.categorias);
+			return counts.length > 0 ? Math.max(...counts) : 1;
 		}
 	},
 	created() {
@@ -795,9 +863,40 @@ export default {
 	.study-hub-card.flashcards:hover { border-color: rgba(255, 171, 0, 0.4); }
 	.study-hub-card.notes:hover { border-color: rgba(0, 184, 212, 0.4); }
 
+	.top-book-item {
+		transition: all 0.3s var(--spring-easing);
+		cursor: pointer;
+		border-radius: 16px !important;
+	}
+	.top-book-item:hover {
+		background: rgba(255, 255, 255, 0.05) !important;
+		transform: translateX(8px);
+	}
+
+	.top-book-rank {
+		width: 28px;
+		height: 28px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		font-weight: 800;
+		font-size: 14px;
+		background: rgba(255, 255, 255, 0.1);
+		color: white;
+	}
+	.rank-1 { background: linear-gradient(135deg, #FFD700, #FFA000); color: black; }
+	.rank-2 { background: linear-gradient(135deg, #C0C0C0, #9E9E9E); color: black; }
+	.rank-3 { background: linear-gradient(135deg, #CD7F32, #8D6E63); color: black; }
+
 	.hub-icon-wrap {
 		width: 70px; height: 70px;
 		border-radius: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
 		display: flex; align-items: center; justify-content: center;
 	}
 	.hub-icon-wrap.amber { background: rgba(255, 171, 0, 0.1); }

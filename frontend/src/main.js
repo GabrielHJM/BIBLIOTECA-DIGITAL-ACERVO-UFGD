@@ -4,6 +4,9 @@ import router from './router'
 // Vuetify
 import vuetify from './plugins/vuetify'
 
+// Design System
+import './assets/styles/design-system.css'
+
 // Components
 import App from './App.vue'
 

@@ -28,10 +28,22 @@ func RegisterStatsRoutes(mux *http.ServeMux, db *sql.DB) {
 			Badges             []string       `json:"badges"`
 			MetaPaginasSemana  int            `json:"meta_paginas_semana"`
 			PaginasLidasSemana int            `json:"paginas_lidas_semana"`
+			TopLivros          []struct {
+				ID     int    `json:"id"`
+				Titulo string `json:"titulo"`
+				Capa   string `json:"capa_url"`
+				Qtd    int    `json:"qtd"`
+			} `json:"top_livros"`
 		}{
 			Categorias:     make(map[string]int),
 			LeiturasPorMes: make(map[string]int),
 			Badges:         []string{},
+			TopLivros: make([]struct {
+				ID     int    `json:"id"`
+				Titulo string `json:"titulo"`
+				Capa   string `json:"capa_url"`
+				Qtd    int    `json:"qtd"`
+			}, 0),
 		}
 
 		// 0. Meta Semanal do Usuário
@@ -66,6 +78,30 @@ func RegisterStatsRoutes(mux *http.ServeMux, db *sql.DB) {
 				var qtd int
 				if err := rowsCat.Scan(&cat, &qtd); err == nil {
 					stats.Categorias[cat] = qtd
+				}
+			}
+		}
+
+		// 3.1. Materiais mais acessados (Top Livros)
+		rowsBooks, err := db.QueryContext(r.Context(), `
+			SELECT m.id, m.titulo, COALESCE(m.capa_url, ''), COUNT(*) as qtd
+			FROM historico_leitura h
+			JOIN materiais m ON h.material_id = m.id
+			WHERE h.usuario_id = $1
+			GROUP BY m.id, m.titulo, m.capa_url
+			ORDER BY qtd DESC
+			LIMIT 5`, usuarioID)
+		if err == nil {
+			defer rowsBooks.Close()
+			for rowsBooks.Next() {
+				var b struct {
+					ID     int    `json:"id"`
+					Titulo string `json:"titulo"`
+					Capa   string `json:"capa_url"`
+					Qtd    int    `json:"qtd"`
+				}
+				if err := rowsBooks.Scan(&b.ID, &b.Titulo, &b.Capa, &b.Qtd); err == nil {
+					stats.TopLivros = append(stats.TopLivros, b)
 				}
 			}
 		}

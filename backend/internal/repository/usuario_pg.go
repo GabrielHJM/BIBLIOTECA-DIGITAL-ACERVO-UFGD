@@ -20,7 +20,7 @@ func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error 
 }
 
 func (r *UsuarioPostgres) BuscarPorEmail(ctx context.Context, email string) (*usuario.Usuario, error) {
-	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, '') FROM usuarios WHERE email = $1"
+	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, '') FROM usuarios WHERE LOWER(email) = LOWER($1)"
 	u := &usuario.Usuario{}
 	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL)
 	if err != nil {
@@ -49,7 +49,7 @@ func (r *UsuarioPostgres) ListarInteresses(ctx context.Context, id int) ([]strin
 }
 
 func (r *UsuarioPostgres) AtualizarSenha(ctx context.Context, email string, novaSenha string) error {
-	query := "UPDATE usuarios SET senha = $1 WHERE email = $2"
+	query := "UPDATE usuarios SET senha = $1 WHERE LOWER(email) = LOWER($2)"
 	_, err := r.DB.ExecContext(ctx, query, novaSenha, email)
 	return err
 }

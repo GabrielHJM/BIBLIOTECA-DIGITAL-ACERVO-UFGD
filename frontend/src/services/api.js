@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-	baseURL: 'http://localhost:8080', // Ajuste a porta conforme .env do backend
+	baseURL: '/api', // Configurado no vue.config.js para fazer proxy pro backend
 	headers: {
 		'Content-Type': 'application/json',
 	},

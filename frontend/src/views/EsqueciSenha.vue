@@ -27,12 +27,48 @@
 
 					<div class="input-group mb-4">
 						<label class="ios-label">NOVA SENHA</label>
-						<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-modern" />
+						<div class="password-wrapper">
+							<input
+								v-model="senha"
+								:type="mostrarSenha ? 'text' : 'password'"
+								placeholder="Mínimo 6 caracteres"
+								class="ios-input-modern pr-12"
+							/>
+							<v-btn
+								icon
+								variant="text"
+								class="password-toggle-btn"
+								@click="mostrarSenha = !mostrarSenha"
+								tabindex="-1"
+							>
+								<v-icon color="white" size="20">
+									{{ mostrarSenha ? 'mdi-eye-off' : 'mdi-eye' }}
+								</v-icon>
+							</v-btn>
+						</div>
 					</div>
 
 					<div class="input-group mb-8">
 						<label class="ios-label">CONFIRMAR NOVA SENHA</label>
-						<input v-model="confirmarSenha" type="password" placeholder="Repita a nova senha" class="ios-input-modern" />
+						<div class="password-wrapper">
+							<input
+								v-model="confirmarSenha"
+								:type="mostrarConfirmarSenha ? 'text' : 'password'"
+								placeholder="Repita a nova senha"
+								class="ios-input-modern pr-12"
+							/>
+							<v-btn
+								icon
+								variant="text"
+								class="password-toggle-btn"
+								@click="mostrarConfirmarSenha = !mostrarConfirmarSenha"
+								tabindex="-1"
+							>
+								<v-icon color="white" size="20">
+									{{ mostrarConfirmarSenha ? 'mdi-eye-off' : 'mdi-eye' }}
+								</v-icon>
+							</v-btn>
+						</div>
 					</div>
 
 					<v-btn class="ios-primary-btn w-100 mb-6" @click="redefinirSenha" :loading="loading" height="56" elevation="0" :disabled="loading">
@@ -65,6 +101,8 @@ export default {
 		email: '',
 		senha: '',
         confirmarSenha: '',
+		mostrarSenha: false,
+		mostrarConfirmarSenha: false,
 		snackbar: false,
 		snackbarText: '',
 		snackbarColor: 'error'
@@ -222,6 +260,27 @@ export default {
 		background: rgba(0, 0, 0, 0.4);
 		border-color: rgba(0, 184, 212, 0.6);
 		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15);
+	}
+
+	.password-wrapper {
+		position: relative;
+		display: flex;
+		align-items: center;
+	}
+
+	.password-toggle-btn {
+		position: absolute;
+		right: 8px;
+		opacity: 0.5;
+		transition: opacity 0.2s;
+	}
+
+	.password-toggle-btn:hover {
+		opacity: 1;
+	}
+
+	.pr-12 {
+		padding-right: 48px !important;
 	}
 
 	.ios-primary-btn {
