@@ -13,37 +13,17 @@ import (
 	"go.uber.org/zap"
 )
 
-// Crossref structures for academic metadata
-type CrossrefResponse struct {
-	Message struct {
-		Items []struct {
-			Title  []string `json:"title"`
-			Author []struct {
-				Given  string `json:"given"`
-				Family string `json:"family"`
-			} `json:"author"`
-			Abstract string `json:"abstract"`
-			Created  struct {
-				DateParts [][]int `json:"date-parts"`
-			} `json:"created"`
-			DOI  string `json:"DOI"`
-			URL  string `json:"URL"`
-			Type string `json:"type"`
-		} `json:"items"`
-	} `json:"message"`
-}
-
-type CAPESHarvester struct {
+type CrossrefHarvester struct {
 	BaseURL string
 }
 
-func NewCAPESHarvester() *CAPESHarvester {
-	return &CAPESHarvester{
+func NewCrossrefHarvester() *CrossrefHarvester {
+	return &CrossrefHarvester{
 		BaseURL: "https://api.crossref.org/works",
 	}
 }
 
-func (h *CAPESHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *CrossrefHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
 	searchTerm := query
 	if searchTerm == "" {
 		searchTerm = category
@@ -61,7 +41,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		logger.Error("CAPES harvester: request failed", zap.Error(err))
+		logger.Error("Crossref harvester: request failed", zap.Error(err))
 		return nil, err
 	}
 	defer resp.Body.Close()
@@ -70,7 +50,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		return nil, fmt.Errorf("crossref api error: %s", resp.Status)
 	}
 
-	var data CrossrefResponse
+	var data CrossrefResponse // reaproveita estrutura de capes.go
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
 	}
@@ -101,7 +81,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			Autor:         strings.Join(authors, ", "),
 			Descricao:     item.Abstract,
 			AnoPublicacao: year,
-			Fonte:         "CAPES",
+			Fonte:         "Crossref",
 			Categoria:     catName,
 			ExternoID:     item.DOI,
 			PDFURL:        item.URL,
@@ -111,6 +91,6 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		materials = append(materials, m)
 	}
 
-	logger.Info("CAPES harvester: search completed", zap.Int("results", len(materials)))
+	logger.Info("Crossref harvester: search completed", zap.Int("results", len(materials)))
 	return materials, nil
 }

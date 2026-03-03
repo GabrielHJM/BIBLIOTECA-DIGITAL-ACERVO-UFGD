@@ -1,86 +1,79 @@
 <template>
-	<v-container class="d-flex justify-center w-100 pa-0" style="margin: auto;">
-		<v-card class="ios-card-premium" elevation="12">
-			<div class="d-flex justify-start mb-2">
-				<v-btn icon variant="text" color="white" @click="$router.push('/')" size="small">
-					<v-icon>mdi-arrow-left</v-icon>
-				</v-btn>
-			</div>
+	<div class="login-absolute-center">
+		<!-- Ambient Background Blobs for Glassmorphism -->
+		<div class="ambient-blob blob-1"></div>
+		<div class="ambient-blob blob-2"></div>
 
-			<v-row justify="center" class="mb-4">
-				<v-img
-					:src="caminho"
-					alt="Avatar"
-					max-width="100"
-					class="drop-shadow"
-					contain
-				></v-img>
-			</v-row>
+		<div class="content-wrapper">
+			<v-card class="ios-login-card position-relative" elevation="0">
+				<!-- Header / Back Button -->
+				<div class="card-header-actions">
+					<v-btn icon="mdi-chevron-left" variant="text" @click="$router.push('/')" size="large" class="back-btn"></v-btn>
+				</div>
 
-			<v-row>
-				<v-col cols="12" class="text-center mb-6">
-					<h1 class="text-white text-h4 font-weight-bold">CADASTRE-SE</h1>
-				</v-col>
-			</v-row>
+				<div class="text-center mt-2 mb-6">
+					<div class="login-icon-wrapper mb-4">
+						<v-img :src="caminho" width="64" class="mx-auto drop-shadow"></v-img>
+					</div>
+					<h2 class="login-title">Cadastre-se</h2>
+					<p class="login-subtitle">Crie sua biblioteca pessoal</p>
+				</div>
 
-			<v-row>
-				<v-col cols="12" md="6" class="py-1">
-					<label class="ios-label">Nome:</label>
-					<input v-model="nome" type="text" placeholder="Seu nome completo" class="ios-input-field w-100" />
-				</v-col>
-				<v-col cols="12" md="6" class="py-1">
-					<label class="ios-label">Instituição:</label>
-					<input v-model="instituicao" type="text" placeholder="Escola ou Faculdade" class="ios-input-field w-100" />
-				</v-col>
-			</v-row>
+				<div class="login-form">
+					<v-row dense>
+						<v-col cols="12" sm="6" class="px-2 mb-2">
+							<label class="ios-label">NOME</label>
+							<input v-model="nome" type="text" placeholder="Seu nome completo" class="ios-input-modern" />
+						</v-col>
+						<v-col cols="12" sm="6" class="px-2 mb-2">
+							<label class="ios-label">INSTITUIÇÃO</label>
+							<input v-model="instituicao" type="text" placeholder="Escola ou Faculdade" class="ios-input-modern" />
+						</v-col>
+					</v-row>
 
-			<v-row class="mt-4">
-				<v-col cols="12" md="6" class="py-1">
-					<label class="ios-label">Email:</label>
-					<input v-model="email" type="email" placeholder="seu@email.com" class="ios-input-field w-100" />
-				</v-col>
-				<v-col cols="12" md="6" class="py-1">
-					<label class="ios-label">Senha:</label>
-					<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-field w-100" />
-				</v-col>
-			</v-row>
+					<v-row dense>
+						<v-col cols="12" sm="6" class="px-2 mb-2">
+							<label class="ios-label">E-MAIL</label>
+							<input v-model="email" type="email" placeholder="seu@email.com" class="ios-input-modern" />
+						</v-col>
+						<v-col cols="12" sm="6" class="px-2 mb-2">
+							<label class="ios-label">SENHA</label>
+							<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-modern" />
+						</v-col>
+					</v-row>
 
-			<v-row class="mt-4 align-center">
-				<v-col cols="12" md="6" class="py-1">
-					<label class="ios-label">Eu sou:</label>
-					<v-select
-						class="ios-select-field"
-						:items="['Aluno', 'Professor', 'Curador Especializado', 'Suporte']"
-						v-model="tipoUsuario"
-						variant="solo"
-						flat
-						hide-details
-						density="comfortable"
-						bg-color="white"
-						placeholder="Selecione seu perfil"
-					></v-select>
-				</v-col>
-				<v-col cols="12" md="6" class="text-center mt-6">
-					<v-btn size="x-large" class="ios-action-btn w-100" elevation="4" @click="cadastrar" :loading="loading" :disabled="loading">
-						Cadastrar-me
+					<v-row dense class="mb-2">
+						<v-col cols="12" class="px-2 mb-4">
+							<label class="ios-label">PERFIL</label>
+							<v-select
+								class="ios-select-modern"
+								:items="['Aluno', 'Professor', 'Curador Especializado', 'Suporte']"
+								v-model="tipoUsuario"
+								variant="solo"
+								flat
+								hide-details
+								placeholder="Selecione seu perfil"
+							></v-select>
+						</v-col>
+					</v-row>
+
+					<v-btn class="ios-primary-btn w-100 mb-6 mt-1" @click="cadastrar" :loading="loading" height="56" elevation="0">
+						Criar Conta
 					</v-btn>
-				</v-col>
-			</v-row>
 
-			<v-row class="mt-8">
-				<v-col cols="12" class="text-center">
-					<router-link to="/login" class="ios-secondary-link">
-						<v-icon color="white" size="24" class="mr-2">mdi-arrow-left</v-icon>
-						<span class="back-text">Já tenho cadastro? Ir para o Login</span>
-					</router-link>
-				</v-col>
-			</v-row>
+					<div class="text-center mb-1">
+						<router-link to="/login" class="signup-link">
+							Já tem conta? <span class="accent-text">Fazer login</span>
+						</router-link>
+					</div>
+				</div>
 
-			<v-snackbar v-model="snackbar" :color="snackbarColor" location="top" rounded="pill">
-				{{ snackbarText }}
-			</v-snackbar>
-		</v-card>
-	</v-container>
+				<v-snackbar v-model="snackbar" :color="snackbarColor" location="top" rounded="pill">
+					{{ snackbarText }}
+				</v-snackbar>
+			</v-card>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -166,82 +159,174 @@ export default {
 </script>
 
 <style scoped>
-	.ios-card-premium {
-		width: 100%;
-		max-width: 700px;
-		background: rgba(45, 78, 115, 0.85) !important;
-		backdrop-filter: blur(20px);
-		border-radius: 24px !important;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-		transition: transform 0.3s var(--spring-easing);
-		padding: 24px !important;
+	.login-absolute-center {
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: radial-gradient(circle at top left, rgba(0, 184, 212, 0.08), transparent 40%),
+					radial-gradient(circle at bottom right, rgba(0, 184, 212, 0.05), transparent 40%);
+		overflow: hidden;
+		height: 100vh;
+		width: 100vw;
 	}
 
-	.ios-card-premium:hover {
-		transform: translateY(-5px);
+	.ambient-blob {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		z-index: 0;
+		opacity: 0.6;
+	}
+	.blob-1 {
+		width: 300px; height: 300px;
+		background: rgba(0, 184, 212, 0.4);
+		top: -50px; left: -100px;
+	}
+	.blob-2 {
+		width: 400px; height: 400px;
+		background: rgba(144, 202, 249, 0.2);
+		bottom: -100px; right: -100px;
+	}
+
+	.content-wrapper {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1;
+		padding: clamp(24px, 4vw, 64px) clamp(16px, 4vw, 64px);
+		height: 100%;
+		box-sizing: border-box;
+	}
+
+	.ios-login-card {
+		width: 100%;
+		max-width: 580px;
+		background: rgba(255, 255, 255, 0.03) !important;
+		backdrop-filter: blur(40px) saturate(180%);
+		-webkit-backdrop-filter: blur(40px) saturate(180%);
+		border-radius: clamp(24px, 4vw, 32px) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px) !important;
+		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
+		overflow-y: auto;
+		max-height: calc(100vh - 48px);
+	}
+
+	.card-header-actions {
+		position: absolute;
+		top: 24px;
+		left: 24px;
+	}
+
+	.login-title {
+		font-size: 32px;
+		font-weight: 800;
+		letter-spacing: -1px;
+		margin-bottom: 8px;
+		color: #ffffff;
+	}
+
+	.login-subtitle {
+		font-size: 16px;
+		opacity: 0.7;
+		font-weight: 500;
+		color: #ffffff;
 	}
 
 	.ios-label {
-		color: rgba(255, 255, 255, 0.9);
-		font-weight: 600;
-		font-size: 14px;
-		margin-left: 12px;
 		display: block;
-		margin-bottom: 4px;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		margin-bottom: 8px;
+		margin-left: 8px;
+		opacity: 0.6;
+		color: #ffffff;
 	}
 
-	.ios-input-field {
-		background: rgba(255, 255, 255, 0.9) !important;
-		border: none !important;
-		border-radius: 16px;
-		padding: 12px 20px;
+	.ios-input-modern {
+		width: 100%;
+		box-sizing: border-box;
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 14px;
+		padding: 14px 20px;
 		font-size: 15px;
-		color: #333;
-		transition: all 0.2s ease;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		color: #ffffff;
 	}
 
-	.ios-input-field:focus {
+	.ios-input-modern::placeholder {
+		color: rgba(255,255,255,0.4);
+	}
+
+	.ios-input-modern:focus {
 		outline: none;
-		background: white !important;
-		box-shadow: 0 0 0 3px rgba(0, 184, 212, 0.4);
+		background: rgba(0, 0, 0, 0.4);
+		border-color: rgba(0, 184, 212, 0.6);
+		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15);
 	}
 
-	.ios-select-field :deep(.v-field) {
-		border-radius: 16px !important;
-		background: rgba(255, 255, 255, 0.9) !important;
+	.ios-select-modern :deep(.v-field) {
+		background: rgba(0, 0, 0, 0.25) !important;
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		border-radius: 18px !important;
+		color: #ffffff !important;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		box-shadow: none !important;
+		padding: 6px 0;
+	}
+	.ios-select-modern :deep(.v-field--focused) {
+		background: rgba(0, 0, 0, 0.4) !important;
+		border-color: rgba(0, 184, 212, 0.6) !important;
+		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15) !important;
+	}
+	.ios-select-modern :deep(.v-select__selection-text) {
+		color: #ffffff !important;
 	}
 
-	.ios-action-btn {
-		background: linear-gradient(135deg, #00B8D4 0%, #0097A7 100%) !important;
+	.ios-primary-btn {
+		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;
 		color: white !important;
-		border-radius: 16px !important;
-		height: 54px !important;
+		border-radius: 20px !important;
 		text-transform: none !important;
 		font-size: 18px !important;
 		font-weight: 700 !important;
-		letter-spacing: 0.5px !important;
+		letter-spacing: -0.2px;
+		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
+		box-shadow: 0 12px 24px rgba(0, 184, 212, 0.3) !important;
 	}
 
-	.ios-secondary-link {
-		color: white;
+	.ios-primary-btn:active {
+		transform: scale(0.97);
+	}
+
+	.signup-link {
+		font-size: 15px;
 		text-decoration: none;
+		color: rgba(255, 255, 255, 0.6);
 		font-weight: 500;
-		display: inline-flex;
-		align-items: center;
-		opacity: 0.8;
-		transition: all 0.2s;
 	}
 
-	.ios-secondary-link:hover {
-		opacity: 1;
-		transform: scale(1.05);
-	}
-
-	.back-text {
-		font-size: 16px;
+	.accent-text {
+		color: #00B8D4;
+		font-weight: 700;
 	}
 
 	.drop-shadow {
-		filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+		filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.4));
+	}
+
+	.back-btn {
+		opacity: 0.6;
+		transition: opacity 0.2s;
+		color: white;
+	}
+
+	.back-btn:hover {
+		opacity: 1;
 	}
 </style>

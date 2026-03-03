@@ -1,9 +1,9 @@
 <template>
-	<div class="dashboard-container mt-8 position-relative">
+	<div class="dashboard-container position-relative">
 		<v-snackbar v-model="snackbar" :timeout="3000" color="cyan darken-2" location="top right">
 			{{ snackbarMsg }}
 		</v-snackbar>
-		<v-container fluid class="pa-4">
+		<v-container fluid class="pa-0 pa-md-2">
 			<!-- Expert Statistics Dashboard Section -->
 			<v-row v-if="stats && !loading" class="mb-8 px-4 fade-in">
 				<!-- Meta Semanal Progress -->
@@ -94,7 +94,7 @@
 					</h2>
 				</v-col>
 				<v-col cols="12" md="6">
-					<v-card class="study-hub-card flashcards premium-glow" @click="$router.push('/flashcards')" rounded="xl">
+					<v-card class="study-hub-card flashcards premium-glow reader-rounding" @click="$router.push('/flashcards')">
 						<div class="d-flex align-center pa-6">
 							<div class="hub-icon-wrap amber">
 								<v-icon size="40" color="amber">mdi-cards-playing-outline</v-icon>
@@ -109,7 +109,7 @@
 					</v-card>
 				</v-col>
 				<v-col cols="12" md="6">
-					<v-card class="study-hub-card notes premium-glow" rounded="xl">
+					<v-card class="study-hub-card notes premium-glow reader-rounding">
 						<div class="d-flex align-center pa-6">
 							<div class="hub-icon-wrap cyan">
 								<v-icon size="40" color="cyan">mdi-notebook-edit-outline</v-icon>
@@ -500,13 +500,15 @@ export default {
 		background: rgba(var(--v-theme-surface), 0.7) !important;
 		backdrop-filter: blur(20px) saturate(180%);
 		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 28px !important;
+		border-radius: 32px !important;
 		border: 1px solid rgba(var(--v-border-color), 0.1);
 		overflow: hidden;
 		transition: all 0.5s var(--spring-easing);
 		opacity: 0;
 		animation: ios-reveal 0.7s var(--spring-easing) forwards;
 	}
+
+	.reader-rounding { border-radius: 32px !important; }
 
 	.ios-item-card:hover {
 		transform: translateY(-10px) scale(1.02);
@@ -519,7 +521,7 @@ export default {
 	.stat-card {
 		background: rgba(var(--v-theme-surface), 0.4);
 		backdrop-filter: blur(40px) saturate(150%);
-		border-radius: 28px;
+		border-radius: 32px;
 		padding: 24px;
 		height: 100%;
 		border: 1px solid rgba(255, 255, 255, 0.08);
@@ -597,6 +599,7 @@ export default {
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		font-weight: 700 !important;
 	}
@@ -614,7 +617,7 @@ export default {
 		width: 130px;
 		background: rgba(var(--v-theme-surface), 0.8) !important;
 		backdrop-filter: blur(10px);
-		border-radius: 16px !important;
+		border-radius: 24px !important;
 		border: 1px solid rgba(128, 128, 128, 0.2);
 		overflow: hidden;
 		cursor: pointer;
@@ -668,6 +671,7 @@ export default {
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 

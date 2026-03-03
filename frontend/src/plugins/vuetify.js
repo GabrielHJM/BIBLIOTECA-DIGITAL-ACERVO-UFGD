@@ -6,7 +6,7 @@
 // export default new Vuetify({});
 
 // import '@mdi/font/css/materialdesignicons.css'
-// import 'vuetify/styles'
+import 'vuetify/styles'
 
 // const vuetify = createVuetify({
 //   ssr: true,

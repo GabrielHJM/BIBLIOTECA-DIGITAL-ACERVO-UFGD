@@ -1,9 +1,26 @@
 import api from './api';
 
+const cache = new Map();
+
 export default {
+	// Helper for caching GET requests
+	async _cachedGet(url, ttl = 300000) { // Default 5 mins TTL
+		const now = Date.now();
+		if (cache.has(url)) {
+			const { data, timestamp } = cache.get(url);
+			if (now - timestamp < ttl) {
+				return Promise.resolve(data);
+			}
+			cache.delete(url); // expired
+		}
+		const response = await api.get(url);
+		cache.set(url, { data: response, timestamp: now });
+		return response;
+	},
+
 	// Listar materiais com paginação
 	listar(limit = 10, offset = 0) {
-		return api.get(`/materiais?limit=${limit}&offset=${offset}`);
+		return this._cachedGet(`/materiais?limit=${limit}&offset=${offset}`);
 	},
 
 	// Pesquisar materiais por termo ou categoria com filtros avançados
@@ -15,7 +32,7 @@ export default {
 		if (anoInicio) url += `&ano_inicio=${anoInicio}`;
 		if (anoFim) url += `&ano_fim=${anoFim}`;
 		if (sort) url += `&sort=${encodeURIComponent(sort)}`;
-		return api.get(url);
+		return this._cachedGet(url, 60000); // 1 minute TTL for search queries
 	},
 
 	// Obter detalhes de um material específico

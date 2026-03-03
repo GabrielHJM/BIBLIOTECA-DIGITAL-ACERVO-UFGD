@@ -1,7 +1,7 @@
 <template>
   <v-card
     class="ios-item-card premium-shadow-hover"
-    elevation="8"
+    elevation="12"
     :style="cardStyle"
   >
     <v-row no-gutters>
@@ -107,7 +107,7 @@ const cardStyle = computed(() => ({
 
 <style scoped>
 .ios-item-card {
-  border-radius: 20px;
+  border-radius: 32px;
   background: rgba(255, 255, 255, 0.7);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.3);
@@ -130,7 +130,7 @@ const cardStyle = computed(() => ({
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
   transition: transform 0.5s ease;
 }
@@ -157,7 +157,7 @@ const cardStyle = computed(() => ({
   color: white !important;
   text-transform: none;
   font-weight: 600;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 0 16px;
 }
 

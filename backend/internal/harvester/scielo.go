@@ -119,6 +119,15 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 			catName = "Artigo Científico"
 		}
 
+		tags := []string{}
+		if len(dc.Subjects) > 0 {
+			for _, sub := range dc.Subjects {
+				if sub != "" {
+					tags = append(tags, sub)
+				}
+			}
+		}
+
 		m := material.Material{
 			Titulo:        dc.Titles[0],
 			Autor:         strings.Join(dc.Creators, ", "),
@@ -128,6 +137,7 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 			Categoria:     catName,
 			Disponivel:    true,
 			CapaURL:       "",
+			Tags:          tags,
 		}
 
 		for _, id := range dc.Identifiers {
@@ -135,14 +145,13 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 				if strings.Contains(id, ".pdf") {
 					m.PDFURL = id
 				} else if strings.Contains(id, "scielo.br") && !strings.Contains(id, "format=pdf") {
-					// Se for um link do SciELO mas não for PDF, tentamos guardar como ExternoID
-					// e futuramente podemos tentar inferir o PDF ou deixar o frontend tratar
+					// Guarda o landing link
 					if m.ExternoID == "" {
 						m.ExternoID = id
 					}
-					// Tentativa de conversão para link que o Google Viewer aceite melhor ou que seja PDF
+					// Conversão agressiva para tentativa de link PDF direto da SciELO (script=sci_pdf)
 					if strings.Contains(id, "sci_arttext") {
-						m.PDFURL = id + "&format=pdf"
+						m.PDFURL = strings.Replace(id, "sci_arttext", "sci_pdf", 1)
 					}
 				} else if m.ExternoID == "" {
 					m.ExternoID = id
@@ -150,11 +159,9 @@ func (h *SciELOHarvester) Search(ctx context.Context, query string, category str
 			}
 		}
 
-		// Fallback: se não achou PDF mas tem ExternoID que parece ser landing page do SciELO
-		if m.PDFURL == "" && strings.Contains(m.ExternoID, "scielo.br") {
-			if strings.Contains(m.ExternoID, "sci_arttext") {
-				m.PDFURL = m.ExternoID + "&format=pdf"
-			}
+		// Fallback se não pegou nada
+		if m.PDFURL == "" && strings.Contains(m.ExternoID, "scielo.br") && strings.Contains(m.ExternoID, "sci_arttext") {
+			m.PDFURL = strings.Replace(m.ExternoID, "sci_arttext", "sci_pdf", 1)
 		}
 
 		materials = append(materials, m)

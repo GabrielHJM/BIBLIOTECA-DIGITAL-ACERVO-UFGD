@@ -10,7 +10,7 @@
 				<v-progress-circular indeterminate color="amber" size="64"></v-progress-circular>
 			</div>
 
-			<div v-else-if="cards.length === 0" class="text-center pa-16 ios-glass-card rounded-xl">
+			<div v-else-if="cards.length === 0" class="text-center pa-16 ios-glass-card reader-rounding">
 				<v-icon size="80" color="amber" class="mb-4">mdi-cards-outline</v-icon>
 				<h2 class="text-h5 text-white">Nenhum flashcard disponível</h2>
 				<p class="text-body-1 text-white opacity-40 mt-2 mb-8">
@@ -28,11 +28,10 @@
 
 				<!-- The Card -->
 				<v-card
-					class="study-card mb-8"
+					class="study-card mb-8 reader-rounding"
 					:class="{ flipped: isFlipped }"
 					@click="flipCard"
 					elevation="12"
-					rounded="xl"
 				>
 					<div class="card-inner">
 						<!-- Front (Question) -->
@@ -156,11 +155,13 @@ export default {
 		height: 100%;
 		-webkit-backface-visibility: hidden;
 		backface-visibility: hidden;
-		border-radius: 24px;
+		border-radius: 32px;
 		background: rgba(255, 255, 255, 0.05);
 		border: 1px solid rgba(255, 255, 255, 0.1);
 		color: white;
 	}
+
+	.reader-rounding { border-radius: 32px !important; }
 
 	.card-back {
 		transform: rotateY(180deg);

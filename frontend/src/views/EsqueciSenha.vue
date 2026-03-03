@@ -1,61 +1,57 @@
 <template>
-	<v-container class="d-flex justify-center align-center w-100 pa-0">
-		<v-card class="ios-card-premium pa-8" elevation="12">
-			<v-row justify="center" class="mb-6">
-				<v-img
-					:src="caminho"
-					alt="Redefinir"
-					max-width="120"
-					class="drop-shadow"
-					contain
-				></v-img>
-			</v-row>
+	<div class="login-absolute-center">
+		<!-- Ambient Background Blobs for Glassmorphism -->
+		<div class="ambient-blob blob-1"></div>
+		<div class="ambient-blob blob-2"></div>
 
-            <v-row justify="center" class="mb-6">
-                <h2 class="text-white font-weight-bold">Redefinir Senha</h2>
-            </v-row>
+		<div class="content-wrapper">
+			<v-card class="ios-login-card position-relative" elevation="0">
+				<!-- Header / Back Button -->
+				<div class="card-header-actions">
+					<v-btn icon="mdi-chevron-left" variant="text" @click="$router.push('/login')" size="large" class="back-btn"></v-btn>
+				</div>
 
-			<v-row>
-				<v-col cols="12" class="text-left py-1 pb-2"><label class="ios-label">Email:</label></v-col>
-				<v-col cols="12" class="py-0">
-					<input v-model="email" type="text" placeholder="seu@email.com" class="ios-input-field w-100" />
-				</v-col>
-			</v-row>
+				<div class="text-center mt-2 mb-6">
+					<div class="login-icon-wrapper mb-4">
+						<v-img :src="caminho" width="64" class="mx-auto drop-shadow"></v-img>
+					</div>
+					<h2 class="login-title">Recuperação</h2>
+					<p class="login-subtitle">Redefina sua senha de acesso</p>
+				</div>
 
-			<v-row class="mt-4">
-				<v-col cols="12" class="text-left py-1 pb-2"><label class="ios-label">Nova Senha:</label></v-col>
-				<v-col cols="12" class="py-0">
-					<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-field w-100" />
-				</v-col>
-			</v-row>
+				<div class="login-form">
+					<div class="input-group mb-4">
+						<label class="ios-label">E-MAIL</label>
+						<input v-model="email" type="email" placeholder="seu@email.com" class="ios-input-modern" />
+					</div>
 
-            <v-row class="mt-4">
-				<v-col cols="12" class="text-left py-1 pb-2"><label class="ios-label">Confirmar Nova Senha:</label></v-col>
-				<v-col cols="12" class="py-0">
-					<input v-model="confirmarSenha" type="password" placeholder="Repita a nova senha" class="ios-input-field w-100" />
-				</v-col>
-			</v-row>
+					<div class="input-group mb-4">
+						<label class="ios-label">NOVA SENHA</label>
+						<input v-model="senha" type="password" placeholder="Mínimo 6 caracteres" class="ios-input-modern" />
+					</div>
 
-			<v-row justify="center" class="mt-8">
-				<v-btn class="ios-action-btn w-100" elevation="4" @click="redefinirSenha" :loading="loading" :disabled="loading">
-					Redefinir
-				</v-btn>
-			</v-row>
+					<div class="input-group mb-8">
+						<label class="ios-label">CONFIRMAR NOVA SENHA</label>
+						<input v-model="confirmarSenha" type="password" placeholder="Repita a nova senha" class="ios-input-modern" />
+					</div>
 
-			<v-row class="mt-10">
-				<v-col cols="12" class="text-center">
-					<router-link to="/login" class="ios-secondary-link">
-						<v-icon color="white" size="24" class="mr-2">mdi-chevron-left</v-icon>
-						<span class="back-text">Voltar para o Login</span>
-					</router-link>
-				</v-col>
-			</v-row>
+					<v-btn class="ios-primary-btn w-100 mb-6" @click="redefinirSenha" :loading="loading" height="56" elevation="0" :disabled="loading">
+						Redefinir Senha
+					</v-btn>
 
-			<v-snackbar v-model="snackbar" :color="snackbarColor" location="top" rounded="pill">
-				{{ snackbarText }}
-			</v-snackbar>
-		</v-card>
-	</v-container>
+					<div class="text-center">
+						<router-link to="/login" class="signup-link">
+							Lembrou da senha? <span class="accent-text">Fazer login</span>
+						</router-link>
+					</div>
+				</div>
+
+				<v-snackbar v-model="snackbar" :color="snackbarColor" location="top" rounded="pill">
+					{{ snackbarText }}
+				</v-snackbar>
+			</v-card>
+		</div>
+	</div>
 </template>
 
 <script>
@@ -117,74 +113,156 @@ export default {
 </script>
 
 <style scoped>
-	.ios-card-premium {
-		width: 100%;
-		max-width: 420px;
-		background: rgba(58, 99, 145, 0.8) !important;
-		backdrop-filter: blur(20px);
-		border-radius: 32px !important;
-		border: 1px solid rgba(255, 255, 255, 0.1);
-        transition: transform 0.3s var(--spring-easing);
+	.login-absolute-center {
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		background: radial-gradient(circle at top left, rgba(0, 184, 212, 0.08), transparent 40%),
+					radial-gradient(circle at bottom right, rgba(0, 184, 212, 0.05), transparent 40%);
+		overflow: hidden;
+		height: 100vh;
+		width: 100vw;
 	}
 
-    .ios-card-premium:hover {
-		transform: translateY(-5px);
+	.ambient-blob {
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		z-index: 0;
+		opacity: 0.6;
+	}
+	.blob-1 {
+		width: 300px; height: 300px;
+		background: rgba(0, 184, 212, 0.4);
+		top: -50px; left: -100px;
+	}
+	.blob-2 {
+		width: 400px; height: 400px;
+		background: rgba(144, 202, 249, 0.2);
+		bottom: -100px; right: -100px;
+	}
+
+	.content-wrapper {
+		width: 100%;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 1;
+		padding: clamp(24px, 4vw, 64px) clamp(16px, 4vw, 64px);
+		height: 100%;
+		box-sizing: border-box;
+	}
+
+	.ios-login-card {
+		width: 100%;
+		max-width: 440px;
+		background: rgba(255, 255, 255, 0.03) !important;
+		backdrop-filter: blur(40px) saturate(180%);
+		-webkit-backdrop-filter: blur(40px) saturate(180%);
+		border-radius: clamp(24px, 4vw, 32px) !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px) !important;
+		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
+		overflow-y: auto;
+		max-height: calc(100vh - 48px);
+	}
+
+	.card-header-actions {
+		position: absolute;
+		top: 24px;
+		left: 24px;
+	}
+
+	.login-title {
+		font-size: 28px;
+		font-weight: 800;
+		letter-spacing: -1px;
+		margin-bottom: 4px;
+		color: #ffffff;
+	}
+
+	.login-subtitle {
+		font-size: 16px;
+		opacity: 0.7;
+		font-weight: 500;
+		color: #ffffff;
 	}
 
 	.ios-label {
-		color: rgba(255, 255, 255, 0.9);
-		font-weight: 600;
-		font-size: 14px;
-        margin-left: 12px;
+		display: block;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 1px;
+		margin-bottom: 8px;
+		margin-left: 8px;
+		opacity: 0.6;
+		color: #ffffff;
 	}
 
-	.ios-input-field {
-		background: rgba(255, 255, 255, 0.9) !important;
-		border: none !important;
+	.ios-input-modern {
+		width: 100%;
+		box-sizing: border-box;
+		background: rgba(0, 0, 0, 0.25);
+		border: 1px solid rgba(255, 255, 255, 0.08);
 		border-radius: 16px;
-		padding: 14px 20px;
-		font-size: 16px;
-		color: #333;
-		transition: all 0.2s ease;
+		padding: 16px 20px;
+		font-size: 15px;
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		color: #ffffff;
 	}
 
-	.ios-input-field:focus {
+	.ios-input-modern::placeholder {
+		color: rgba(255,255,255,0.4);
+	}
+
+	.ios-input-modern:focus {
 		outline: none;
-		background: white !important;
-		box-shadow: 0 0 0 3px rgba(0, 184, 212, 0.4);
+		background: rgba(0, 0, 0, 0.4);
+		border-color: rgba(0, 184, 212, 0.6);
+		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15);
 	}
 
-	.ios-action-btn {
-		background: linear-gradient(135deg, #00B8D4 0%, #0097A7 100%) !important;
+	.ios-primary-btn {
+		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;
 		color: white !important;
-		border-radius: 16px !important;
-		height: 54px !important;
+		border-radius: 20px !important;
 		text-transform: none !important;
 		font-size: 18px !important;
 		font-weight: 700 !important;
-		letter-spacing: 0.5px !important;
+		letter-spacing: -0.2px;
+		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
+		box-shadow: 0 12px 24px rgba(0, 184, 212, 0.3) !important;
 	}
 
-	.ios-secondary-link {
-		color: white;
+	.ios-primary-btn:active {
+		transform: scale(0.97);
+	}
+
+	.signup-link {
+		font-size: 15px;
 		text-decoration: none;
+		color: rgba(255, 255, 255, 0.6);
 		font-weight: 500;
-		display: inline-flex;
-		align-items: center;
-		opacity: 0.8;
-		transition: all 0.2s;
 	}
 
-	.ios-secondary-link:hover {
+	.accent-text {
+		color: #00B8D4;
+		font-weight: 700;
+	}
+
+	.drop-shadow {
+		filter: drop-shadow(0 16px 24px rgba(0, 0, 0, 0.4));
+	}
+
+	.back-btn {
+		opacity: 0.6;
+		transition: opacity 0.2s;
+		color: white;
+	}
+
+	.back-btn:hover {
 		opacity: 1;
-		transform: scale(1.05);
-	}
-
-	.back-text {
-		font-size: 16px;
-	}
-
-    .drop-shadow {
-		filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
 	}
 </style>

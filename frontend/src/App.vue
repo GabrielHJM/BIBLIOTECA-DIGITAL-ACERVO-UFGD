@@ -174,13 +174,26 @@
 		</v-app-bar>
 
 		<v-main>
-			<v-container fluid class="pa-0" :class="{ 'public-page-container': !showBar }">
+			<!-- Private/Main App Layout Wrapper -->
+			<div v-if="showBar" class="responsive-container">
 				<router-view v-slot="{ Component }">
-						<transition name="ios-page" mode="out-in">
+					<transition name="ios-page" mode="out-in">
+						<keep-alive include="ExplorePageExtended,HomeView">
 							<component :is="Component" :key="$route.fullPath" />
-						</transition>
+						</keep-alive>
+					</transition>
 				</router-view>
-			</v-container>
+			</div>
+			<!-- Public Layout Wrapper (No app bar, full screen auth views) -->
+			<div v-else class="public-page-container">
+				<router-view v-slot="{ Component }">
+					<transition name="ios-page" mode="out-in">
+						<keep-alive>
+							<component :is="Component" :key="$route.fullPath" />
+						</keep-alive>
+					</transition>
+				</router-view>
+			</div>
 		</v-main>
 
 		<Footer />
@@ -469,8 +482,25 @@ export default {
 		align-items: center !important;
 		justify-content: center !important;
 		min-height: 100vh !important;
-		padding: 40px 20px !important;
+		padding: clamp(24px, 5vw, 64px) clamp(16px, 5vw, 64px) !important;
 		overflow-y: auto !important;
+		width: 100%;
+	}
+
+	.responsive-container {
+		width: 100%;
+		max-width: 1600px;
+		margin: 0 auto;
+		padding-left: clamp(16px, 6vw, 80px) !important;
+		padding-right: clamp(16px, 6vw, 80px) !important;
+		padding-top: clamp(24px, 4vw, 40px) !important;
+		padding-bottom: clamp(40px, 8vw, 120px) !important;
+	}
+
+	/* Touch target improvements */
+	button, .v-btn, a, .logo-clickable, .category-card-header {
+		min-height: 44px; /* iOS HIG minimum touch target */
+		min-width: 44px;
 	}
 
 	.public-page {

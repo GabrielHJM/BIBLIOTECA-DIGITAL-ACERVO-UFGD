@@ -24,5 +24,10 @@ export default {
 	// Atualizar meta de leitura
 	atualizarMeta(id, meta) {
 		return api.put(`/usuarios/${id}/meta`, { meta_paginas_semana: meta });
+	},
+
+	// Excluir conta do usuário
+	apagar(id) {
+		return api.delete(`/usuarios/${id}`);
 	}
 };

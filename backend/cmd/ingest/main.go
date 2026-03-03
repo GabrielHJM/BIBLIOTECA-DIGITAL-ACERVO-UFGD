@@ -39,21 +39,41 @@ func main() {
 		}
 	}
 
-	if source == "all" || source == "ieee" {
-		h := harvester.NewIEEEHarvester()
-		materials, err := h.Search(context.Background(), "tecnologia", "", 10)
-		if err != nil {
-			logger.Error("Erro ao coletar IEEE", zap.Error(err))
-		} else {
-			saveMaterials(repo, materials)
-		}
-	}
-
 	if source == "all" || source == "capes" {
 		h := harvester.NewCAPESHarvester()
 		materials, err := h.Search(context.Background(), "ciência", "", 10)
 		if err != nil {
 			logger.Error("Erro ao coletar CAPES", zap.Error(err))
+		} else {
+			saveMaterials(repo, materials)
+		}
+	}
+
+	if source == "all" || source == "openlibrary" {
+		h := harvester.NewOpenLibraryHarvester()
+		materials, err := h.Search(context.Background(), "science", "", 10)
+		if err != nil {
+			logger.Error("Erro ao coletar Open Library", zap.Error(err))
+		} else {
+			saveMaterials(repo, materials)
+		}
+	}
+
+	if source == "all" || source == "isbndb" {
+		h := harvester.NewISBNdbHarvester()
+		materials, err := h.Search(context.Background(), "technology", "", 10)
+		if err != nil {
+			logger.Error("Erro ao coletar ISBNdb", zap.Error(err))
+		} else {
+			saveMaterials(repo, materials)
+		}
+	}
+
+	if source == "all" || source == "crossref" {
+		h := harvester.NewCrossrefHarvester()
+		materials, err := h.Search(context.Background(), "education", "", 10)
+		if err != nil {
+			logger.Error("Erro ao coletar Crossref", zap.Error(err))
 		} else {
 			saveMaterials(repo, materials)
 		}

@@ -1,6 +1,6 @@
 <template>
-	<div class="explore-container mt-8">
-		<v-container fluid class="pa-4">
+	<div class="explore-container">
+		<v-container fluid class="pa-0 pa-md-2">
 			<!-- Advanced Header Section -->
 			<v-row align="center" class="mb-6 px-4">
 				<v-col cols="12" md="8" lg="9" class="py-2">
@@ -177,7 +177,7 @@ export default {
 			ano_inicio: null,
 			ano_fim: null
 		},
-		fontesList: ['SciELO', 'CAPES', 'IEEE'],
+		fontesList: ['SciELO', 'CAPES', 'Open Library', 'ISBNdb', 'Crossref'],
 		categoriasMock: ['Ciência', 'Tecnologia', 'Educação', 'Medicina', 'Engenharia', 'Filosofia'],
 		sortOptions: [
 			{ label: 'Relevância', value: '' },
@@ -332,6 +332,7 @@ export default {
 		overflow: hidden;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 	}
 

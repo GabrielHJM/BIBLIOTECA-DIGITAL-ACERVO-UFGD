@@ -43,6 +43,17 @@
 				>
 					Salvar Alterações
 				</v-btn>
+
+				<!-- Delete Account Button -->
+				<v-btn
+					class="w-100 mt-4 text-none d-flex align-center justify-center font-weight-medium"
+					color="#ff3b30"
+					variant="text"
+					@click="confirmDeleteModal = true"
+				>
+					<v-icon left size="20" class="mr-2">mdi-delete-outline</v-icon>
+					Excluir Minha Conta
+				</v-btn>
 			</div>
 		</v-card>
 
@@ -78,6 +89,40 @@
 			</v-card>
 		</v-dialog>
 
+		<!-- Delete Account Confirmation Modal -->
+		<v-dialog v-model="confirmDeleteModal" max-width="400" transition="dialog-bottom-transition">
+			<v-card class="ios-modal-card">
+				<v-card-title class="text-white text-center pt-6 text-h6 font-weight-bold" style="color: #ff3b30 !important;">
+					<v-icon color="#ff3b30" class="mb-2" size="36">mdi-alert-circle-outline</v-icon>
+					<br>Excluir Conta
+				</v-card-title>
+				<v-card-text class="text-white text-center opacity-80 pb-6 px-6">
+					Tem certeza de que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita e todos os seus dados serão apagados.
+				</v-card-text>
+				<v-card-actions class="d-flex flex-column px-6 pb-6" style="gap: 12px;">
+					<v-btn
+						class="w-100 rounded-lg font-weight-bold ma-0"
+						color="#ff3b30"
+						variant="flat"
+						height="48"
+						:loading="deleting"
+						@click="deleteAccount"
+					>
+						Sim, Excluir Conta
+					</v-btn>
+					<v-btn
+						class="w-100 rounded-lg font-weight-medium ma-0 text-white"
+						style="background: rgba(255, 255, 255, 0.1);"
+						variant="flat"
+						height="48"
+						@click="confirmDeleteModal = false"
+					>
+						Cancelar
+					</v-btn>
+				</v-card-actions>
+			</v-card>
+		</v-dialog>
+
 		<!-- Hidden file input -->
 		<input
 			type="file"
@@ -108,7 +153,9 @@ export default {
 				foto_url: ''
 			},
 			loading: false,
+			deleting: false,
 			photoModal: false,
+			confirmDeleteModal: false,
 			previewUrl: null,
 			snackbar: false,
 			snackbarText: '',
@@ -178,6 +225,30 @@ export default {
 			} finally {
 				this.loading = false
 			}
+		},
+		async deleteAccount() {
+			this.deleting = true;
+			try {
+				await UsuarioService.apagar(this.user.id);
+
+				this.snackbarText = "Conta excluída com sucesso.";
+				this.snackbarColor = "info";
+				this.snackbar = true;
+
+				auth.logout();
+
+				setTimeout(() => {
+					this.$router.push('/');
+				}, 1500);
+			} catch (error) {
+				console.error("Erro ao excluir conta:", error);
+				this.snackbarText = "Erro ao excluir conta. Tente novamente mais tarde.";
+				this.snackbarColor = "error";
+				this.snackbar = true;
+			} finally {
+				this.deleting = false;
+				this.confirmDeleteModal = false;
+			}
 		}
 	}
 }
@@ -186,7 +257,7 @@ export default {
 <style scoped>
 .profile-container {
 	min-height: calc(100vh - 90px);
-	padding: 40px 20px;
+	padding: 0;
 }
 
 .ios-profile-card {

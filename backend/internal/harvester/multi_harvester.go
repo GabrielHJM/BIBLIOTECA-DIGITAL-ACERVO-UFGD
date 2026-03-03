@@ -14,18 +14,22 @@ import (
 )
 
 type MultiSourceHarvester struct {
-	scielo *SciELOHarvester
-	capes  *CAPESHarvester
-	ieee   *IEEEHarvester
-	meta   *metadata.MetadataService
+	scielo      *SciELOHarvester
+	capes       *CAPESHarvester
+	openlibrary *OpenLibraryHarvester
+	isbndb      *ISBNdbHarvester
+	crossref    *CrossrefHarvester
+	meta        *metadata.MetadataService
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
 	return &MultiSourceHarvester{
-		scielo: NewSciELOHarvester(),
-		capes:  NewCAPESHarvester(),
-		ieee:   NewIEEEHarvester(),
-		meta:   metadata.NewMetadataService(),
+		scielo:      NewSciELOHarvester(),
+		capes:       NewCAPESHarvester(),
+		openlibrary: NewOpenLibraryHarvester(),
+		isbndb:      NewISBNdbHarvester(),
+		crossref:    NewCrossrefHarvester(),
+		meta:        metadata.NewMetadataService(),
 	}
 }
 
@@ -47,7 +51,9 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	}{
 		{"SciELO", h.scielo.Search},
 		{"CAPES", h.capes.Search},
-		{"IEEE", h.ieee.Search},
+		{"Open Library", h.openlibrary.Search},
+		{"ISBNdb", h.isbndb.Search},
+		{"Crossref", h.crossref.Search},
 	}
 
 	for _, harv := range targetHarvesters {

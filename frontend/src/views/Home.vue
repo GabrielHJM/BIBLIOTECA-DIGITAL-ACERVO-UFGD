@@ -42,11 +42,14 @@
 
 		<!-- Categories Section -->
 		<section class="categories-section">
-			<div class="section-header">
-				<h2 class="section-title">COMECE SEUS ESTUDOS</h2>
-				<div class="title-underline"></div>
+			<div class="section-header-flex">
+				<div class="section-header-title">
+					<v-icon size="28" color="var(--ios-cyan)">mdi-book-open-page-variant-outline</v-icon>
+					<h3 class="section-title">Comece Seus Estudos</h3>
+				</div>
+			</div>
 
-				<div class="acervos-filter mt-8 d-flex justify-center">
+			<div class="acervos-filter mt-4 mb-8 d-flex justify-center">
 					<v-select
 						v-model="selectedAcervo"
 						:items="acervosList"
@@ -63,7 +66,6 @@
 							<v-icon color="#00B8D4" class="mr-2">mdi-bookshelf</v-icon>
 						</template>
 					</v-select>
-				</div>
 			</div>
 
 			<div class="categories-grid">
@@ -145,12 +147,13 @@
 		<section class="features-section">
 			<div class="features-inner">
 				<div class="features-text-col">
-					<h2 class="features-headline">Por que a Biblioteca Digital Acessível é inovadora?</h2>
+					<div class="section-header-flex px-0 mb-4">
+						<div class="section-header-title">
+							<v-icon size="28" color="#BF5AF2">mdi-lightbulb-on-outline</v-icon>
+							<h3 class="features-headline mb-0">Inovação e Acessibilidade</h3>
+						</div>
+					</div>
 					<p class="features-desc">Um ecossistema de leitura pensado para democratizar o acesso ao conhecimento, sem barreiras e sem custos.</p>
-					<button class="btn-primary mt-6" @click="$router.push('/cadastro')">
-						<v-icon size="18" class="mr-2">mdi-rocket-launch</v-icon>
-						Comece Agora
-					</button>
 				</div>
 
 				<div class="features-cards-col">
@@ -192,8 +195,12 @@
 		<!-- CTA Banner -->
 		<section class="cta-section">
 			<div class="cta-inner">
-				<v-icon size="40" color="white" class="mb-4">mdi-book-open-page-variant</v-icon>
-				<h2 class="cta-title">Pronto para explorar?</h2>
+				<div class="section-header-flex justify-center mb-6 px-0 w-100">
+					<div class="section-header-title text-center">
+						<v-icon size="32" color="white" class="mr-2">mdi-rocket-launch-outline</v-icon>
+						<h2 class="cta-title mb-0" style="color:white; font-size:2rem; letter-spacing: -1px;">Pronto para explorar?</h2>
+					</div>
+				</div>
 				<p class="cta-subtitle">Junte-se a milhares de estudantes e profissionais que já utilizam nossa plataforma de forma gratuita.</p>
 				<div class="cta-actions">
 					<template v-if="!isLoggedIn">
@@ -207,11 +214,58 @@
 			</div>
 		</section>
 
+		<!-- Dynamic Knowledge News (GNews via cache limite 100 req/dia) -->
+		<section class="news-section">
+			<div class="section-header-flex">
+				<div class="section-header-title">
+					<v-icon size="28" color="var(--ios-cyan)">mdi-newspaper-variant-outline</v-icon>
+					<h3>Notícias em Ciência & Tecnologia</h3>
+				</div>
+				<div class="news-nav">
+					<button class="news-nav-btn" @click="scrollNews(-1)"><v-icon>mdi-chevron-left</v-icon></button>
+					<button class="news-nav-btn" @click="scrollNews(1)"><v-icon>mdi-chevron-right</v-icon></button>
+				</div>
+			</div>
+
+			<div class="news-carousel-container">
+				<div class="news-carousel" ref="newsCarousel">
+
+					<div v-if="loadingNews" class="news-loading-wrapper">
+						<v-progress-circular indeterminate color="var(--ios-cyan)" size="40"></v-progress-circular>
+					</div>
+
+					<template v-else>
+						<div class="news-track static-track">
+							<a
+								v-for="(item, i) in newsList"
+								:key="'news1-' + i"
+								:href="item.url"
+								target="_blank"
+								class="news-card"
+							>
+								<div class="news-card-img-placeholder" v-if="!item.image">
+									<v-icon>mdi-newspaper</v-icon>
+								</div>
+								<img v-else :src="item.image" alt="News Image" class="news-card-img" />
+								<div class="news-card-content">
+									<span class="news-source">{{ item.source.name || 'GNews' }}</span>
+									<h4 class="news-title">{{ item.title }}</h4>
+									<p class="news-desc">{{ item.description }}</p>
+								</div>
+							</a>
+						</div>
+					</template>
+
+				</div>
+			</div>
+		</section>
+
 	</div>
 </template>
 
 <script>
 import MaterialService from '../services/MaterialService';
+import NewsService from '../services/NewsService';
 import { state as authState } from '@/auth';
 import { useTheme } from 'vuetify';
 import { computed } from 'vue';
@@ -235,6 +289,9 @@ export default {
 	data() {
 		return {
 			loading: true,
+			loadingNews: true,
+			newsList: [],
+			isHoveringNews: false,
 			hoveredFeature: null,
 			pillTransforms: {},
 			selectedAcervo: '',
@@ -242,8 +299,9 @@ export default {
 				{ title: 'Todos os Acervos', value: '' },
 				{ title: 'SciELO', value: 'SciELO' },
 				{ title: 'CAPES', value: 'CAPES' },
-				{ title: 'IEEE', value: 'IEEE' },
-				{ title: 'OpenAlex', value: 'OpenAlex' }
+				{ title: 'Open Library', value: 'Open Library' },
+				{ title: 'ISBNdb', value: 'ISBNdb' },
+				{ title: 'Crossref', value: 'Crossref' }
 			],
 			stats: [
 				{ value: '5K+', label: 'Materiais Livres' },
@@ -270,12 +328,30 @@ export default {
 	},
 	async mounted() {
 		await this.fetchMateriais();
+		this.fetchNews();
 		window.addEventListener('scroll', this.handleParallax);
 	},
 	beforeUnmount() {
 		window.removeEventListener('scroll', this.handleParallax);
 	},
 	methods: {
+		async fetchNews() {
+			this.loadingNews = true;
+			try {
+				this.newsList = await NewsService.buscarNoticias();
+			} catch (err) {
+				console.error("Erro ao puxar noticias:", err);
+			} finally {
+				this.loadingNews = false;
+			}
+		},
+		scrollNews(direction) {
+			const container = this.$refs.newsCarousel;
+			if (container) {
+				const scrollAmount = 340 * direction; // Largura do card + gap
+				container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+			}
+		},
 		handleParallax() {
 			const scrolled = window.scrollY;
 			const hero = document.querySelector('.hero-content');
@@ -301,6 +377,15 @@ export default {
 							livros = response;
 						} else if (response && response.data && Array.isArray(response.data)) {
 							livros = response.data;
+						}
+
+						if (livros.length === 0 && this.selectedAcervo !== '') {
+							const fallback = await MaterialService.pesquisar('', '', this.selectedAcervo, 0, 0, 3, 0, 'random');
+							if (fallback && Array.isArray(fallback)) {
+								livros = fallback;
+							} else if (fallback && fallback.data && Array.isArray(fallback.data)) {
+								livros = fallback.data;
+							}
 						}
 
 						cat.livros = livros;
@@ -363,6 +448,30 @@ export default {
 	transition: background-color 0.4s var(--spring-easing);
 }
 
+/* ===========================
+   BASE SEC HEADERS
+=========================== */
+.section-header-flex {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 24px;
+	padding: 0 20px;
+}
+
+.section-header-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.section-header-title h3 {
+	font-size: 1.8rem;
+	font-weight: 700;
+	letter-spacing: -0.5px;
+	margin: 0;
+}
+
 /* Hero Styles */
 .hero-section {
 	padding: 120px 24px 100px;
@@ -394,6 +503,7 @@ export default {
 .accent-gradient {
 	background: linear-gradient(135deg, var(--ios-cyan), #007AFF);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
 
@@ -409,7 +519,7 @@ export default {
 	background: var(--ios-cyan);
 	color: white;
 	padding: 16px 32px;
-	border-radius: 16px;
+	border-radius: 100px;
 	font-weight: 700;
 	font-size: 16px;
 	box-shadow: 0 10px 30px rgba(0, 184, 212, 0.3);
@@ -423,7 +533,7 @@ export default {
 
 .ios-btn-secondary {
 	padding: 16px 32px;
-	border-radius: 16px;
+	border-radius: 100px;
 	font-weight: 600;
 	background: rgba(var(--v-theme-on-surface), 0.05);
 	transition: all 0.3s var(--spring-easing);
@@ -471,11 +581,25 @@ export default {
 	text-transform: uppercase;
 }
 
+/* Categories Section */
+.categories-section {
+	position: relative;
+	z-index: 1;
+	max-width: 1200px;
+	margin: 80px auto;
+	padding: 60px 48px;
+	background: rgba(255, 255, 255, 0.02);
+	backdrop-filter: blur(20px) saturate(150%);
+	border-radius: 32px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+}
+
 .categories-grid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 	gap: 24px;
-	margin-top: 24px;
+	margin-top: 40px;
 }
 
 /* Category Cards – white card style matching the mockup */
@@ -657,10 +781,15 @@ export default {
 .features-section {
 	position: relative;
 	z-index: 1;
-	padding: 60px 32px;
-	background: rgba(0,0,0,0.15);
-	border-top: 1px solid rgba(255,255,255,0.06);
-	border-bottom: 1px solid rgba(255,255,255,0.06);
+	max-width: 1200px;
+	margin: 100px auto 60px; /* Increased distance from categories */
+	padding: 80px 48px;
+	background: rgba(0,184,212,0.08); /* Similar to cta-inner */
+	backdrop-filter: blur(24px) saturate(160%);
+	-webkit-backdrop-filter: blur(24px) saturate(160%);
+	border-radius: 32px; /* Same as cta-inner */
+	border: 1px solid rgba(0,184,212,0.25); /* Same as cta-inner */
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
 }
 .features-inner {
 	max-width: 1100px;
@@ -752,20 +881,22 @@ export default {
 .cta-section {
 	position: relative;
 	z-index: 1;
-	padding: 80px 24px;
+	max-width: 1200px;
+	margin: 0 auto 100px;
+	padding: 80px 48px;
+	background: rgba(255, 255, 255, 0.02);
+	backdrop-filter: blur(20px) saturate(150%);
+	border-radius: 32px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
 	text-align: center;
 }
 .cta-inner {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	background: rgba(0,184,212,0.1);
-	border: 1px solid rgba(0,184,212,0.25);
-	border-radius: 32px;
-	padding: 60px 40px;
 	max-width: 640px;
 	margin: 0 auto;
-	backdrop-filter: blur(20px);
 }
 .cta-title {
 	font-size: 2rem;
@@ -877,10 +1008,194 @@ export default {
 	.hero-section { padding: 60px 16px 40px; }
 	.categories-section { padding: 16px 16px 40px; }
 	.categories-grid { grid-template-columns: 1fr; }
-	.features-section { padding: 40px 16px; }
+	.features-section {
+		padding: 40px 24px;
+		margin: 60px 16px 40px;
+		border-radius: 32px;
+	}
 	.stats-row { flex-wrap: wrap; }
 	.stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.08); }
 	.stat-item:last-child { border-bottom: none; }
-	.cta-inner { padding: 40px 20px; }
+	.cta-section {
+		padding: 60px 24px;
+		margin: 0 16px 60px;
+	}
+}
+
+/* ===========================
+   DYNAMIC NEWS SECTION
+=========================== */
+.news-section {
+	padding: 60px 40px 100px;
+	max-width: 1400px;
+	margin: 0 auto;
+}
+
+.news-nav {
+	display: flex;
+	gap: 12px;
+}
+
+.news-nav-btn {
+	width: 44px;
+	height: 44px;
+	border-radius: 50%;
+	background: rgba(var(--v-theme-on-surface), 0.05);
+	color: rgb(var(--v-theme-on-surface));
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.3s ease;
+}
+
+.news-nav-btn:hover {
+	background: rgba(var(--v-theme-on-surface), 0.15);
+	transform: scale(1.05);
+}
+
+.news-carousel-container {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	background: rgba(var(--v-theme-surface), 0.4);
+	backdrop-filter: blur(24px) saturate(180%);
+	border-radius: 32px;
+	padding: 32px 0;
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+}
+
+.news-carousel-container::before,
+.news-carousel-container::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 100px;
+	z-index: 2;
+	pointer-events: none;
+}
+
+.news-carousel-container::before {
+	left: 0;
+	background: linear-gradient(to right, rgba(var(--v-theme-surface), 0.9), transparent);
+}
+
+.news-carousel-container::after {
+	right: 0;
+	background: linear-gradient(to left, rgba(var(--v-theme-surface), 0.9), transparent);
+}
+
+.news-carousel {
+	display: flex;
+	width: 100%;
+	overflow-x: auto;
+	scroll-behavior: smooth;
+	padding: 10px 20px 40px;
+	/* Hide scrollbar */
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+.news-carousel::-webkit-scrollbar {
+	display: none;
+}
+
+.news-track.static-track {
+	display: flex;
+	gap: 24px;
+	padding-right: 40px;
+}
+
+.news-card {
+	flex: 0 0 320px;
+	display: flex;
+	flex-direction: column;
+	background: rgba(var(--v-theme-surface), 0.8);
+	border-radius: 20px;
+	overflow: hidden;
+	text-decoration: none;
+	color: inherit;
+	transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+	border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+	box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+}
+
+.news-card:hover {
+	transform: translateY(-8px) scale(1.02);
+	box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+	background: rgba(var(--v-theme-surface), 1);
+}
+
+.news-card-img-placeholder {
+	height: 160px;
+	background: rgba(var(--v-theme-on-surface), 0.05);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.news-card-img {
+	width: 100%;
+	height: 160px;
+	object-fit: cover;
+	transition: transform 0.4s ease;
+}
+
+.news-card:hover .news-card-img {
+	transform: scale(1.05);
+}
+
+.news-card-content {
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.news-source {
+	font-size: 0.75rem;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--ios-cyan);
+	letter-spacing: 0.5px;
+}
+
+.news-title {
+	font-size: 1.1rem;
+	font-weight: 700;
+	line-height: 1.3;
+	margin: 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.news-desc {
+	font-size: 0.9rem;
+	color: rgba(var(--v-theme-on-surface), 0.7);
+	line-height: 1.5;
+	margin: 0;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
+.news-loading-wrapper {
+	width: 100vw;
+	max-width: 100%;
+	display: flex;
+	justify-content: center;
+	padding: 80px 0;
+}
+
+@media (max-width: 768px) {
+	.news-section {
+		padding: 40px 20px 80px;
+	}
+	.news-card {
+		flex: 0 0 280px;
+	}
 }
 </style>

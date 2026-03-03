@@ -1,10 +1,10 @@
 <template>
-	<div class="estudo-container mt-8" v-if="!loading && material">
-		<v-container fluid class="pa-0 pa-sm-4">
+	<div class="estudo-container" v-if="!loading && material">
+		<v-container fluid class="pa-0 pa-md-2">
 			<v-row no-gutters>
 				<!-- Sidebar: Book Info & Citation Tools -->
 				<v-col cols="12" lg="3" class="pa-4" v-if="!zenMode">
-					<v-card class="ios-glass-card pa-6 sticky-sidebar" rounded="xl">
+					<v-card class="ios-glass-card pa-6 sticky-sidebar reader-rounding">
 						<v-btn class="ios-btn-back mb-6" variant="text" @click="goBack" density="comfortable">
 							<v-icon class="mr-2">mdi-arrow-left</v-icon> Voltar
 						</v-btn>
@@ -128,7 +128,7 @@
 
 				<!-- Main Content: Reading View -->
 				<v-col cols="12" lg="9" class="pa-4">
-					<v-card class="reader-card" rounded="xl">
+					<v-card class="reader-card reader-rounding">
 						<!-- Custom Reader Toolbar -->
 						<div class="reader-toolbar d-flex align-center px-4 py-2">
 							<div class="d-flex align-center">
@@ -171,105 +171,106 @@
 						</div>
 
 						<div class="viewer-area fill-height" ref="viewerContainer">
-							<!-- AI Chat Overlay/Drawer -->
-							<v-navigation-drawer
-								v-model="chatDrawer"
-								location="right"
-								temporary
-								width="350"
-								class="ios-chat-drawer"
-								overlay-opacity="0.3"
-							>
-								<div class="chat-header pa-4 d-flex align-center">
-									<v-icon color="amber" class="mr-2">mdi-robot-happy</v-icon>
-									<span class="font-weight-black text-white">Ask the Book (IA)</span>
-									<v-spacer></v-spacer>
-									<v-btn icon="mdi-close" size="small" variant="text" @click="chatDrawer = false"></v-btn>
-								</div>
-
-								<div class="chat-messages pa-4" ref="chatScroll">
-									<div v-if="chatMessages.length === 0" class="empty-chat d-flex flex-column align-center justify-center opacity-40 py-10">
-										<v-icon size="48">mdi-chat-question-outline</v-icon>
-										<p class="text-caption mt-2 text-center">Tire suas dúvidas sobre o conteúdo deste livro agora!</p>
+							<!-- AI Chat Floating Window -->
+							<v-dialog v-model="chatDrawer" max-width="450" transition="dialog-bottom-transition">
+								<v-card class="rounded-xl overflow-hidden elevation-24" style="background: rgba(20, 25, 35, 0.95) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; max-height: 85vh;">
+									<div class="chat-header pa-4 d-flex align-center">
+										<v-icon color="amber" class="mr-2">mdi-robot-happy</v-icon>
+										<span class="font-weight-black text-white">Ask the Book (IA)</span>
+										<v-spacer></v-spacer>
+										<v-btn icon="mdi-close" size="small" variant="text" @click="chatDrawer = false"></v-btn>
 									</div>
-									<div v-for="(msg, i) in chatMessages" :key="i" :class="['chat-bubble-wrap', msg.role]">
-										<div class="chat-bubble">
-											{{ msg.text }}
+
+									<div class="chat-messages pa-4 flex-grow-1" ref="chatScroll" style="overflow-y: auto;">
+										<div v-if="chatMessages.length === 0" class="empty-chat d-flex flex-column align-center justify-center opacity-40 py-10">
+											<v-icon size="48">mdi-chat-question-outline</v-icon>
+											<p class="text-caption mt-2 text-center">Tire suas dúvidas sobre o conteúdo deste livro agora!</p>
+										</div>
+										<div v-for="(msg, i) in chatMessages" :key="i" :class="['chat-bubble-wrap', msg.role]">
+											<div class="chat-bubble">
+												{{ msg.text }}
+											</div>
+										</div>
+										<div v-if="sendingChat" class="chat-bubble-wrap ai">
+											<div class="chat-bubble typing">
+												<v-progress-circular indeterminate size="16" width="2" color="amber"></v-progress-circular>
+												<span class="ml-2">Pensando...</span>
+											</div>
 										</div>
 									</div>
-									<div v-if="sendingChat" class="chat-bubble-wrap ai">
-										<div class="chat-bubble typing">
-											<v-progress-circular indeterminate size="16" width="2" color="amber"></v-progress-circular>
-											<span class="ml-2">Pensando...</span>
-										</div>
+
+									<div class="chat-input-wrap pa-4" style="background: rgba(0,0,0,0.5); border-top: 1px solid rgba(255,255,255,0.05);">
+										<v-text-field
+											v-model="chatInput"
+											placeholder="Faça uma pergunta..."
+											variant="solo"
+											bg-color="rgba(255,255,255,0.1)"
+											density="comfortable"
+											rounded="pill"
+											hide-details
+											@keyup.enter="enviarPerguntaIA"
+											class="chat-field"
+										>
+											<template v-slot:append-inner>
+												<v-btn icon="mdi-send" variant="text" size="small" color="amber" @click="enviarPerguntaIA" :disabled="!chatInput.trim() || sendingChat"></v-btn>
+											</template>
+										</v-text-field>
 									</div>
-								</div>
+								</v-card>
+							</v-dialog>
 
-								<div class="chat-input-wrap pa-4 bg-black">
-									<v-text-field
-										v-model="chatInput"
-										placeholder="Faça uma pergunta..."
-										variant="solo"
-										density="comfortable"
-										rounded="pill"
-										hide-details
-										@keyup.enter="enviarPerguntaIA"
-										class="chat-field"
-									>
-										<template v-slot:append-inner>
-											<v-btn icon="mdi-send" variant="text" size="small" color="amber" @click="enviarPerguntaIA" :disabled="!chatInput.trim() || sendingChat"></v-btn>
-										</template>
-									</v-text-field>
-								</div>
-							</v-navigation-drawer>
-
-							<!-- Study Notes Drawer -->
-							<v-navigation-drawer
-								v-model="notesDrawer"
-								location="right"
-								temporary
-								width="350"
-								class="ios-notes-drawer"
-							>
-								<div class="notes-header pa-4 d-flex align-center">
-									<v-icon color="cyan" class="mr-2">mdi-note-edit-outline</v-icon>
-									<span class="font-weight-black text-white">Minhas Anotações</span>
-									<v-spacer></v-spacer>
-									<v-btn icon="mdi-close" size="small" variant="text" @click="notesDrawer = false"></v-btn>
-								</div>
-
-								<div class="pa-4">
-									<v-textarea
-										v-model="novaAnotacao"
-										placeholder="Escreva uma nota sobre este livro..."
-										variant="solo"
-										bg-color="rgba(255,255,255,0.05)"
-										rows="3"
-										hide-details
-										class="mb-3 rounded-lg"
-									></v-textarea>
-									<v-btn block color="cyan" class="text-none font-weight-bold" @click="salvarAnotacao" :loading="salvandoNota" :disabled="!novaAnotacao.trim()">
-										Salvar Anotação
-									</v-btn>
-								</div>
-
-								<v-divider class="opacity-10"></v-divider>
-
-								<div class="notes-list pa-4">
-									<div v-if="anotacoes.length === 0" class="empty-notes text-center opacity-30 py-10">
-										<v-icon size="48">mdi-text-box-plus-outline</v-icon>
-										<p class="text-caption mt-2">Nenhuma anotação ainda.</p>
+							<!-- Study Notes Floating Window -->
+							<v-dialog v-model="notesDrawer" max-width="450" transition="dialog-bottom-transition">
+								<v-card class="rounded-xl overflow-hidden elevation-24" style="background: rgba(20, 25, 35, 0.95) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; max-height: 85vh;">
+									<div class="notes-header pa-4 d-flex align-center" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+										<v-icon color="cyan" class="mr-2">mdi-note-edit-outline</v-icon>
+										<span class="font-weight-black text-white">Minhas Anotações</span>
+										<v-spacer></v-spacer>
+										<v-btn icon="mdi-close" size="small" variant="text" @click="notesDrawer = false"></v-btn>
 									</div>
-									<v-card v-for="nota in anotacoes" :key="nota.id" class="nota-card mb-4 pa-3" variant="tonal" color="cyan">
-										<div class="d-flex justify-space-between align-start mb-2">
-											<v-chip size="x-small" color="cyan" variant="flat">Pág. {{ nota.pagina || '?' }}</v-chip>
-											<v-btn icon="mdi-delete" size="x-small" variant="text" color="red" @click="deletarAnotacao(nota.id)"></v-btn>
+
+									<div class="pa-4" style="background: rgba(0,0,0,0.2);">
+										<v-text-field
+											v-if="!isAuthenticated"
+											readonly
+											hide-details
+											variant="tonal"
+											density="compact"
+											color="amber"
+											class="mb-3 text-caption text-amber"
+											prepend-inner-icon="mdi-information"
+											value="Anotações salvas apenas temporariamente"
+										></v-text-field>
+										<v-textarea
+											v-model="novaAnotacao"
+											placeholder="Escreva uma nota sobre este livro..."
+											variant="solo"
+											bg-color="rgba(255,255,255,0.08)"
+											rows="3"
+											hide-details
+											class="mb-3 rounded-lg"
+										></v-textarea>
+										<v-btn block color="cyan" class="text-none font-weight-bold" @click="salvarAnotacao" :loading="salvandoNota" :disabled="!novaAnotacao.trim()">
+											Salvar Anotação
+										</v-btn>
+									</div>
+
+									<div class="notes-list pa-4 flex-grow-1" style="overflow-y: auto;">
+										<div v-if="anotacoes.length === 0" class="empty-notes text-center opacity-30 py-10">
+											<v-icon size="48">mdi-text-box-plus-outline</v-icon>
+											<p class="text-caption mt-2">Nenhuma anotação ainda.</p>
 										</div>
-										<div class="text-body-2 text-white">{{ nota.conteudo }}</div>
-										<div class="text-right text-overline opacity-40 mt-1">{{ formatarData(nota.data_criacao) }}</div>
-									</v-card>
-								</div>
-							</v-navigation-drawer>
+										<v-card v-for="(nota, idx) in anotacoes" :key="nota.id || idx" class="nota-card mb-4 pa-3" variant="tonal" color="cyan" style="background: rgba(0, 184, 212, 0.05);">
+											<div class="d-flex justify-space-between align-start mb-2">
+												<v-chip size="x-small" color="cyan" variant="flat">Pág. {{ nota.pagina || '1' }}</v-chip>
+												<v-btn icon="mdi-delete" size="x-small" variant="text" color="red" @click="deletarAnotacao(nota.id, idx)"></v-btn>
+											</div>
+											<div class="text-body-2 text-white">{{ nota.conteudo }}</div>
+											<div class="text-right text-overline opacity-40 mt-1">{{ formatarData(nota.data_criacao) }}</div>
+										</v-card>
+									</div>
+								</v-card>
+							</v-dialog>
 
 							<template v-if="isAuthenticated">
 								<!-- PDF Proxy Viewer -->
@@ -350,7 +351,7 @@
 					</v-card>
 
 					<!-- Description & Abstract -->
-					<v-card class="ios-glass-card mt-6 pa-8" rounded="xl" v-if="material.descricao || resumoIA">
+					<v-card class="ios-glass-card mt-6 pa-8 reader-rounding" v-if="material.descricao || resumoIA">
 						<div class="d-flex align-center justify-space-between mb-6">
 							<h3 class="text-h5 font-weight-bold text-white d-flex align-center">
 								<v-icon :color="resumoIA ? 'amber' : 'cyan'" class="mr-3">{{ resumoIA ? 'mdi-auto-fix' : 'mdi-text-long' }}</v-icon>
@@ -415,8 +416,8 @@
 				</v-col>
 			</v-row>
 
-			<v-snackbar v-model="copySnack" :timeout="2000" color="cyan darken-2" location="bottom">
-				Citação copiada com sucesso!
+			<v-snackbar v-model="snackbar" :timeout="3000" :color="snackbarColor" location="bottom" rounded="pill">
+				{{ snackbarText }}
 			</v-snackbar>
 		</v-container>
 
@@ -427,7 +428,7 @@
 					<v-icon color="cyan" size="24" class="mr-2">mdi-format-quote-close</v-icon>
 					<h3 class="text-h6 font-weight-bold text-white">Gerador de Citação</h3>
 					<v-spacer></v-spacer>
-					<v-btn icon="mdi-close" variant="text" size="small" @click="showCitationDialog = false"></v-btn>
+				<v-btn icon="mdi-close" variant="text" size="small" @click="showCitationDialog = false"></v-btn>
 				</div>
 
 				<div class="citation-box pa-4 mb-4 rounded-lg bg-black-opacity-40">
@@ -478,7 +479,9 @@ export default {
 		zoomLevel: 100,
 		zenMode: false,
 		isFullscreen: false,
-		copySnack: false,
+		snackbar: false,
+		snackbarText: '',
+		snackbarColor: 'success',
 		chatDrawer: false,
 		chatInput: '',
 		chatMessages: [],
@@ -533,7 +536,9 @@ export default {
 		copyCitation(event) {
 			const text = event.target.innerText;
 			navigator.clipboard.writeText(text);
-			this.copySnack = true;
+			this.snackbarText = 'Citação copiada com sucesso!';
+			this.snackbarColor = 'success';
+			this.snackbar = true;
 		},
 		handleReadOnline() {
 			if (this.$refs.viewerContainer) {
@@ -576,7 +581,7 @@ export default {
 				this.chatMessages.push({ role: 'ai', text: response.data.resposta });
 			} catch (error) {
 				console.error('Erro ao perguntar IA:', error);
-				this.chatMessages.push({ role: 'ai', text: 'Desculpe, tive um problema ao processar sua pergunta. Verifique sua chave de API.' });
+				this.chatMessages.push({ role: 'ai', text: 'Desculpe, tive um problema ao processar sua pergunta. O recurso de Inteligência Artificial parece estar offline ou a chave da API (GEMINI_API_KEY) está faltando no servidor.' });
 			} finally {
 				this.sendingChat = false;
 				this.$nextTick(() => { this.scrollToBottom(); });
@@ -587,10 +592,15 @@ export default {
 			try {
 				const response = await MaterialService.obterResumo(this.material.id);
 				this.resumoIA = response.data.resumo;
-				// Scroll to abstract section
-				document.querySelector('.abstract-text').scrollIntoView({ behavior: 'smooth' });
+				setTimeout(() => {
+					const el = document.querySelector('.resumo-ia-content');
+					if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}, 300);
 			} catch (error) {
 				console.error('Erro ao gerar resumo IA:', error);
+				this.snackbarText = 'Falha ao gerar o resumo. Verifique se a chave da API de IA está configurada no backend.';
+				this.snackbarColor = 'error';
+				this.snackbar = true;
 			} finally {
 				this.loadingResumo = false;
 			}
@@ -602,32 +612,70 @@ export default {
 			}
 		},
 		async carregarAnotacoes() {
+			if (!this.isAuthenticated) {
+				const localNotes = localStorage.getItem(`anotacoes_temp_${this.material?.id}`);
+				if (localNotes) {
+					this.anotacoes = JSON.parse(localNotes);
+				}
+				return;
+			}
 			try {
 				const response = await EstudoService.listarAnotacoes(auth.getUser().id, this.material.id);
-				this.anotacoes = response.data;
+				this.anotacoes = response.data || [];
 			} catch (error) {
 				console.error('Erro ao carregar anotações:', error);
 			}
 		},
 		async salvarAnotacao() {
 			this.salvandoNota = true;
+
+			const nova = {
+				conteudo: this.novaAnotacao,
+				pagina: 1, // Placeholder
+				cor: 'cyan',
+				data_criacao: new Date().toISOString()
+			};
+
+			if (!this.isAuthenticated) {
+				nova.id = Date.now();
+				this.anotacoes.push(nova);
+				localStorage.setItem(`anotacoes_temp_${this.material.id}`, JSON.stringify(this.anotacoes));
+
+				this.novaAnotacao = '';
+				this.salvandoNota = false;
+				this.snackbarText = 'Anotação salva localmente. Faça login para guardar na nuvem!';
+				this.snackbarColor = 'info';
+				this.snackbar = true;
+				return;
+			}
+
 			try {
 				await EstudoService.criarAnotacao({
 					usuario_id: auth.getUser().id,
 					material_id: this.material.id,
-					conteudo: this.novaAnotacao,
-					pagina: 0, // Placeholder, can be improved to detect current page
-					cor: 'cyan'
+					...nova
 				});
 				this.novaAnotacao = '';
 				await this.carregarAnotacoes();
+
+				this.snackbarText = 'Anotação salva na sua conta com sucesso!';
+				this.snackbarColor = 'success';
+				this.snackbar = true;
 			} catch (error) {
 				console.error('Erro ao salvar anotação:', error);
+				this.snackbarText = 'Erro ao salvar anotação. Tente novamente.';
+				this.snackbarColor = 'error';
+				this.snackbar = true;
 			} finally {
 				this.salvandoNota = false;
 			}
 		},
-		async deletarAnotacao(id) {
+		async deletarAnotacao(id, index) {
+			if (!this.isAuthenticated) {
+				this.anotacoes.splice(index, 1);
+				localStorage.setItem(`anotacoes_temp_${this.material.id}`, JSON.stringify(this.anotacoes));
+				return;
+			}
 			try {
 				await EstudoService.deletarAnotacao(id, auth.getUser().id);
 				await this.carregarAnotacoes();
@@ -661,7 +709,7 @@ export default {
 </script>
 
 <style scoped>
-	.estudo-container { min-height: 100vh; background: #121826; }
+	.estudo-container { min-height: 100vh; padding-top: 100px; padding-bottom: 50px; }
 
 	.ios-glass-card {
 		background: rgba(255, 255, 255, 0.04) !important;
@@ -700,7 +748,8 @@ export default {
 	.zen-mode .reader-toolbar { background: #000; }
 
 	.viewer-area { flex: 1; position: relative; transition: all 0.5s ease; }
-	.safe-iframe { border: none; }
+	.safe-iframe { border: none; border-radius: inherit; }
+	.reader-rounding { border-radius: 32px !important; }
 
 	.lock-screen {
 		background: linear-gradient(135deg, rgba(0,0,0,0.95), rgba(0,184,212,0.1));
