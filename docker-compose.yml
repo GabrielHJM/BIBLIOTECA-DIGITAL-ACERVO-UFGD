@@ -37,16 +37,22 @@ services:
           memory: 256M
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      target: build-stage
     restart: always
     ports:
-      - "80:80"
+      - "80:8081"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run serve
     depends_on:
       - backend
     deploy:
       resources:
         limits:
-          memory: 128M
+          memory: 256M
 
 volumes:
   postgres_data:

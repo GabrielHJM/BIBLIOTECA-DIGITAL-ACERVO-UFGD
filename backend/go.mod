@@ -10,6 +10,7 @@ require (
 
 require (
 	github.com/joho/godotenv v1.5.1
+	github.com/redis/go-redis/v9 v9.18.0
 	github.com/swaggo/http-swagger v1.3.4
 	github.com/swaggo/swag v1.16.6
 	go.uber.org/zap v1.27.1
@@ -29,7 +30,6 @@ require (
 	github.com/go-openapi/swag/stringutils v0.25.4 // indirect
 	github.com/go-openapi/swag/typeutils v0.25.4 // indirect
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
-	github.com/redis/go-redis/v9 v9.18.0 // indirect
 	github.com/swaggo/files v1.0.1 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
