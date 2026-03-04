@@ -6,6 +6,8 @@
 	--ios-cyan-rgb: 0, 184, 212;
 	--ios-pink: #FF2D55;
 	--ios-orange: #FF9500;
+	--ios-bg: #F2F2F7;
+	--ios-bg-dark: #121212;
 
 	/* Glassmorphism Tokens */
 	--glass-bg: rgba(255, 255, 255, 0.7);
@@ -19,7 +21,8 @@
 	--ios-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.1);
 	--ios-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.15);
 
-	/* Typography */
+	/* Animation & Layout */
+	--spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
 	--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
 }
 

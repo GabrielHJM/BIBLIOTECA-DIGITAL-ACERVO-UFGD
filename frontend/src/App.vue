@@ -371,16 +371,7 @@ export default {
 </script>
 
 <style>
-	:root {
-		--ios-blue: #007AFF;
-		--ios-cyan: #00B8D4;
-		--ios-bg: #F2F2F7;
-		--ios-bg-dark: #000000;
-		--ios-card: rgba(255, 255, 255, 0.7);
-		--ios-card-dark: rgba(28, 28, 30, 0.7);
-		--spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
-		--apple-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", Arial, sans-serif;
-	}
+	/* Global Defaults */
 
 	@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
@@ -408,16 +399,27 @@ export default {
 	}
 
 	.header-logo-container {
-		transition: transform 0.3s var(--spring-easing);
+		transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+		cursor: pointer;
 	}
 
 	.header-logo-container:hover {
-		transform: scale(1.02);
+		transform: scale(1.03) translateY(-1px);
+		filter: drop-shadow(0 4px 12px rgba(0, 184, 212, 0.15));
+	}
+
+	.header-logo-container:active {
+		transform: scale(0.97);
 	}
 
 	.logo-img-original {
 		height: 36px;
 		filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+		transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.header-logo-container:hover .logo-img-original {
+		transform: rotate(5deg) scale(1.05);
 	}
 
 	.logo-text-stack {
@@ -431,6 +433,11 @@ export default {
 		font-weight: 800 !important;
 		letter-spacing: -0.5px;
 		margin: 0;
+		transition: color 0.3s ease;
+	}
+
+	.header-logo-container:hover .original-title {
+		color: #ffffff;
 	}
 
 	.subtitle-accent {
@@ -438,6 +445,12 @@ export default {
 		font-weight: 900;
 		color: var(--ios-cyan);
 		letter-spacing: 2px;
+		transition: all 0.3s ease;
+	}
+
+	.header-logo-container:hover .subtitle-accent {
+		color: #00E5FF;
+		text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
 	}
 
 	/* Enhanced Search Bar */
@@ -529,6 +542,7 @@ export default {
 		padding: clamp(24px, 5vw, 64px) clamp(16px, 5vw, 64px) !important;
 		overflow-y: auto !important;
 		width: 100%;
+		background: transparent !important;
 	}
 
 	.responsive-container {
@@ -539,6 +553,7 @@ export default {
 		padding-right: clamp(16px, 6vw, 80px) !important;
 		padding-top: clamp(24px, 4vw, 40px) !important;
 		padding-bottom: clamp(40px, 8vw, 120px) !important;
+		background: transparent !important;
 	}
 
 	/* Touch target improvements */

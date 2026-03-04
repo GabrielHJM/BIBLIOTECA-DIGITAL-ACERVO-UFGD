@@ -23,12 +23,8 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 	buscarUC := &material.BuscarMaterialUseCase{Repo: repo, Meta: meta}
 	similaresUC := &material.BuscarSimilaresUseCase{Repo: repo}
 	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c}
-	recomendacaoUC := &material.ObterRecomendacoesUseCase{Repo: repo}
 	favoritarUC := &material.FavoritarMaterialUseCase{Repo: repo}
-	avaliarUC := &material.AvaliarMaterialUseCase{Repo: repo}
-	emprestarUC := &material.CriarEmprestimoUseCase{Repo: repo}
 	historicoUC := &material.HistoricoLeituraUseCase{Repo: repo}
-	aiUC := material.NewAIUseCase(repo, gemini)
 
 	mux.HandleFunc("GET /materiais", func(w http.ResponseWriter, r *http.Request) {
 		termo := r.URL.Query().Get("q")
@@ -98,22 +94,6 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 		JSONSuccess(w, materiais, http.StatusOK)
 	})
 
-	mux.HandleFunc("GET /materiais/recomendacoes", func(w http.ResponseWriter, r *http.Request) {
-		usuarioID, _ := strconv.Atoi(r.URL.Query().Get("usuario_id"))
-		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-		if limit == 0 {
-			limit = 5
-		}
-
-		materiais, err := recomendacaoUC.Execute(r.Context(), usuarioID, limit)
-		if err != nil {
-			JSONError(w, "Erro ao obter recomendações: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		JSONSuccess(w, materiais, http.StatusOK)
-	})
-
 	mux.HandleFunc("POST /materiais/favoritar", func(w http.ResponseWriter, r *http.Request) {
 		var req struct {
 			UsuarioID  int  `json:"usuario_id"`
@@ -143,42 +123,6 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 		JSONSuccess(w, favoritos, http.StatusOK)
 	})
 
-	mux.HandleFunc("POST /materiais/avaliar", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			UsuarioID  int    `json:"usuario_id"`
-			MaterialID int    `json:"material_id"`
-			Nota       int    `json:"nota"`
-			Comentario string `json:"comentario"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			JSONError(w, "JSON inválido", http.StatusBadRequest)
-			return
-		}
-
-		if err := avaliarUC.Execute(r.Context(), req.UsuarioID, req.MaterialID, req.Nota, req.Comentario); err != nil {
-			JSONError(w, "Erro ao avaliar material: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		JSONSuccess(w, nil, http.StatusOK)
-	})
-
-	mux.HandleFunc("POST /materiais/emprestar", func(w http.ResponseWriter, r *http.Request) {
-		var req struct {
-			UsuarioID  int `json:"usuario_id"`
-			MaterialID int `json:"material_id"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			JSONError(w, "JSON inválido", http.StatusBadRequest)
-			return
-		}
-		if err := emprestarUC.Execute(r.Context(), req.UsuarioID, req.MaterialID); err != nil {
-			JSONError(w, "Erro ao realizar empréstimo: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		JSONSuccess(w, nil, http.StatusOK)
-	})
-
 	mux.HandleFunc("/materiais/historico", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -206,64 +150,6 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 		default:
 			JSONError(w, "Método inválido", http.StatusMethodNotAllowed)
 		}
-	})
-
-	mux.HandleFunc("GET /materiais/avaliacoes", func(w http.ResponseWriter, r *http.Request) {
-		materialID, err := strconv.Atoi(r.URL.Query().Get("id"))
-		if err != nil {
-			JSONError(w, "ID do material inválido", http.StatusBadRequest)
-			return
-		}
-
-		avaliacoes, err := avaliarUC.Listar(r.Context(), materialID)
-		if err != nil {
-			JSONError(w, "Erro ao listar avaliações", http.StatusInternalServerError)
-			return
-		}
-
-		JSONSuccess(w, avaliacoes, http.StatusOK)
-	})
-
-	mux.HandleFunc("POST /materiais/{id}/chat", func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.PathValue("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			JSONError(w, "ID inválido", http.StatusBadRequest)
-			return
-		}
-
-		var req struct {
-			Pergunta string `json:"pergunta"`
-		}
-		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			JSONError(w, "JSON inválido", http.StatusBadRequest)
-			return
-		}
-
-		resposta, err := aiUC.PerguntarLivro(r.Context(), id, req.Pergunta)
-		if err != nil {
-			JSONError(w, "Erro na IA: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		JSONSuccess(w, map[string]string{"resposta": resposta}, http.StatusOK)
-	})
-
-	mux.HandleFunc("GET /materiais/{id}/resumo", func(w http.ResponseWriter, r *http.Request) {
-		idStr := r.PathValue("id")
-		id, err := strconv.Atoi(idStr)
-		if err != nil {
-			JSONError(w, "ID inválido", http.StatusBadRequest)
-			return
-		}
-
-		resumo, err := aiUC.GerarResumo(r.Context(), id)
-		if err != nil {
-			JSONError(w, "Erro ao gerar resumo: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		JSONSuccess(w, map[string]string{"resumo": resumo}, http.StatusOK)
 	})
 
 	mux.HandleFunc("GET /materiais/pdf/proxy", func(w http.ResponseWriter, r *http.Request) {

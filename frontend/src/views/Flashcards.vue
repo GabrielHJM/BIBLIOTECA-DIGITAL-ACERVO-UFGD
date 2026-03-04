@@ -14,7 +14,7 @@
 				<v-icon size="80" color="amber" class="mb-4">mdi-cards-outline</v-icon>
 				<h2 class="text-h5 text-white">Nenhum flashcard disponível</h2>
 				<p class="text-body-1 text-white opacity-40 mt-2 mb-8">
-					Use o botão "Gerar Flashcards IA" na tela de qualquer livro para começar.
+					Adicione materiais aos seus estudos para começar a praticar.
 				</p>
 				<v-btn color="amber" rounded="pill" size="large" @click="$router.push('/explorar')">Explorar Livros</v-btn>
 			</div>

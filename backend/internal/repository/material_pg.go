@@ -205,55 +205,6 @@ func (r *MaterialPostgres) Deletar(ctx context.Context, id int) error {
 	return err
 }
 
-func (r *MaterialPostgres) SalvarEmprestimo(ctx context.Context, e *material.Emprestimo) error {
-	return r.DB.QueryRowContext(ctx,
-		"INSERT INTO emprestimos (usuario_id, material_id, data_emprestimo, data_devolucao, status) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		e.UsuarioID, e.MaterialID, e.DataEmprestimo, e.DataDevolucao, e.Status,
-	).Scan(&e.ID)
-}
-
-func (r *MaterialPostgres) ListarEmprestimosPorUsuario(ctx context.Context, usuarioID int) ([]material.Emprestimo, error) {
-	rows, err := r.DB.QueryContext(ctx, "SELECT id, usuario_id, material_id, data_emprestimo, data_devolucao, status FROM emprestimos WHERE usuario_id = $1", usuarioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var emprestimos []material.Emprestimo
-	for rows.Next() {
-		var e material.Emprestimo
-		if err := rows.Scan(&e.ID, &e.UsuarioID, &e.MaterialID, &e.DataEmprestimo, &e.DataDevolucao, &e.Status); err != nil {
-			return nil, err
-		}
-		emprestimos = append(emprestimos, e)
-	}
-	return emprestimos, nil
-}
-func (r *MaterialPostgres) SalvarAvaliacao(ctx context.Context, a *material.Avaliacao) error {
-	return r.DB.QueryRowContext(ctx,
-		"INSERT INTO avaliacoes (usuario_id, material_id, nota, comentario, data) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		a.UsuarioID, a.MaterialID, a.Nota, a.Comentario, a.Data,
-	).Scan(&a.ID)
-}
-
-func (r *MaterialPostgres) ListarAvaliacoesPorMaterial(ctx context.Context, materialID int) ([]material.Avaliacao, error) {
-	rows, err := r.DB.QueryContext(ctx, "SELECT id, usuario_id, material_id, nota, comentario, data FROM avaliacoes WHERE material_id = $1", materialID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var avaliacoes []material.Avaliacao
-	for rows.Next() {
-		var a material.Avaliacao
-		if err := rows.Scan(&a.ID, &a.UsuarioID, &a.MaterialID, &a.Nota, &a.Comentario, &a.Data); err != nil {
-			return nil, err
-		}
-		avaliacoes = append(avaliacoes, a)
-	}
-	return avaliacoes, nil
-}
-
 func (r *MaterialPostgres) AdicionarFavorito(ctx context.Context, f *material.Favorito) error {
 	_, err := r.DB.ExecContext(ctx, "INSERT INTO favoritos (usuario_id, material_id) VALUES ($1, $2) ON CONFLICT DO NOTHING", f.UsuarioID, f.MaterialID)
 	return err
@@ -302,56 +253,6 @@ func (r *MaterialPostgres) ListarHistoricoPorUsuario(ctx context.Context, usuari
 		WHERE h.usuario_id = $1
 		ORDER BY m.id DESC`, replaceColumns(materialColumns, "m."))
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var materiais []material.Material
-	for rows.Next() {
-		var m material.Material
-		if err := scanMaterial(rows, &m); err != nil {
-			return nil, err
-		}
-		materiais = append(materiais, m)
-	}
-	return materiais, nil
-}
-
-func (r *MaterialPostgres) ObterRecomendacoes(ctx context.Context, usuarioID int, limit int) ([]material.Material, error) {
-	// Recomendação Inteligente:
-	// 1. Materiais lidos por usuários que compartilham dos mesmos interesses
-	// 2. Materiais da mesma categoria de interesse do usuário
-	// 3. Materiais mais bem avaliados globalmente
-	query := fmt.Sprintf(`
-		WITH interesses AS (
-			SELECT interesse FROM interesses_usuario WHERE usuario_id = $1
-		),
-		usuarios_similares AS (
-			SELECT DISTINCT usuario_id FROM interesses_usuario
-			WHERE interesse IN (SELECT interesse FROM interesses) AND usuario_id != $1
-		),
-		recomendados AS (
-			-- Opção 1: Lidos por usuários similares
-			SELECT material_id, 3 as peso FROM historico_leitura WHERE usuario_id IN (SELECT usuario_id FROM usuarios_similares)
-			UNION ALL
-			-- Opção 2: Mesma categoria de interesse
-			SELECT id as material_id, 2 as peso FROM materiais WHERE categoria IN (SELECT interesse FROM interesses)
-			UNION ALL
-			-- Opção 3: Nota alta (Global)
-			SELECT id as material_id, 1 as peso FROM materiais WHERE media_nota >= 4.0
-		)
-		SELECT %s
-		FROM materiais m
-		JOIN (
-			SELECT material_id, SUM(peso) as relevancia
-			FROM recomendados
-			GROUP BY material_id
-		) r_final ON m.id = r_final.material_id
-		WHERE m.id NOT IN (SELECT material_id FROM historico_leitura WHERE usuario_id = $1)
-		ORDER BY r_final.relevancia DESC, m.media_nota DESC
-		LIMIT $2`, replaceColumns(materialColumns, "m."))
-	rows, err := r.DB.QueryContext(ctx, query, usuarioID, limit)
 	if err != nil {
 		return nil, err
 	}

@@ -29,7 +29,7 @@ const routes = [
 	{
 		path: '/sobre-nos',
 		name: 'sobre-nos',
-		component: () => import(/* webpackChunkName: "about" */ '@/views/SobreNos.vue'),
+		component: () => import(/* webpackChunkName: "info" */ '@/views/SobreNos.vue'),
 		meta: { requiresAuth: false }
 	},
 	{

@@ -35,7 +35,6 @@ import (
 	"biblioteca-digital-api/internal/pkg/cache"
 	"biblioteca-digital-api/internal/pkg/logger"
 	"biblioteca-digital-api/internal/repository"
-	"biblioteca-digital-api/internal/usecase/social"
 	"sync"
 
 	_ "biblioteca-digital-api/docs"
@@ -104,17 +103,6 @@ func main() {
 
 	// Study & Social Tables
 	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS anotacoes (
-			id SERIAL PRIMARY KEY,
-			usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
-			material_id INTEGER NOT NULL REFERENCES materiais(id),
-			conteudo TEXT NOT NULL,
-			pagina INTEGER,
-			cor TEXT DEFAULT 'yellow',
-			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	_, _ = db.Exec(`
 		CREATE TABLE IF NOT EXISTS flashcards (
 			id SERIAL PRIMARY KEY,
 			usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
@@ -148,26 +136,6 @@ func main() {
 			PRIMARY KEY (usuario_id, interesse)
 		);
 	`)
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS avaliacoes (
-			id SERIAL PRIMARY KEY,
-			usuario_id INTEGER REFERENCES usuarios(id),
-			material_id INTEGER REFERENCES materiais(id),
-			nota INTEGER,
-			comentario TEXT,
-			data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS emprestimos (
-			id SERIAL PRIMARY KEY,
-			usuario_id INTEGER REFERENCES usuarios(id),
-			material_id INTEGER REFERENCES materiais(id),
-			data_emprestimo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			data_devolucao TIMESTAMP,
-			status TEXT DEFAULT 'ativo'
-		);
-	`)
 
 	// FTS Trigger & Index
 	_, _ = db.Exec(`
@@ -193,6 +161,8 @@ func main() {
 	// Additional Indexes for Performance
 	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);`)
 	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_fonte ON materiais(fonte);`)
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_ano ON materiais(ano_publicacao);`)
 	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;`)
 
 	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey)
@@ -248,10 +218,6 @@ func main() {
 	handler.RegisterUsuarioRoutes(mux, db)
 	handler.RegisterMaterialRoutes(mux, db, geminiClient, c)
 
-	socialRepo := repository.NewSocialPG(db)
-	socialUC := social.NewSocialUseCase(socialRepo, socialRepo, socialRepo, socialRepo)
-	handler.RegisterSocialRoutes(mux, socialUC, socialRepo, socialRepo)
-
 	handler.RegisterStatsRoutes(mux, db)
 	handler.RegisterEstudoRoutes(mux, db, geminiClient)
 	handler.RegisterAdminRoutes(mux, db)
@@ -259,7 +225,8 @@ func main() {
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	// Apply Logger, Rate Limiter, and CORS middleware
-	handlerWithLogger := middleware.Logger(mux)
+	handlerWithSecurity := middleware.Security(mux)
+	handlerWithLogger := middleware.Logger(handlerWithSecurity)
 	handlerWithRateLimit := middleware.RateLimit(handlerWithLogger)
 	handlerWithCORS := middleware.CORS(handlerWithRateLimit)
 

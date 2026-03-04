@@ -5,10 +5,6 @@ import (
 )
 
 type Repository interface {
-	// Anotações
-	CriarAnotacao(ctx context.Context, a *Anotacao) error
-	ListarAnotacoes(ctx context.Context, usuarioID, materialID int) ([]Anotacao, error)
-	DeletarAnotacao(ctx context.Context, id, usuarioID int) error
 
 	// Flashcards
 	CriarFlashcard(ctx context.Context, f *Flashcard) error

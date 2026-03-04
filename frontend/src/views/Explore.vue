@@ -50,23 +50,9 @@
 				<div v-show="showFilters" class="filter-panel px-4 mb-6">
 					<v-card class="ios-glass-card pa-6" rounded="xl">
 						<v-row>
-							<!-- Source Filter -->
-							<v-col cols="12" sm="4">
-								<label class="filter-label">Fonte do Material</label>
-								<v-select
-									v-model="filters.fonte"
-									:items="fontesList"
-									placeholder="Todas as Fontes"
-									variant="solo-inverted"
-									density="comfortable"
-									hide-details
-									class="mt-2"
-									rounded="lg"
-									clearable
-								></v-select>
-							</v-col>
+
 							<!-- Year Range -->
-							<v-col cols="12" sm="4">
+							<v-col cols="12" sm="6">
 								<label class="filter-label">Ano de Publicação (A partir de)</label>
 								<v-select
 									v-model="filters.ano_inicio"
@@ -80,7 +66,7 @@
 									clearable
 								></v-select>
 							</v-col>
-							<v-col cols="12" sm="4">
+							<v-col cols="12" sm="6">
 								<label class="filter-label">Ordenar Por</label>
 								<v-select
 									v-model="filters.sort"
@@ -173,12 +159,11 @@ export default {
 		filters: {
 			q: '',
 			categoria: '',
-			fonte: '',
 			ano_inicio: null,
 			ano_fim: null
 		},
-		fontesList: ['SciELO', 'CAPES', 'Open Library', 'ISBNdb', 'Crossref'],
-		categoriasMock: ['Ciência', 'Tecnologia', 'Educação', 'Medicina', 'Engenharia', 'Filosofia'],
+
+		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'CONTABILIDADE', 'Artigo Periódico'],
 		sortOptions: [
 			{ label: 'Relevância', value: '' },
 			{ label: 'Melhor Avaliados', value: 'rating' },
@@ -191,7 +176,6 @@ export default {
 	computed: {
 		activeFiltersCount() {
 			let count = 0;
-			if (this.filters.fonte) count++;
 			if (this.filters.ano_inicio) count++;
 			if (this.filters.categoria) count++;
 			return count;
@@ -215,10 +199,9 @@ export default {
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
 					this.filters.categoria,
-					this.filters.fonte,
+					'', // fonte
 					this.filters.ano_inicio,
 					this.filters.ano_fim,
-					null, // tags
 					20,   // limit
 					0,    // offset
 					this.filters.sort
@@ -237,7 +220,7 @@ export default {
 			}, 600);
 		},
 		limparFiltros() {
-			this.filters = { q: this.filters.q, categoria: '', fonte: '', ano_inicio: null, ano_fim: null };
+			this.filters = { q: this.filters.q, categoria: '', ano_inicio: null, ano_fim: null };
 			this.buscar();
 		},
 		async onToggleFavorite(livro) {

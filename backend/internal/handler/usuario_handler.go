@@ -57,7 +57,7 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		err := cadastrarUC.Execute(r.Context(), &u)
 		if err != nil {
 			logger.Error("Erro ao cadastrar usuário", zap.Error(err))
-			JSONError(w, "Não foi possível completar o cadastro. Verifique os dados ou tente novamente mais tarde.", http.StatusUnprocessableEntity)
+			JSONError(w, err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
 

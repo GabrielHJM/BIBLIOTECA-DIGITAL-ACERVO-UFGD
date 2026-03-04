@@ -270,13 +270,14 @@ export default {
 
 	.password-toggle-btn {
 		position: absolute;
-		right: 8px;
-		opacity: 0.5;
-		transition: opacity 0.2s;
+		right: 6px;
+		opacity: 0.7;
+		color: #00B8D4 !important;
+		transition: all 0.2s ease;
 	}
-
 	.password-toggle-btn:hover {
 		opacity: 1;
+		transform: scale(1.1);
 	}
 
 	.pr-12 {

@@ -49,24 +49,7 @@
 				</div>
 			</div>
 
-			<div class="acervos-filter mt-4 mb-8 d-flex justify-center">
-					<v-select
-						v-model="selectedAcervo"
-						:items="acervosList"
-						item-title="title"
-						item-value="value"
-						variant="outlined"
-						rounded="pill"
-						density="compact"
-						hide-details
-						class="acervo-select"
-						@update:modelValue="fetchMateriais"
-					>
-						<template v-slot:prepend-inner>
-							<v-icon color="#00B8D4" class="mr-2">mdi-bookshelf</v-icon>
-						</template>
-					</v-select>
-			</div>
+
 
 			<div class="categories-grid">
 				<div
@@ -192,80 +175,13 @@
 			</div>
 		</section>
 
-		<!-- CTA Banner -->
-		<section class="cta-section">
-			<div class="cta-inner">
-				<div class="section-header-flex justify-center mb-6 px-0 w-100">
-					<div class="section-header-title text-center">
-						<v-icon size="32" color="white" class="mr-2">mdi-rocket-launch-outline</v-icon>
-						<h2 class="cta-title mb-0" style="color:white; font-size:2rem; letter-spacing: -1px;">Pronto para explorar?</h2>
-					</div>
-				</div>
-				<p class="cta-subtitle">Junte-se a milhares de estudantes e profissionais que já utilizam nossa plataforma de forma gratuita.</p>
-				<div class="cta-actions">
-					<template v-if="!isLoggedIn">
-						<button class="btn-white" @click="$router.push('/cadastro')">Criar Conta Grátis</button>
-						<button class="btn-outline-white" @click="$router.push('/login')">Já tenho conta</button>
-					</template>
-					<template v-else>
-						<button class="btn-white" @click="$router.push('/dashboard')">Acessar Meu Dashboard</button>
-					</template>
-				</div>
-			</div>
-		</section>
 
-		<!-- Dynamic Knowledge News (GNews via cache limite 100 req/dia) -->
-		<section class="news-section">
-			<div class="section-header-flex">
-				<div class="section-header-title">
-					<v-icon size="28" color="var(--ios-cyan)">mdi-newspaper-variant-outline</v-icon>
-					<h3>Notícias em Ciência & Tecnologia</h3>
-				</div>
-				<div class="news-nav">
-					<button class="news-nav-btn" @click="scrollNews(-1)"><v-icon>mdi-chevron-left</v-icon></button>
-					<button class="news-nav-btn" @click="scrollNews(1)"><v-icon>mdi-chevron-right</v-icon></button>
-				</div>
-			</div>
-
-			<div class="news-carousel-container">
-				<div class="news-carousel" ref="newsCarousel">
-
-					<div v-if="loadingNews" class="news-loading-wrapper">
-						<v-progress-circular indeterminate color="var(--ios-cyan)" size="40"></v-progress-circular>
-					</div>
-
-					<template v-else>
-						<div class="news-track static-track">
-							<a
-								v-for="(item, i) in newsList"
-								:key="'news1-' + i"
-								:href="item.url"
-								target="_blank"
-								class="news-card"
-							>
-								<div class="news-card-img-placeholder" v-if="!item.image">
-									<v-icon>mdi-newspaper</v-icon>
-								</div>
-								<img v-else :src="item.image" alt="News Image" class="news-card-img" />
-								<div class="news-card-content">
-									<span class="news-source">{{ item.source.name || 'GNews' }}</span>
-									<h4 class="news-title">{{ item.title }}</h4>
-									<p class="news-desc">{{ item.description }}</p>
-								</div>
-							</a>
-						</div>
-					</template>
-
-				</div>
-			</div>
-		</section>
 
 	</div>
 </template>
 
 <script>
 import MaterialService from '../services/MaterialService';
-import NewsService from '../services/NewsService';
 import { state as authState } from '@/auth';
 import { useTheme } from 'vuetify';
 import { computed } from 'vue';
@@ -289,20 +205,8 @@ export default {
 	data() {
 		return {
 			loading: true,
-			loadingNews: true,
-			newsList: [],
-			isHoveringNews: false,
 			hoveredFeature: null,
 			pillTransforms: {},
-			selectedAcervo: '',
-			acervosList: [
-				{ title: 'Todos os Acervos', value: '' },
-				{ title: 'SciELO', value: 'SciELO' },
-				{ title: 'CAPES', value: 'CAPES' },
-				{ title: 'Open Library', value: 'Open Library' },
-				{ title: 'ISBNdb', value: 'ISBNdb' },
-				{ title: 'Crossref', value: 'Crossref' }
-			],
 			stats: [
 				{ value: '5K+', label: 'Materiais Livres' },
 				{ value: '50+', label: 'Categorias' },
@@ -328,30 +232,13 @@ export default {
 	},
 	async mounted() {
 		await this.fetchMateriais();
-		this.fetchNews();
 		window.addEventListener('scroll', this.handleParallax);
 	},
 	beforeUnmount() {
 		window.removeEventListener('scroll', this.handleParallax);
 	},
 	methods: {
-		async fetchNews() {
-			this.loadingNews = true;
-			try {
-				this.newsList = await NewsService.buscarNoticias();
-			} catch (err) {
-				console.error("Erro ao puxar noticias:", err);
-			} finally {
-				this.loadingNews = false;
-			}
-		},
-		scrollNews(direction) {
-			const container = this.$refs.newsCarousel;
-			if (container) {
-				const scrollAmount = 340 * direction; // Largura do card + gap
-				container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-			}
-		},
+
 		handleParallax() {
 			const scrolled = window.scrollY;
 			const hero = document.querySelector('.hero-content');
@@ -369,7 +256,7 @@ export default {
 				const promises = this.categoriasMock.map(async (cat) => {
 					try {
 						// Usa o nome da categoria usando filtro correto 'categoria' em vez de busca livre, exigindo 3 aleatórios locais
-						const response = await MaterialService.pesquisar('', cat.nome, this.selectedAcervo, 0, 0, 3, 0, 'random');
+						const response = await MaterialService.pesquisar('', cat.nome, '', 0, 0, 3, 0, 'random');
 
 						// Com o novo interceptor, response já contém o array de materiais ou response.data
 						let livros = [];
@@ -379,8 +266,8 @@ export default {
 							livros = response.data;
 						}
 
-						if (livros.length === 0 && this.selectedAcervo !== '') {
-							const fallback = await MaterialService.pesquisar('', '', this.selectedAcervo, 0, 0, 3, 0, 'random');
+						if (livros.length === 0) {
+							const fallback = await MaterialService.pesquisar('', '', '', 0, 0, 3, 0, 'random');
 							if (fallback && Array.isArray(fallback)) {
 								livros = fallback;
 							} else if (fallback && fallback.data && Array.isArray(fallback.data)) {

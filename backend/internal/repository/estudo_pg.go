@@ -15,39 +15,6 @@ func NewEstudoPostgres(db *sql.DB) *EstudoPostgres {
 	return &EstudoPostgres{DB: db}
 }
 
-func (r *EstudoPostgres) CriarAnotacao(ctx context.Context, a *estudo.Anotacao) error {
-	query := `INSERT INTO anotacoes (usuario_id, material_id, conteudo, pagina, cor)
-	          VALUES ($1, $2, $3, $4, $5) RETURNING id, data_criacao`
-	return r.DB.QueryRowContext(ctx, query, a.UsuarioID, a.MaterialID, a.Conteudo, a.Pagina, a.Cor).
-		Scan(&a.ID, &a.DataCriacao)
-}
-
-func (r *EstudoPostgres) ListarAnotacoes(ctx context.Context, usuarioID, materialID int) ([]estudo.Anotacao, error) {
-	query := `SELECT id, usuario_id, material_id, conteudo, pagina, cor, data_criacao
-	          FROM anotacoes WHERE usuario_id = $1 AND material_id = $2 ORDER BY pagina ASC, data_criacao DESC`
-	rows, err := r.DB.QueryContext(ctx, query, usuarioID, materialID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var anotacoes []estudo.Anotacao
-	for rows.Next() {
-		var a estudo.Anotacao
-		if err := rows.Scan(&a.ID, &a.UsuarioID, &a.MaterialID, &a.Conteudo, &a.Pagina, &a.Cor, &a.DataCriacao); err != nil {
-			return nil, err
-		}
-		anotacoes = append(anotacoes, a)
-	}
-	return anotacoes, nil
-}
-
-func (r *EstudoPostgres) DeletarAnotacao(ctx context.Context, id, usuarioID int) error {
-	query := `DELETE FROM anotacoes WHERE id = $1 AND usuario_id = $2`
-	_, err := r.DB.ExecContext(ctx, query, id, usuarioID)
-	return err
-}
-
 func (r *EstudoPostgres) CriarFlashcard(ctx context.Context, f *estudo.Flashcard) error {
 	query := `INSERT INTO flashcards (usuario_id, material_id, pergunta, resposta)
 	          VALUES ($1, $2, $3, $4) RETURNING id, proxima_revisao, data_criacao`

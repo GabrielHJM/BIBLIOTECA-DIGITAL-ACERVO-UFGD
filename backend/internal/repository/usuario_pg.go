@@ -4,6 +4,8 @@ import (
 	"biblioteca-digital-api/internal/domain/usuario"
 	"context"
 	"database/sql"
+	"errors"
+	"strings"
 )
 
 type UsuarioPostgres struct {
@@ -16,7 +18,15 @@ func NewUsuarioPG(db *sql.DB) *UsuarioPostgres {
 
 func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error {
 	query := "INSERT INTO usuarios (nome, email, senha, tipo, foto_url) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-	return r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo, u.FotoURL).Scan(&u.ID)
+	err := r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo, u.FotoURL).Scan(&u.ID)
+	if err != nil {
+		// Verificar se é erro de violação de unicidade (email duplicado)
+		if strings.Contains(err.Error(), "unique constraint") || strings.Contains(err.Error(), "23505") {
+			return errors.New("este email já está cadastrado")
+		}
+		return err
+	}
+	return nil
 }
 
 func (r *UsuarioPostgres) BuscarPorEmail(ctx context.Context, email string) (*usuario.Usuario, error) {

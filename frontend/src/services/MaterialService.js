@@ -40,10 +40,7 @@ export default {
 		return api.get(`/materiais/detalhes?id=${id}`);
 	},
 
-	// Obter recomendações para um usuário
-	obterRecomendacoes(usuarioId, limit = 5) {
-		return api.get(`/materiais/recomendacoes?usuario_id=${usuarioId}&limit=${limit}`);
-	},
+
 
 	// Favoritar ou desfavoritar material
 	favoritar(usuarioId, materialId, status) {
@@ -59,23 +56,9 @@ export default {
 		return api.get(`/materiais/favoritos?usuario_id=${usuarioId}`);
 	},
 
-	// Avaliar um material
-	avaliar(usuarioId, materialId, nota, comentario = '') {
-		return api.post('/materiais/avaliar', {
-			usuario_id: usuarioId,
-			material_id: materialId,
-			nota: nota,
-			comentario: comentario
-		});
-	},
 
-	// Realizar empréstimo de um material
-	emprestar(usuarioId, materialId) {
-		return api.post('/materiais/emprestar', {
-			usuario_id: usuarioId,
-			material_id: materialId
-		});
-	},
+
+
 
 	// Registrar leitura no histórico
 	registrarLeitura(usuarioId, materialId) {
@@ -97,8 +80,7 @@ export default {
 
 	// Obter URL do proxy de PDF
 	getProxyPdfUrl(pdfUrl) {
-		const baseURL = api.defaults.baseURL || 'http://localhost:8080/api';
-		return `${baseURL}/materiais/pdf/proxy?url=${encodeURIComponent(pdfUrl)}`;
+		return `/api/materiais/pdf/proxy?url=${encodeURIComponent(pdfUrl)}`;
 	},
 
 	// Obter estatísticas do usuário
@@ -106,13 +88,5 @@ export default {
 		return api.get(`/usuario/estatisticas?usuario_id=${usuarioId}`);
 	},
 
-	// Chatbot IA com o livro
-	perguntar(id, pergunta) {
-		return api.post(`/materiais/${id}/chat`, { pergunta });
-	},
 
-	// Gerar resumo IA do livro
-	obterResumo(id) {
-		return api.get(`/materiais/${id}/resumo`);
-	}
 };

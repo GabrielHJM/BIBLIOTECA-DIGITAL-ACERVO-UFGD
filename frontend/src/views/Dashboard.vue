@@ -248,35 +248,7 @@
 				</v-slide-group>
 			</div>
 
-			<!-- Recomendações Inteligentes (Topic 2 IA) -->
-			<div v-if="recomendacoes.length > 0 && !loading" class="mb-10 mt-4">
-				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">
-					<v-icon color="amber" class="mr-2">mdi-auto-fix</v-icon>
-					Recomendado para Você (IA)
-				</h2>
-				<v-slide-group show-arrows class="pa-2">
-					<v-slide-group-item
-						v-for="(livro, index) in recomendacoes"
-						:key="'rec-'+index"
-					>
-						<v-card
-							class="ios-history-card ma-2"
-							elevation="4"
-							@click="$router.push('/estudo/' + livro.id)"
-						>
-							<v-img
-								:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'"
-								cover
-								height="150"
-							></v-img>
-							<div class="pa-2">
-								<div class="text-caption font-weight-bold history-title" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
-								<div class="opacity-60 ultra-caption" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-2'">{{ livro.autor }}</div>
-							</div>
-						</v-card>
-					</v-slide-group-item>
-				</v-slide-group>
-			</div>
+
 
 			<!-- Meus Favoritos Section -->
 			<div v-if="favoritos.length > 0 && !loading" class="mb-10 mt-4">
@@ -383,7 +355,6 @@ export default {
 		livros: [],
 		historico: [],
 		favoritos: [],
-		recomendacoes: [],
 		searchQuery: '',
 		loading: false,
 		user: {},
@@ -415,7 +386,6 @@ export default {
 			this.buscarHistorico()
 			this.buscarFavoritos()
 			this.buscarEstatisticas()
-			this.buscarRecomendacoes()
 		}
 	},
 	methods: {
@@ -459,14 +429,7 @@ export default {
 				console.error('Erro ao buscar favoritos:', error)
 			}
 		},
-		async buscarRecomendacoes() {
-			try {
-				const response = await MaterialService.obterRecomendacoes(this.user.id, 6)
-				this.recomendacoes = response.data || []
-			} catch (error) {
-				console.error('Erro ao buscar recomendações inteligentes:', error)
-			}
-		},
+
 		isFavorited(materialId) {
 			return this.favoritos.some(f => f.id === materialId)
 		},
@@ -896,8 +859,6 @@ export default {
 		align-items: center;
 		justify-content: center;
 		flex-shrink: 0;
-	}
-		display: flex; align-items: center; justify-content: center;
 	}
 	.hub-icon-wrap.amber { background: rgba(255, 171, 0, 0.1); }
 	.hub-icon-wrap.cyan { background: rgba(0, 184, 212, 0.1); }

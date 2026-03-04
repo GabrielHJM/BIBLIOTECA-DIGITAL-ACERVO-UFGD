@@ -29,6 +29,12 @@ type CrossrefResponse struct {
 			DOI  string `json:"DOI"`
 			URL  string `json:"URL"`
 			Type string `json:"type"`
+			Link []struct {
+				URL                 string `json:"URL"`
+				ContentType         string `json:"content-type"`
+				ContentVersion      string `json:"content-version"`
+				IntendedApplication string `json:"intended-application"`
+			} `json:"link"`
 		} `json:"items"`
 	} `json:"message"`
 }
@@ -52,6 +58,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		searchTerm = "science"
 	}
 
+	// Search without strict full-text filter as it can be too restrictive
 	searchURL := fmt.Sprintf("%s?query=%s&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
@@ -96,6 +103,42 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			catName = "Artigo Periódico"
 		}
 
+		// LOGIC REFINEMENT: Find direct PDF link with strict prioritization
+		pdfURL := item.URL // Fallback to DOI URL
+
+		var bestPDF string
+		var secondaryPDF string
+		var tertiaryPDF string
+
+		for _, link := range item.Link {
+			linkURL := strings.ToLower(link.URL)
+			contentType := strings.ToLower(link.ContentType)
+
+			// 1. Top priority: Link ends strictly with .pdf
+			if strings.HasSuffix(linkURL, ".pdf") {
+				bestPDF = link.URL
+				break // Found the best possible link
+			}
+
+			// 2. Secondary priority: Content-Type is specifically PDF
+			if strings.Contains(contentType, "application/pdf") {
+				secondaryPDF = link.URL
+			}
+
+			// 3. Tertiary priority: URL contains .pdf but not necessarily at the end
+			if tertiaryPDF == "" && strings.Contains(linkURL, ".pdf") {
+				tertiaryPDF = link.URL
+			}
+		}
+
+		if bestPDF != "" {
+			pdfURL = bestPDF
+		} else if secondaryPDF != "" {
+			pdfURL = secondaryPDF
+		} else if tertiaryPDF != "" {
+			pdfURL = tertiaryPDF
+		}
+
 		m := material.Material{
 			Titulo:        item.Title[0],
 			Autor:         strings.Join(authors, ", "),
@@ -104,13 +147,13 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			Fonte:         "CAPES",
 			Categoria:     catName,
 			ExternoID:     item.DOI,
-			PDFURL:        item.URL,
+			PDFURL:        pdfURL,
 			Disponivel:    true,
 		}
 
 		materials = append(materials, m)
 	}
 
-	logger.Info("CAPES harvester: search completed", zap.Int("results", len(materials)))
+	logger.Info("CAPES harvester: refined search completed", zap.Int("results", len(materials)))
 	return materials, nil
 }
