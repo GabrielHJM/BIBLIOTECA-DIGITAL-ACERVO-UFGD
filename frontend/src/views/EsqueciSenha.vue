@@ -11,7 +11,7 @@
 					<v-btn icon="mdi-chevron-left" variant="text" @click="$router.push('/login')" size="large" class="back-btn"></v-btn>
 				</div>
 
-				<div class="text-center mt-2 mb-6">
+				<div class="text-center mt-2 mb-4">
 					<div class="login-icon-wrapper mb-4">
 						<v-img :src="caminho" width="64" class="mx-auto drop-shadow"></v-img>
 					</div>
@@ -48,7 +48,7 @@
 						</div>
 					</div>
 
-					<div class="input-group mb-8">
+					<div class="input-group mb-6">
 						<label class="ios-label">CONFIRMAR NOVA SENHA</label>
 						<div class="password-wrapper">
 							<input
@@ -201,7 +201,7 @@ export default {
 		-webkit-backdrop-filter: blur(40px) saturate(180%);
 		border-radius: clamp(24px, 4vw, 32px) !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		padding: clamp(24px, 5vw, 40px) clamp(20px, 5vw, 36px) !important;
+		padding: clamp(16px, 4vw, 32px) clamp(16px, 4vw, 30px) !important;
 		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
 		overflow-y: auto;
 		max-height: calc(100vh - 48px);

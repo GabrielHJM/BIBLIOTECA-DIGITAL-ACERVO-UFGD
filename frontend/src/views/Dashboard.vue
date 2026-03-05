@@ -5,7 +5,7 @@
 		</v-snackbar>
 		<v-container fluid class="pa-0 pa-md-2">
 			<!-- Expert Statistics Dashboard Section -->
-			<v-row v-if="stats && !loading" class="mb-8 px-4 fade-in">
+			<v-row v-if="stats && !loading" class="mb-4 px-4 fade-in">
 				<!-- Meta Semanal Progress -->
 				<v-col cols="12" md="4">
 					<PremiumCard
@@ -86,7 +86,7 @@
 			</v-row>
 
 			<!-- Study Hub Section -->
-			<v-row class="mb-8 px-4">
+			<v-row class="mb-6 px-4">
 				<v-col cols="12">
 					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center text-white">
 						<v-icon color="amber" class="mr-2">mdi-school-outline</v-icon>
@@ -126,7 +126,7 @@
 			</v-row>
 
 			<!-- Insights Section (New) -->
-			<v-row v-if="stats && !loading" class="mb-8 px-4 fade-in">
+			<v-row v-if="stats && !loading" class="mb-6 px-4 fade-in">
 				<v-col cols="12">
 					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center text-white">
 						<v-icon color="cyan" class="mr-2">mdi-chart-areaspline</v-icon>
@@ -213,7 +213,7 @@
 			</v-row>
 
 			<!-- Histórico de Leitura Section -->
-			<div v-if="historico.length > 0 && !loading" class="mb-10 mt-4">
+			<div v-if="historico.length > 0 && !loading" class="mb-6 mt-2">
 				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">
 					<v-icon color="cyan" class="mr-2">mdi-history</v-icon>
 					Continuar Lendo
@@ -251,7 +251,7 @@
 
 
 			<!-- Meus Favoritos Section -->
-			<div v-if="favoritos.length > 0 && !loading" class="mb-10 mt-4">
+			<div v-if="favoritos.length > 0 && !loading" class="mb-6 mt-2">
 				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-grey-darken-3'">
 					<v-icon color="pink" class="mr-2">mdi-heart</v-icon>
 					Meus Favoritos
@@ -499,7 +499,7 @@ export default {
 <style scoped>
 	.dashboard-container {
 		min-height: 100vh;
-		padding-bottom: 80px;
+		padding-bottom: 40px;
 	}
 
 	.tracking-tight {

@@ -58,27 +58,34 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 
 	if termo != "" {
 		// Busca FTS em Português
-		ftsQuery = fmt.Sprintf("plainto_tsquery('portuguese', $%d)", argCount)
-		query += fmt.Sprintf(", ts_rank(search_vector, %s) as rank", ftsQuery)
-		args = append(args, termo)
-		argCount++
+		// Nós vamos fornecer o mesmo 'termo' mais tarde no código principal para FTS, mas aqui registramos que estamos usando o rank()
+		// Usamos COALESCE pois se search_vector estiver NULL, ts_rank retorna NULL e quebra o Scan em float64
+		query += fmt.Sprintf(", COALESCE(ts_rank(search_vector, plainto_tsquery('portuguese', $%d)), 0.0) as rank", argCount)
+		// Não adicionamos args aqui ainda porque reestruturamos a injeção condicional no bloco AND abaixo para unificar.
 	}
 
 	query += " FROM materiais WHERE status = 'aprovado'"
 
+	// Busca híbrida: FTS Rankado OR Fallback ILIKE em título/autor
 	if termo != "" {
-		query += fmt.Sprintf(" AND search_vector @@ %s", ftsQuery)
+		ftsQuery = fmt.Sprintf("plainto_tsquery('portuguese', $%d)", argCount)
+		// Alterado de apenas search_vector @@ ftsQuery para também cobrir casos onde FTS falha
+		query += fmt.Sprintf(" AND (search_vector @@ %s OR unaccent(titulo) ILIKE unaccent($%d) OR unaccent(autor) ILIKE unaccent($%d))", ftsQuery, argCount+1, argCount+1)
+
+		// O Select já tem o rank, precisamos adicionar o termo com % para o ILIKE
+		args = append(args, termo, "%"+termo+"%")
+		argCount += 2 // Adicionamos 2 args (termo original para FTS e termo com % para ILIKE)
 	}
 
 	if categoria != "" {
-		query += fmt.Sprintf(" AND categoria ILIKE $%d", argCount)
-		args = append(args, categoria)
+		query += fmt.Sprintf(" AND unaccent(categoria) ILIKE unaccent($%d)", argCount)
+		args = append(args, "%"+categoria+"%")
 		argCount++
 	}
 
 	if fonte != "" {
-		query += fmt.Sprintf(" AND fonte ILIKE $%d", argCount)
-		args = append(args, fonte)
+		query += fmt.Sprintf(" AND unaccent(fonte) ILIKE unaccent($%d)", argCount)
+		args = append(args, "%"+fonte+"%")
 		argCount++
 	}
 
@@ -159,15 +166,23 @@ func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, 
 }
 
 func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) error {
-	// O sistema verifica duplicatas no app porque ON CONFLICT externo_id falha sem o index
+	// O sistema verifica duplicatas no app e já preenche o ID se existir para o cache não quebrar
 	if m.ExternoID != "" {
-		var exists bool
-		err := r.DB.QueryRowContext(ctx, "SELECT EXISTS(SELECT 1 FROM materiais WHERE externo_id = $1)", m.ExternoID).Scan(&exists)
-		if err != nil {
-			return fmt.Errorf("erro ao verificar unicidade do material: %w", err)
-		}
-		if exists {
+		err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE externo_id = $1", m.ExternoID).Scan(&m.ID)
+		if err == nil {
 			return fmt.Errorf("material já existe com esse ID externo")
+		}
+	} else {
+		if m.ISBN != "" {
+			err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE isbn = $1 limit 1", m.ISBN).Scan(&m.ID)
+			if err == nil {
+				return fmt.Errorf("material já existe por isbn")
+			}
+		} else {
+			err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE titulo = $1 AND autor = $2 limit 1", m.Titulo, m.Autor).Scan(&m.ID)
+			if err == nil {
+				return fmt.Errorf("material já existe por titulo e autor")
+			}
 		}
 	}
 

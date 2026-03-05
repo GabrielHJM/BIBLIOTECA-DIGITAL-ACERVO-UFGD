@@ -29,16 +29,6 @@ func main() {
 
 	logger.Info("Iniciando ingestão de dados", zap.String("source", source))
 
-	if source == "all" || source == "scielo" {
-		h := harvester.NewSciELOHarvester()
-		materials, err := h.Search(context.Background(), "", "", 20)
-		if err != nil {
-			logger.Error("Erro ao coletar SciELO", zap.Error(err))
-		} else {
-			saveMaterials(repo, materials)
-		}
-	}
-
 	if source == "all" || source == "capes" {
 		h := harvester.NewCAPESHarvester()
 		materials, err := h.Search(context.Background(), "ciência", "", 10)
@@ -49,31 +39,11 @@ func main() {
 		}
 	}
 
-	if source == "all" || source == "openlibrary" {
-		h := harvester.NewOpenLibraryHarvester()
-		materials, err := h.Search(context.Background(), "science", "", 10)
-		if err != nil {
-			logger.Error("Erro ao coletar Open Library", zap.Error(err))
-		} else {
-			saveMaterials(repo, materials)
-		}
-	}
-
-	if source == "all" || source == "isbndb" {
-		h := harvester.NewISBNdbHarvester()
+	if source == "all" || source == "googlebooks" {
+		h := harvester.NewGoogleBooksHarvester()
 		materials, err := h.Search(context.Background(), "technology", "", 10)
 		if err != nil {
-			logger.Error("Erro ao coletar ISBNdb", zap.Error(err))
-		} else {
-			saveMaterials(repo, materials)
-		}
-	}
-
-	if source == "all" || source == "crossref" {
-		h := harvester.NewCrossrefHarvester()
-		materials, err := h.Search(context.Background(), "education", "", 10)
-		if err != nil {
-			logger.Error("Erro ao coletar Crossref", zap.Error(err))
+			logger.Error("Erro ao coletar Google Books", zap.Error(err))
 		} else {
 			saveMaterials(repo, materials)
 		}

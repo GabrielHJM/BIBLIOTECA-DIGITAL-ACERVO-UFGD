@@ -78,8 +78,8 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 			// Salva resultados externos no banco para gerar o ID sincornamente antes de retornar ao usuário
 			err := uc.Repo.Criar(ctx, em)
 			if err != nil {
-				fmt.Printf("Erro ao salvar material externo: %v\n", err)
-				continue
+				// Material já existe ou falha no banco. O ID foi preenchido na struct pela lógica fallback do repo
+				fmt.Printf("Aviso ao salvar material externo: %v\n", err)
 			}
 
 			if em.ExternoID != "" {

@@ -43,7 +43,7 @@ const props = defineProps({
   },
   padding: {
     type: String,
-    default: '24px'
+    default: '18px'
   },
   blur: {
     type: Boolean,

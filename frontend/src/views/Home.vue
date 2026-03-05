@@ -361,7 +361,7 @@ export default {
 
 /* Hero Styles */
 .hero-section {
-	padding: 120px 24px 100px;
+	padding: 80px 24px 60px;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -432,7 +432,7 @@ export default {
 
 /* Stats Glass Bar */
 .stats-glass-bar {
-	margin: 80px auto 0;
+	margin: 50px auto 0;
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
@@ -473,8 +473,8 @@ export default {
 	position: relative;
 	z-index: 1;
 	max-width: 1200px;
-	margin: 80px auto;
-	padding: 60px 48px;
+	margin: 40px auto;
+	padding: 40px 48px;
 	background: rgba(255, 255, 255, 0.02);
 	backdrop-filter: blur(20px) saturate(150%);
 	border-radius: 32px;
@@ -669,8 +669,8 @@ export default {
 	position: relative;
 	z-index: 1;
 	max-width: 1200px;
-	margin: 100px auto 60px; /* Increased distance from categories */
-	padding: 80px 48px;
+	margin: 50px auto 40px; /* Reduced distance from categories */
+	padding: 50px 48px;
 	background: rgba(0,184,212,0.08); /* Similar to cta-inner */
 	backdrop-filter: blur(24px) saturate(160%);
 	-webkit-backdrop-filter: blur(24px) saturate(160%);

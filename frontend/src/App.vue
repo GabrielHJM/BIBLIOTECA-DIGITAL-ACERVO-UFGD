@@ -280,10 +280,12 @@ export default {
 				// Pequeno delay para feedback visual se for muito rápido
 				await new Promise(resolve => setTimeout(resolve, 500))
 
-				if (auth.isAuthenticated()) {
-					this.$router.push({ path: '/dashboard', query: { q } })
-				} else {
+				// ALWAYS redirect to /explorar to show search results properly
+				if (this.$route.path !== '/explorar') {
 					this.$router.push({ path: '/explorar', query: { q } })
+				} else {
+					// If already on /explorar, update the query which will trigger the watch and fetch results
+					this.$router.replace({ path: '/explorar', query: { q } })
 				}
 			} finally {
 				this.loading = false
@@ -549,10 +551,10 @@ export default {
 		width: 100%;
 		max-width: 1600px;
 		margin: 0 auto;
-		padding-left: clamp(16px, 6vw, 80px) !important;
-		padding-right: clamp(16px, 6vw, 80px) !important;
-		padding-top: clamp(24px, 4vw, 40px) !important;
-		padding-bottom: clamp(40px, 8vw, 120px) !important;
+		padding-left: clamp(16px, 3vw, 40px) !important;
+		padding-right: clamp(16px, 3vw, 40px) !important;
+		padding-top: clamp(16px, 2vw, 24px) !important;
+		padding-bottom: clamp(24px, 4vw, 60px) !important;
 		background: transparent !important;
 	}
 

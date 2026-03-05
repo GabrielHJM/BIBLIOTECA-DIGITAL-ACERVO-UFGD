@@ -17,8 +17,9 @@ import (
 type CrossrefResponse struct {
 	Message struct {
 		Items []struct {
-			Title  []string `json:"title"`
-			Author []struct {
+			Title   []string `json:"title"`
+			Subject []string `json:"subject"`
+			Author  []struct {
 				Given  string `json:"given"`
 				Family string `json:"family"`
 			} `json:"author"`
@@ -58,8 +59,8 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		searchTerm = "science"
 	}
 
-	// Search without strict full-text filter as it can be too restrictive
-	searchURL := fmt.Sprintf("%s?query=%s&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	// Enforce has-full-text for much better PDF links
+	searchURL := fmt.Sprintf("%s?query=%s&filter=has-full-text:true&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
 	if err != nil {
@@ -100,14 +101,18 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 
 		catName := category
 		if catName == "" {
-			catName = "Artigo Periódico"
+			if len(item.Subject) > 0 {
+				catName = item.Subject[0]
+			} else {
+				catName = "Artigo Periódico"
+			}
 		}
 
 		// LOGIC REFINEMENT: Find direct PDF link strictly ending with .pdf
 		var pdfURL string
 
 		for _, link := range item.Link {
-			linkURL := strings.ToLower(link.URL)
+			linkURL := strings.ToLower(strings.Split(link.URL, "?")[0])
 
 			// Top priority: Link ends strictly with .pdf
 			if strings.HasSuffix(linkURL, ".pdf") {
@@ -121,6 +126,9 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			continue
 		}
 
+		// Fetch cover from Google Books
+		cover := GetCoverFromGoogleBooks(item.Title[0], strings.Join(authors, ", "))
+
 		m := material.Material{
 			Titulo:        item.Title[0],
 			Autor:         strings.Join(authors, ", "),
@@ -129,6 +137,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			Fonte:         "CAPES",
 			Categoria:     catName,
 			ExternoID:     item.DOI,
+			CapaURL:       cover,
 			PDFURL:        pdfURL,
 			Disponivel:    true,
 		}

@@ -1,43 +1,42 @@
 <template>
 	<div class="explore-container">
-		<v-container fluid class="pa-0 pa-md-2">
+		<v-container fluid class="px-4 py-0">
 			<!-- Advanced Header Section -->
-			<v-row align="center" class="mb-6 px-4">
-				<v-col cols="12" md="8" lg="9" class="py-2">
+			<v-row dense align="center" class="mt-2 mb-2">
+				<v-col cols="12" md="8" lg="9">
 					<div class="search-premium-box d-flex align-center">
 						<v-text-field
 							v-model="filters.q"
 							prepend-inner-icon="mdi-magnify"
 							placeholder="Busque por título, autor, DOI ou assunto..."
 							variant="solo"
-							class="ios-search-bar flex-grow-1"
+							class="ios-search-bar"
 							hide-details
 							@update:modelValue="onSearchInput"
 							@keyup.enter="buscar"
+							density="comfortable"
 						></v-text-field>
 						<v-btn
-							class="search-btn ml-4"
-							elevation="4"
+							class="search-btn ml-3"
 							@click="buscar"
 							:loading="loading"
-							height="56"
-							rounded="xl"
+							height="48"
+							rounded="lg"
 						>
-							<v-icon class="mr-2">mdi-magnify</v-icon>
 							EXPLORAR
 						</v-btn>
 					</div>
 				</v-col>
-				<v-col cols="12" md="4" lg="3" class="py-2">
+				<v-col cols="12" md="4" lg="3">
 					<v-btn
 						class="ios-filter-toggle w-100"
-						variant="outlined"
+						variant="tonal"
 						prepend-icon="mdi-tune-variant"
 						@click="showFilters = !showFilters"
-						height="56"
-						rounded="xl"
+						height="48"
+						rounded="lg"
 					>
-						Filtros Avançados
+						Filtros
 						<v-chip size="x-small" color="cyan" class="ml-2" v-if="activeFiltersCount > 0">
 							{{ activeFiltersCount }}
 						</v-chip>
@@ -47,96 +46,74 @@
 
 			<!-- Expandable Filter Panel -->
 			<v-expand-transition>
-				<div v-show="showFilters" class="filter-panel px-4 mb-6">
-					<v-card class="ios-glass-card pa-6" rounded="xl">
-						<v-row>
-
-							<!-- Year Range -->
+				<div v-show="showFilters" class="filter-panel mb-4">
+					<v-card class="ios-glass-card pa-4" rounded="lg">
+						<v-row dense>
 							<v-col cols="12" sm="6">
-								<label class="filter-label">Ano de Publicação (A partir de)</label>
 								<v-select
 									v-model="filters.ano_inicio"
 									:items="yearsList"
-									placeholder="Qualquer ano"
-									variant="solo-inverted"
-									density="comfortable"
+									label="Ano de Publicação"
+									variant="filled"
+									density="compact"
 									hide-details
-									class="mt-2"
-									rounded="lg"
 									clearable
 								></v-select>
 							</v-col>
 							<v-col cols="12" sm="6">
-								<label class="filter-label">Ordenar Por</label>
 								<v-select
 									v-model="filters.sort"
 									:items="sortOptions"
 									item-title="label"
 									item-value="value"
-									placeholder="Relevância"
-									variant="solo-inverted"
-									density="comfortable"
+									label="Ordenar Por"
+									variant="filled"
+									density="compact"
 									hide-details
-									class="mt-2"
-									rounded="lg"
 									@update:modelValue="buscar"
 								></v-select>
 							</v-col>
 						</v-row>
-						<v-row dense class="mt-4">
-							<v-col cols="12" class="d-flex justify-end gap-2">
-								<v-btn variant="text" size="small" @click="limparFiltros">Limpar</v-btn>
-								<v-btn color="cyan" size="small" rounded="pill" @click="buscar">Aplicar Filtros</v-btn>
-							</v-col>
-						</v-row>
+						<div class="d-flex justify-end mt-3 gap-2">
+							<v-btn variant="text" size="small" @click="limparFiltros">Limpar</v-btn>
+							<v-btn color="cyan" size="small" @click="buscar">Aplicar</v-btn>
+						</div>
 					</v-card>
 				</div>
 			</v-expand-transition>
 
 			<!-- Quick Categories -->
-			<v-row class="px-4 mb-4" v-if="!showFilters">
-				<v-col cols="12">
-					<v-slide-group v-model="filters.categoria" show-arrows @update:modelValue="buscar">
-						<v-slide-group-item v-slot="{ isSelected, toggle }" value="">
-							<v-chip :color="isSelected ? 'cyan' : 'white'" :variant="isSelected ? 'flat' : 'outlined'" class="ma-2 px-4" @click="toggle" size="large">
-								Todos
-							</v-chip>
-						</v-slide-group-item>
-						<v-slide-group-item v-for="cat in categoriasMock" :key="cat" :value="cat" v-slot="{ isSelected, toggle }">
-							<v-chip :color="isSelected ? 'cyan' : 'white'" :variant="isSelected ? 'flat' : 'outlined'" class="ma-2 px-4" @click="toggle" size="large">
-								{{ cat }}
-							</v-chip>
-						</v-slide-group-item>
-					</v-slide-group>
-				</v-col>
-			</v-row>
+			<div class="category-row mb-4" v-if="!showFilters">
+				<v-chip-group v-model="filters.categoria" @update:modelValue="buscar" mandatory color="cyan">
+					<v-chip value="" class="premium-chip" variant="tonal" filter>Todos</v-chip>
+					<v-chip v-for="cat in categoriasMock" :key="cat" :value="cat" class="premium-chip" variant="tonal" filter>
+						{{ cat }}
+					</v-chip>
+				</v-chip-group>
+			</div>
 
 			<!-- Content Grid -->
-			<v-row class="px-2" v-if="!loading">
-				<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" md="6" lg="4" class="pa-4">
+			<v-row dense v-if="!loading">
+				<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" sm="6" md="4" lg="3" class="pa-2">
 					<BookCard
 						:book="livro"
-						:animation-delay="index * 50"
+						:animation-delay="index * 30"
 						@toggle-favorite="onToggleFavorite"
 						@share="shareBook(livro.id)"
 					/>
 				</v-col>
 
-				<v-col cols="12" v-if="livros.length === 0" class="text-center mt-12">
-					<v-icon size="80" color="cyan" class="mb-4 opacity-20">mdi-text-search-variant</v-icon>
-					<h2 class="opacity-60 text-white">Nenhum resultado encontrado</h2>
-					<p class="opacity-40 text-white px-4">Refine seus filtros ou tente termos mais abrangentes.</p>
+				<v-col cols="12" v-if="livros.length === 0" class="text-center py-12">
+					<v-icon size="64" color="cyan" class="mb-4 opacity-50">mdi-text-search-variant</v-icon>
+					<h3 class="text-white">Nenhum resultado</h3>
+					<p class="text-white opacity-60">Tente outros termos ou filtros.</p>
 				</v-col>
 			</v-row>
 
-			<!-- Skeleton Loading State -->
-			<v-row class="px-2" v-else>
-				<v-col v-for="n in 6" :key="n" cols="12" md="6" lg="4" class="pa-4">
-					<v-skeleton-loader
-						class="ios-item-card-skeleton"
-						type="image, article, actions"
-						theme="dark"
-					></v-skeleton-loader>
+			<!-- Skeleton -->
+			<v-row dense v-else>
+				<v-col v-for="n in 8" :key="n" cols="12" sm="6" md="4" lg="3" class="pa-2">
+					<v-skeleton-loader type="card" theme="dark" class="rounded-xl"></v-skeleton-loader>
 				</v-col>
 			</v-row>
 		</v-container>
@@ -248,8 +225,28 @@ export default {
 </script>
 
 <style scoped>
-	.explore-container { min-height: 100vh; padding-bottom: 80px; }
+	.explore-container { min-height: calc(100vh - 80px); padding-bottom: 40px; margin-top: -12px; }
 	.search-premium-box { width: 100%; }
+
+	.category-scroll-container {
+		overflow-x: auto;
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	.category-scroll-container::-webkit-scrollbar { display: none; }
+
+	.premium-chip {
+		background: rgba(255, 255, 255, 0.05) !important;
+		backdrop-filter: blur(10px);
+		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		color: white !important;
+		transition: all 0.3s ease;
+	}
+	.premium-chip.v-chip--active {
+		background: linear-gradient(135deg, rgba(0, 184, 212, 0.3), rgba(0, 122, 153, 0.5)) !important;
+		border-color: rgba(0, 184, 212, 0.5) !important;
+		box-shadow: 0 4px 12px rgba(0, 184, 212, 0.2);
+	}
 
 	.ios-search-bar :deep(.v-field) {
 		background: rgba(255, 255, 255, 0.08) !important;
@@ -286,23 +283,18 @@ export default {
 		margin-left: 4px;
 	}
 
-	.ios-item-card {
-		background: rgba(var(--v-theme-surface), 0.7) !important;
-		backdrop-filter: blur(20px) saturate(180%);
-		-webkit-backdrop-filter: blur(20px) saturate(180%);
-		border-radius: 24px !important;
-		border: 1px solid rgba(var(--v-border-color), 0.1);
-		transition: all 0.4s var(--spring-easing);
-		position: relative;
-		overflow: hidden;
-		opacity: 0;
-		animation: revealCard 0.6s var(--spring-easing) forwards;
+	:deep(.ios-item-card) {
+		background: rgba(30, 41, 59, 0.7) !important;
+		backdrop-filter: blur(16px);
+		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		border-radius: 20px !important;
+		transition: all 0.3s ease;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
 	}
-	.ios-item-card:hover {
-		transform: translateY(-8px) scale(1.02);
-		background: rgba(var(--v-theme-surface), 0.9) !important;
-		border-color: var(--ios-cyan);
-		box-shadow: 0 20px 40px rgba(0,0,0,0.15) !important;
+	:deep(.ios-item-card:hover) {
+		transform: translateY(-5px);
+		background: rgba(30, 41, 59, 0.9) !important;
+		border-color: #00B8D4 !important;
 	}
 
 	.item-title {

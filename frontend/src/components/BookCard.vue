@@ -17,7 +17,7 @@
       </v-col>
 
       <!-- Info Section -->
-      <v-col cols="7" class="pa-4 text-left">
+      <v-col cols="7" class="pa-3 text-left">
         <h3 class="item-title mb-1 text-truncate">{{ book.titulo }}</h3>
         <div class="item-details">
           <p class="text-truncate"><strong>Autor:</strong> {{ book.autor }}</p>
@@ -130,12 +130,19 @@ const cardStyle = computed(() => ({
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.2;
+  color: white !important;
+  height: 2.6em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
 }
 
 .item-details p {
   font-size: 0.85rem;
   margin-bottom: 2px;
-  opacity: 0.8;
+  opacity: 0.9;
+  color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .ios-btn-open {
