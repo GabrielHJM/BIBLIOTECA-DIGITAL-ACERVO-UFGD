@@ -103,40 +103,22 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			catName = "Artigo Periódico"
 		}
 
-		// LOGIC REFINEMENT: Find direct PDF link with strict prioritization
-		pdfURL := item.URL // Fallback to DOI URL
-
-		var bestPDF string
-		var secondaryPDF string
-		var tertiaryPDF string
+		// LOGIC REFINEMENT: Find direct PDF link strictly ending with .pdf
+		var pdfURL string
 
 		for _, link := range item.Link {
 			linkURL := strings.ToLower(link.URL)
-			contentType := strings.ToLower(link.ContentType)
 
-			// 1. Top priority: Link ends strictly with .pdf
+			// Top priority: Link ends strictly with .pdf
 			if strings.HasSuffix(linkURL, ".pdf") {
-				bestPDF = link.URL
-				break // Found the best possible link
-			}
-
-			// 2. Secondary priority: Content-Type is specifically PDF
-			if strings.Contains(contentType, "application/pdf") {
-				secondaryPDF = link.URL
-			}
-
-			// 3. Tertiary priority: URL contains .pdf but not necessarily at the end
-			if tertiaryPDF == "" && strings.Contains(linkURL, ".pdf") {
-				tertiaryPDF = link.URL
+				pdfURL = link.URL
+				break
 			}
 		}
 
-		if bestPDF != "" {
-			pdfURL = bestPDF
-		} else if secondaryPDF != "" {
-			pdfURL = secondaryPDF
-		} else if tertiaryPDF != "" {
-			pdfURL = tertiaryPDF
+		// If no direct .pdf link is found, skip this material completely
+		if pdfURL == "" {
+			continue
 		}
 
 		m := material.Material{

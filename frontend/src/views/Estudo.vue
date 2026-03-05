@@ -24,17 +24,16 @@
 					<div class="action-buttons">
 						<v-btn
 							block
-							:color="isDirectPDF ? 'cyan-darken-2' : 'grey-darken-3'"
+							color="cyan-darken-2"
 							class="mb-3 text-none font-weight-bold ios-btn"
 							@click="abrirPDF"
-							:prepend-icon="isDirectPDF ? 'mdi-book-open-page-variant' : 'mdi-web'"
+							prepend-icon="mdi-book-open-page-variant"
 							elevation="0"
 						>
-							{{ isDirectPDF ? 'Ler no Navegador' : 'Acessar Site de Origem' }}
+							Acessar Material
 						</v-btn>
 
 						<v-btn
-							v-if="isDirectPDF"
 							block
 							variant="outlined"
 							color="cyan-lighten-2"
@@ -42,7 +41,7 @@
 							@click="baixarPDF"
 							prepend-icon="mdi-download"
 						>
-							Baixar PDF
+							Baixar e ler offline
 						</v-btn>
 					</div>
 				</v-col>
@@ -189,29 +188,15 @@ export default {
 		},
 		abrirPDF() {
 			if (!this.material || !this.material.pdf_url) return;
-			// Se não for PDF direto e o usuário quiser forçar, ou se for pra abrir normal, alertamos ou abrimos em aba.
-			if (!this.isDirectPDF) {
-				this.snackbarText = 'Este material não possui um PDF direto. Redirecionando para a fonte externa...';
-				this.snackbarColor = 'info';
-				this.snackbar = true;
-				setTimeout(() => {
-					window.open(this.material.pdf_url, '_blank');
-				}, 1500);
-				return;
-			}
+			// Abre diretamente assumindo que é um link de PDF válido
 			window.open(this.material.pdf_url, '_blank');
 		},
 		baixarPDF() {
 			if (!this.material || !this.material.pdf_url) return;
-			if (!this.isDirectPDF) {
-				this.snackbarText = 'Download indisponível (não é um arquivo PDF direto).';
-				this.snackbarColor = 'warning';
-				this.snackbar = true;
-				return;
-			}
 			const link = document.createElement('a');
 			link.href = this.material.pdf_url;
 			link.setAttribute('download', `${this.material.titulo}.pdf`);
+			link.setAttribute('target', '_blank'); // fallback for external downloads
 			document.body.appendChild(link);
 			link.click();
 			document.body.removeChild(link);
@@ -221,11 +206,7 @@ export default {
 		}
 	},
 	computed: {
-		isDirectPDF() {
-			if (!this.material || !this.material.pdf_url) return false;
-			const url = this.material.pdf_url.toLowerCase();
-			return url.includes('.pdf');
-		}
+		// Computed property isDirectPDF is removed as we only allow direct PDFs now
 	},
 	async mounted() {
 		this.isAuthenticated = auth.isAuthenticated();

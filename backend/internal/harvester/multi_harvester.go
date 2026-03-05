@@ -3,7 +3,6 @@ package harvester
 import (
 	"biblioteca-digital-api/internal/domain/material"
 	"biblioteca-digital-api/internal/pkg/logger"
-	"biblioteca-digital-api/internal/pkg/metadata"
 	"context"
 
 	"go.uber.org/zap"
@@ -11,13 +10,11 @@ import (
 
 type MultiSourceHarvester struct {
 	capes *CAPESHarvester
-	meta  *metadata.MetadataService
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
 	return &MultiSourceHarvester{
 		capes: NewCAPESHarvester(),
-		meta:  metadata.NewMetadataService(),
 	}
 }
 
@@ -39,16 +36,6 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		}
 		if !seen[id] {
 			seen[id] = true
-			// Enrich metadata if missing cover or description
-			if m.CapaURL == "" || m.Descricao == "" {
-				cover, desc := h.meta.FetchEnrichment(m.Titulo, m.Autor, m.ISBN)
-				if m.CapaURL == "" && cover != "" {
-					m.CapaURL = cover
-				}
-				if m.Descricao == "" && desc != "" {
-					m.Descricao = desc
-				}
-			}
 			allMaterials = append(allMaterials, m)
 		}
 	}

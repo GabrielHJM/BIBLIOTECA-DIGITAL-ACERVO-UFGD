@@ -4,7 +4,6 @@ import (
 	"biblioteca-digital-api/internal/harvester"
 	"biblioteca-digital-api/internal/pkg/ai"
 	"biblioteca-digital-api/internal/pkg/cache"
-	"biblioteca-digital-api/internal/pkg/metadata"
 	"biblioteca-digital-api/internal/repository"
 	"biblioteca-digital-api/internal/usecase/material"
 	"database/sql"
@@ -17,10 +16,9 @@ import (
 func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiClient, c cache.Cache) {
 	repo := &repository.MaterialPostgres{DB: db}
 	mh := harvester.NewMultiSourceHarvester()
-	meta := metadata.NewMetadataService()
 
 	listarUC := &material.ListarConteudosUseCase{Repo: repo, Harvester: mh, Cache: c}
-	buscarUC := &material.BuscarMaterialUseCase{Repo: repo, Meta: meta}
+	buscarUC := &material.BuscarMaterialUseCase{Repo: repo}
 	similaresUC := &material.BuscarSimilaresUseCase{Repo: repo}
 	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c}
 	favoritarUC := &material.FavoritarMaterialUseCase{Repo: repo}

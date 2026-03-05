@@ -31,3 +31,21 @@ dist/
 # Temporary tools
 cloudflared.exe
 cloudflared_log*.txt
+
+# Logs and outputs
+*.log
+*_log*.txt
+backend_logs_debug.txt
+build_error.txt
+npm-debug.log*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Binaries and executables
+*.exe
+
+# OS generated files
+Thumbs.db
