@@ -69,6 +69,14 @@ const routes = [
 		}
 	},
 	{
+		path: '/anotacoes',
+		name: 'anotacoes',
+		component: () => import(/* webpackChunkName: "secure" */ '@/views/Anotacoes.vue'),
+		beforeEnter: (to, from, next) => {
+			auth.isAuthenticated() ? next() : next('/login')
+		}
+	},
+	{
 		path: '/admin',
 		name: 'admin',
 		component: () => import(/* webpackChunkName: "secure" */ '@/views/AdminDashboard.vue'),

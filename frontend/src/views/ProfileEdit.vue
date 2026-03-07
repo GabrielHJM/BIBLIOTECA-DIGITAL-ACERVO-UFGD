@@ -20,7 +20,11 @@
 						</div>
 					</v-avatar>
 				</div>
-				<span class="mt-3 text-caption text-white opacity-70">Toque para alterar a foto</span>
+				<v-chip size="small" :color="userRoleName === 'Professor' ? '#00E5FF' : 'white'" :variant="userRoleName === 'Professor' ? 'flat' : 'outlined'" class="mt-4 font-weight-bold" style="color: #0b192c !important;">
+					<v-icon start size="16">{{ userRoleName === 'Professor' ? 'mdi-school' : 'mdi-account-school' }}</v-icon>
+					{{ userRoleName }}
+				</v-chip>
+				<span class="mt-2 text-caption text-white opacity-70">Toque para alterar a foto</span>
 			</div>
 
 			<!-- Form Section -->
@@ -165,6 +169,13 @@ export default {
 	created() {
 		const cachedUser = auth.getUser()
 		this.user = { ...cachedUser }
+	},
+	computed: {
+		userRoleName() {
+			if (this.user.tipo_usuario_id === 1) return 'Aluno';
+			if (this.user.tipo_usuario_id === 2) return 'Professor';
+			return 'Membro';
+		}
 	},
 	methods: {
 		openPhotoSelector() {

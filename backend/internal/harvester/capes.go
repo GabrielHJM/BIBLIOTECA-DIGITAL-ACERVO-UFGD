@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync"
 
 	"go.uber.org/zap"
 )
@@ -84,64 +85,110 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 	}
 
 	var materials []material.Material
+	resultsChan := make(chan material.Material, len(data.Message.Items))
+	var wg sync.WaitGroup
+
 	for _, item := range data.Message.Items {
 		if len(item.Title) == 0 {
 			continue
 		}
 
-		var authors []string
-		for _, a := range item.Author {
-			authors = append(authors, fmt.Sprintf("%s %s", a.Given, a.Family))
-		}
+		wg.Add(1)
+		go func(it struct {
+			Title   []string `json:"title"`
+			Subject []string `json:"subject"`
+			Author  []struct {
+				Given  string `json:"given"`
+				Family string `json:"family"`
+			} `json:"author"`
+			Abstract string `json:"abstract"`
+			Created  struct {
+				DateParts [][]int `json:"date-parts"`
+			} `json:"created"`
+			DOI  string `json:"DOI"`
+			URL  string `json:"URL"`
+			Type string `json:"type"`
+			Link []struct {
+				URL                 string `json:"URL"`
+				ContentType         string `json:"content-type"`
+				ContentVersion      string `json:"content-version"`
+				IntendedApplication string `json:"intended-application"`
+			} `json:"link"`
+		}) {
+			defer wg.Done()
 
-		year := 0
-		if len(item.Created.DateParts) > 0 && len(item.Created.DateParts[0]) > 0 {
-			year = item.Created.DateParts[0][0]
-		}
-
-		catName := category
-		if catName == "" {
-			if len(item.Subject) > 0 {
-				catName = item.Subject[0]
-			} else {
-				catName = "Artigo Periódico"
+			var authors []string
+			for _, a := range it.Author {
+				authors = append(authors, fmt.Sprintf("%s %s", a.Given, a.Family))
 			}
-		}
 
-		// LOGIC REFINEMENT: Find direct PDF link strictly ending with .pdf
-		var pdfURL string
-
-		for _, link := range item.Link {
-			linkURL := strings.ToLower(strings.Split(link.URL, "?")[0])
-
-			// Top priority: Link ends strictly with .pdf
-			if strings.HasSuffix(linkURL, ".pdf") {
-				pdfURL = link.URL
-				break
+			year := 0
+			if len(it.Created.DateParts) > 0 && len(it.Created.DateParts[0]) > 0 {
+				year = it.Created.DateParts[0][0]
 			}
-		}
 
-		// If no direct .pdf link is found, skip this material completely
-		if pdfURL == "" {
-			continue
-		}
+			catName := category
+			if catName == "" {
+				if len(it.Subject) > 0 {
+					catName = it.Subject[0]
+				} else {
+					catName = "Artigo Periódico"
+				}
+			}
 
-		// Fetch cover from Google Books
-		cover := GetCoverFromGoogleBooks(item.Title[0], strings.Join(authors, ", "))
+			var pdfURL string
+			for _, link := range it.Link {
+				lowerURL := strings.ToLower(link.URL)
+				if strings.HasSuffix(lowerURL, ".pdf") || link.ContentType == "application/pdf" || link.IntendedApplication == "text-mining" {
+					pdfURL = link.URL
+					break
+				}
+			}
 
-		m := material.Material{
-			Titulo:        item.Title[0],
-			Autor:         strings.Join(authors, ", "),
-			Descricao:     item.Abstract,
-			AnoPublicacao: year,
-			Fonte:         "CAPES",
-			Categoria:     catName,
-			ExternoID:     item.DOI,
-			CapaURL:       cover,
-			PDFURL:        pdfURL,
-			Disponivel:    true,
-		}
+			if pdfURL == "" {
+				return
+			}
 
+			// Fetch cover from Google Books (In parallel now)
+			cover := GetCoverFromGoogleBooks(it.Title[0], strings.Join(authors, ", "))
+
+			difficulty := 3
+			if len(it.Abstract) > 1000 {
+				difficulty = 4
+			}
+			if year < 2010 {
+				difficulty++
+			}
+			if difficulty > 5 {
+				difficulty = 5
+			}
+
+			xp := 10 + (difficulty * 5)
+
+			resultsChan <- material.Material{
+				Titulo:        it.Title[0],
+				Autor:         strings.Join(authors, ", "),
+				Descricao:     it.Abstract,
+				AnoPublicacao: year,
+				Fonte:         "CAPES",
+				Categoria:     catName,
+				ExternoID:     it.DOI,
+				CapaURL:       cover,
+				PDFURL:        pdfURL,
+				Disponivel:    true,
+				Dificuldade:   difficulty,
+				XP:            xp,
+				Relevancia:    10,
+			}
+		}(item)
+	}
+
+	go func() {
+		wg.Wait()
+		close(resultsChan)
+	}()
+
+	for m := range resultsChan {
 		materials = append(materials, m)
 	}
 

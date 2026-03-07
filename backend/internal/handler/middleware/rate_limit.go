@@ -12,13 +12,13 @@ import (
 
 // client representa um visitante pela perspectiva do limitador de taxa
 type client struct {
+	mu       sync.Mutex
 	limiter  *rate.Limiter
 	lastSeen time.Time
 }
 
 var (
-	mu      sync.Mutex
-	clients = make(map[string]*client)
+	clients sync.Map
 )
 
 func init() {
@@ -28,13 +28,17 @@ func init() {
 func cleanupClients() {
 	for {
 		time.Sleep(time.Minute)
-		mu.Lock()
-		for ip, client := range clients {
-			if time.Since(client.lastSeen) > 3*time.Minute {
-				delete(clients, ip)
+		clients.Range(func(key, value interface{}) bool {
+			ip := key.(string)
+			c := value.(*client)
+
+			c.mu.Lock()
+			if time.Since(c.lastSeen) > 3*time.Minute {
+				clients.Delete(ip)
 			}
-		}
-		mu.Unlock()
+			c.mu.Unlock()
+			return true
+		})
 	}
 }
 
@@ -47,21 +51,24 @@ func RateLimit(next http.Handler) http.Handler {
 			ip = forwardedFor
 		}
 
-		mu.Lock()
-		if _, found := clients[ip]; !found {
-			// Permite 5 requests por segundo com um burst de 10
-			clients[ip] = &client{limiter: rate.NewLimiter(5, 10)}
-		}
-		clients[ip].lastSeen = time.Now()
+		value, _ := clients.LoadOrStore(ip, &client{
+			limiter:  rate.NewLimiter(5, 10),
+			lastSeen: time.Now(),
+		})
+		c := value.(*client)
 
-		if !clients[ip].limiter.Allow() {
-			mu.Unlock()
+		c.mu.Lock()
+		c.lastSeen = time.Now()
+		allowed := c.limiter.Allow()
+		c.mu.Unlock()
+
+		if !allowed {
 			logger.Warn("Rate limit exceeded", zap.String("ip", ip))
 			http.Error(w, "Rate limit exceeded. Please try again later.", http.StatusTooManyRequests)
 			return
 		}
-		mu.Unlock()
 
 		next.ServeHTTP(w, r)
 	})
 }
+

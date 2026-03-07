@@ -39,11 +39,11 @@ func main() {
 		}
 	}
 
-	if source == "all" || source == "googlebooks" {
-		h := harvester.NewGoogleBooksHarvester()
-		materials, err := h.Search(context.Background(), "technology", "", 10)
+	if source == "all" || source == "semanticscholar" {
+		h := harvester.NewSemanticScholarHarvester()
+		materials, err := h.Search(context.Background(), "tecnologia", "Computação", 15)
 		if err != nil {
-			logger.Error("Erro ao coletar Google Books", zap.Error(err))
+			logger.Error("Erro ao coletar Semantic Scholar", zap.Error(err))
 		} else {
 			saveMaterials(repo, materials)
 		}

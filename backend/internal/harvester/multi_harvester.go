@@ -11,26 +11,39 @@ import (
 )
 
 type MultiSourceHarvester struct {
-	capes  *CAPESHarvester
-	gbooks *GoogleBooksHarvester
-	arxiv  *ArXivHarvester
-	doaj   *DOAJHarvester
+	capes *CAPESHarvester
+	ss    *SemanticScholarHarvester
+	arxiv *ArXivHarvester
+	gb    *GoogleBooksHarvester
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
 	return &MultiSourceHarvester{
-		capes:  NewCAPESHarvester(),
-		gbooks: NewGoogleBooksHarvester(),
-		arxiv:  NewArXivHarvester(),
-		doaj:   NewDOAJHarvester(),
+		capes: NewCAPESHarvester(),
+		ss:    NewSemanticScholarHarvester(),
+		arxiv: NewArXivHarvester(),
+		gb:    NewGoogleBooksHarvester(),
 	}
 }
 
 func (h *MultiSourceHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error) {
-	// Refine query for technology if it's broad to bring more modern results
+	// Refine query for English-based academic databases from PT-BR targets
 	refinedQuery := query
-	if strings.ToLower(query) == "tecnologia" || strings.ToLower(category) == "tecnologia" {
-		refinedQuery = "tecnologia \"artificial intelligence\" OR \"software engineering\" OR \"cybersecurity\""
+	lowercaseQ := strings.ToLower(query)
+	lowercaseC := strings.ToLower(category)
+
+	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
+		refinedQuery = "computer science OR software OR technology"
+	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
+		refinedQuery = "health OR medicine OR biology"
+	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
+		refinedQuery = "science OR physics OR chemistry"
+	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
+		refinedQuery = "mathematics OR algebra OR geometry"
+	} else if lowercaseQ == "história" || lowercaseC == "história" {
+		refinedQuery = "history OR archaeology OR humanity"
+	} else if lowercaseQ == "educação" || lowercaseC == "educação" {
+		refinedQuery = "education OR pedagogical OR teaching"
 	}
 
 	var allMaterials []material.Material
@@ -48,7 +61,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 			}
 		},
 		func() {
-			mats, err := h.gbooks.Search(ctx, refinedQuery, category, limit)
+			mats, err := h.ss.Search(ctx, refinedQuery, category, limit)
 			if err == nil {
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)
@@ -64,7 +77,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 			}
 		},
 		func() {
-			mats, err := h.doaj.Search(ctx, refinedQuery, category, limit)
+			mats, err := h.gb.Search(ctx, refinedQuery, category, limit)
 			if err == nil {
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)

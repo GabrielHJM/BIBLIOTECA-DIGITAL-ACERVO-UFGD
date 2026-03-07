@@ -78,7 +78,12 @@
 								</v-avatar>
 								<div>
 									<div class="dropdown-user-name">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
-									<div class="dropdown-user-role">{{ isLoggedIn ? 'Usuário autenticado' : 'Não autenticado' }}</div>
+									<div class="dropdown-user-role">
+										<v-chip v-if="isLoggedIn" size="x-small" :color="userRoleName === 'Professor' ? '#00E5FF' : 'white'" :variant="userRoleName === 'Professor' ? 'flat' : 'outlined'" class="mt-1 font-weight-bold" style="color: #0b192c !important;">
+											{{ userRoleName }}
+										</v-chip>
+										<span v-else>Não autenticado</span>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -308,6 +313,12 @@ export default {
 		userDisplayName() {
 			const user = authState.user
 			return user?.nome || user?.email || 'Usuário'
+		},
+		userRoleName() {
+			const user = authState.user
+			if (user?.tipo_usuario_id === 1) return 'Aluno';
+			if (user?.tipo_usuario_id === 2) return 'Professor';
+			return 'Membro';
 		},
 		userAvatar() {
 			const user = authState.user

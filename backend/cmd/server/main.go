@@ -221,6 +221,7 @@ func main() {
 	handler.RegisterStatsRoutes(mux, db)
 	handler.RegisterEstudoRoutes(mux, db, geminiClient)
 	handler.RegisterAdminRoutes(mux, db)
+	handler.RegisterAnotacaoRoutes(mux, db)
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 

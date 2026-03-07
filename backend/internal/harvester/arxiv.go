@@ -13,6 +13,30 @@ import (
 	"go.uber.org/zap"
 )
 
+type ArxivFeed struct {
+	XMLName xml.Name     `xml:"feed"`
+	Entries []ArxivEntry `xml:"entry"`
+}
+
+type ArxivEntry struct {
+	ID        string `xml:"id"`
+	Updated   string `xml:"updated"`
+	Published string `xml:"published"`
+	Title     string `xml:"title"`
+	Summary   string `xml:"summary"`
+	Authors   []struct {
+		Name string `xml:"name"`
+	} `xml:"author"`
+	Links []struct {
+		Href  string `xml:"href,attr"`
+		Title string `xml:"title,attr"`
+		Type  string `xml:"type,attr"`
+	} `xml:"link"`
+	Categories []struct {
+		Term string `xml:"term,attr"`
+	} `xml:"category"`
+}
+
 type ArXivHarvester struct {
 	BaseURL string
 }
@@ -23,37 +47,10 @@ func NewArXivHarvester() *ArXivHarvester {
 	}
 }
 
-type ArXivEntry struct {
-	ID        string `xml:"id"`
-	Updated   string `xml:"updated"`
-	Published string `xml:"published"`
-	Title     string `xml:"title"`
-	Summary   string `xml:"summary"`
-	Author    []struct {
-		Name string `xml:"name"`
-	} `xml:"author"`
-	Link []struct {
-		Href string `xml:"href,attr"`
-		Rel  string `xml:"rel,attr"`
-		Type string `xml:"type,attr"`
-	} `xml:"link"`
-	Category []struct {
-		Term string `xml:"term,attr"`
-	} `xml:"category"`
-}
-
-type ArXivFeed struct {
-	XMLName xml.Name     `xml:"feed"`
-	Entry   []ArXivEntry `xml:"entry"`
-}
-
 func (h *ArXivHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
 	searchTerm := query
 	if searchTerm == "" {
-		searchTerm = category
-	}
-	if searchTerm == "" {
-		searchTerm = "technology"
+		searchTerm = "all"
 	}
 
 	searchURL := fmt.Sprintf("%s?search_query=all:%s&start=0&max_results=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
@@ -74,73 +71,69 @@ func (h *ArXivHarvester) Search(ctx context.Context, query string, category stri
 		return nil, fmt.Errorf("arxiv api error: %s", resp.Status)
 	}
 
-	var feed ArXivFeed
-	if err := xml.NewDecoder(resp.Body).Decode(&feed); err != nil {
-		return nil, fmt.Errorf("failed to decode arxiv xml: %w", err)
+	var data ArxivFeed
+	if err := xml.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, err
 	}
 
 	var materials []material.Material
-	for _, entry := range feed.Entry {
-		var authors []string
-		for _, a := range entry.Author {
-			authors = append(authors, a.Name)
+	for _, item := range data.Entries {
+		if item.Title == "" {
+			continue
 		}
 
-		year := 0
-		if len(entry.Published) >= 4 {
-			fmt.Sscanf(entry.Published[:4], "%d", &year)
-		}
-
-		// ArXiv links: usually one is for the abstract, another for the PDF
+		// STRICT PDF RULE
 		var pdfURL string
-		for _, link := range entry.Link {
-			if link.Type == "application/pdf" || strings.Contains(link.Href, "pdf") {
+		for _, link := range item.Links {
+			if link.Title == "pdf" || link.Type == "application/pdf" {
 				pdfURL = link.Href
-				// Ensure PDF URL starts with https and is direct
-				if !strings.HasPrefix(pdfURL, "http") {
-					continue
+				// Ensure it ends with .pdf
+				if !strings.HasSuffix(pdfURL, ".pdf") {
+					pdfURL = pdfURL + ".pdf"
 				}
-				// ArXiv links are usually http://arxiv.org/pdf/xxxx - upgrade to https if possible
-				pdfURL = strings.Replace(pdfURL, "http://", "https://", 1)
 				break
 			}
 		}
 
-		// If no explicit PDF link found, try to derive it from the ID
-		if pdfURL == "" && strings.Contains(entry.ID, "abs/") {
-			pdfURL = strings.Replace(entry.ID, "abs/", "pdf/", 1) + ".pdf"
-		} else if pdfURL == "" && strings.Contains(entry.ID, "arxiv.org/") {
-			// Some IDs are just the URL
-			pdfURL = entry.ID
-			if !strings.HasSuffix(pdfURL, ".pdf") {
-				pdfURL = strings.Replace(pdfURL, "abs/", "pdf/", 1) + ".pdf"
-			}
+		if pdfURL == "" || !strings.HasSuffix(pdfURL, ".pdf") {
+			continue // Skip if no PDF found
 		}
 
-		if pdfURL == "" {
-			continue
+		var authors []string
+		for _, a := range item.Authors {
+			authors = append(authors, a.Name)
 		}
 
-		catName := category
-		if catName == "" {
-			if len(entry.Category) > 0 {
-				catName = h.mapCategory(entry.Category[0].Term)
-			} else {
-				catName = "TECNOLOGIA"
-			}
+		year := 0
+		if len(item.Published) >= 4 {
+			fmt.Sscanf(item.Published[:4], "%d", &year)
 		}
+
+		// Gamification
+		difficulty := 4 // ArXiv papers are usually dense
+		xp := 10 + (difficulty * 5)
+		relevance := 20
+
+		cover := GetCoverFromGoogleBooks(item.Title, strings.Join(authors, ", "))
 
 		m := material.Material{
-			Titulo:        strings.TrimSpace(entry.Title),
+			Titulo:        strings.ReplaceAll(item.Title, "\n", " "),
 			Autor:         strings.Join(authors, ", "),
-			Descricao:     strings.TrimSpace(entry.Summary),
+			Descricao:     strings.TrimSpace(item.Summary),
 			AnoPublicacao: year,
 			Fonte:         "ArXiv",
-			Categoria:     catName,
-			ExternoID:     entry.ID,
+			Categoria:     category,
+			ExternoID:     item.ID,
+			CapaURL:       cover,
 			PDFURL:        pdfURL,
 			Disponivel:    true,
-			CapaURL:       GetCoverFromGoogleBooks(entry.Title, ""), // Use existing helper for cover
+			Dificuldade:   difficulty,
+			XP:            xp,
+			Relevancia:    relevance,
+		}
+
+		if m.Categoria == "" {
+			m.Categoria = "Pesquisa Avançada"
 		}
 
 		materials = append(materials, m)
@@ -148,22 +141,4 @@ func (h *ArXivHarvester) Search(ctx context.Context, query string, category stri
 
 	logger.Info("ArXiv harvester: search completed", zap.Int("results", len(materials)))
 	return materials, nil
-}
-
-func (h *ArXivHarvester) mapCategory(term string) string {
-	term = strings.ToLower(term)
-	// Simple mapping for ArXiv categories to friendly portal categories
-	if strings.HasPrefix(term, "cs.") {
-		return "TECNOLOGIA"
-	}
-	if strings.HasPrefix(term, "math.") {
-		return "MATEMÁTICA"
-	}
-	if strings.HasPrefix(term, "physics.") || strings.HasPrefix(term, "quant-ph") {
-		return "CIÊNCIAS"
-	}
-	if strings.HasPrefix(term, "bio.") || strings.HasPrefix(term, "q-bio") {
-		return "SAÚDE"
-	}
-	return "TECNOLOGIA" // Fallback for ArXiv which is mostly tech
 }

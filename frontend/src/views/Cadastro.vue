@@ -65,7 +65,7 @@
 							<label class="ios-label">PERFIL</label>
 							<v-select
 								class="ios-select-modern"
-								:items="['Aluno', 'Professor', 'Curador Especializado', 'Suporte']"
+								:items="['Aluno', 'Professor']"
 								v-model="tipoUsuario"
 								variant="solo"
 								flat
@@ -144,8 +144,6 @@ export default {
 				switch(this.tipoUsuario) {
 					case 'Aluno': tipo = 1; break;
 					case 'Professor': tipo = 2; break;
-					case 'Curador Especializado': tipo = 3; break;
-					case 'Suporte': tipo = 4; break;
 					default: tipo = 1;
 				}
 

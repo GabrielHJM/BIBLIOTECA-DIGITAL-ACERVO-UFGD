@@ -8,9 +8,13 @@ import (
 	"biblioteca-digital-api/internal/usecase/material"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"strconv"
+	"time"
 )
 
 func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiClient, c cache.Cache) {
@@ -157,14 +161,33 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 			return
 		}
 
-		// Segurança Básica SSRF: validar apenas HTTP/HTTPS
-		if len(pdfURL) < 7 || (pdfURL[:7] != "http://" && pdfURL[:8] != "https://") {
+		// Segurança Básica SSRF: validar apenas HTTP/HTTPS e bloquear IPs locais/privados
+		parsedURL, err := url.Parse(pdfURL)
+		if err != nil || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
 			JSONError(w, "URL inválida - apenas HTTP/HTTPS são permitidos", http.StatusBadRequest)
 			return
 		}
 
+		// Resolução de IP e verificação de SSRF profunda
+		ips, err := net.LookupIP(parsedURL.Hostname())
+		if err != nil || len(ips) == 0 {
+			JSONError(w, "Não foi possível resolver o host", http.StatusBadRequest)
+			return
+		}
+		for _, ip := range ips {
+			if ip.IsLoopback() || ip.IsPrivate() || ip.IsUnspecified() || ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() {
+				JSONError(w, "Acesso bloqueado a IPs internos ou privados por segurança (SSRF Protection)", http.StatusForbidden)
+				return
+			}
+		}
+
+		// Cliente HTTP seguro com Timeout
+		safeClient := &http.Client{
+			Timeout: 15 * time.Second,
+		}
+
 		// Faz o fetch do PDF original
-		resp, err := http.Get(pdfURL)
+		resp, err := safeClient.Get(pdfURL)
 		if err != nil {
 			JSONError(w, "Erro ao buscar PDF original: "+err.Error(), http.StatusInternalServerError)
 			return
@@ -172,7 +195,7 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 		defer resp.Body.Close()
 
 		if resp.StatusCode != http.StatusOK {
-			JSONError(w, "Erro na fonte original: "+resp.Status, http.StatusBadGateway)
+			JSONError(w, fmt.Sprintf("Erro na fonte original: %d %s", resp.StatusCode, resp.Status), http.StatusBadGateway)
 			return
 		}
 
@@ -191,9 +214,11 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Content-Security-Policy", "default-src 'none'; frame-ancestors 'self';")
 
-		_, err = io.Copy(w, resp.Body)
-		if err != nil {
-			// Aqui não podemos mais usar JSONError pois o body pode já ter começado a carregar
+		// Proteção contra arquivos gigantes (DoS): Limita a 50 MB
+		limitReader := io.LimitReader(resp.Body, 50<<20)
+
+		if _, err = io.Copy(w, limitReader); err != nil {
+			// Não use JSONError se o body já tiver começado a ser enviado
 			return
 		}
 	})

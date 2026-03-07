@@ -16,10 +16,11 @@ const materialColumns = `id, titulo, autor, COALESCE(isbn, ''), categoria, ano_p
                           COALESCE(descricao, ''), COALESCE(capa_url, ''), COALESCE(pdf_url, ''),
                           disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0),
                           COALESCE(paginas, 0), COALESCE(externo_id, ''), COALESCE(fonte, ''),
-                          COALESCE(status, 'aprovado'), COALESCE(curador_id, 0)`
+                          COALESCE(status, 'aprovado'), COALESCE(curador_id, 0),
+                          COALESCE(dificuldade, 1), COALESCE(xp, 10), COALESCE(relevancia, 0)`
 
 func (r *MaterialPostgres) Listar(ctx context.Context, limit, offset int) ([]material.Material, error) {
-	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'aprovado' LIMIT $1 OFFSET $2", materialColumns)
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'aprovado' AND pdf_url ILIKE '%%.pdf%%' AND capa_url NOT LIKE 'https://images.unsplash.com/%%' LIMIT $1 OFFSET $2", materialColumns)
 	rows, err := r.DB.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -41,7 +42,7 @@ func (r *MaterialPostgres) BuscarPorID(ctx context.Context, id int) (*material.M
 	var m material.Material
 	query := fmt.Sprintf("SELECT %s FROM materiais WHERE id = $1", materialColumns)
 	err := r.DB.QueryRowContext(ctx, query, id).Scan(
-		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes, &m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID)
+		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes, &m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID, &m.Dificuldade, &m.XP, &m.Relevancia)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +65,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 		// Não adicionamos args aqui ainda porque reestruturamos a injeção condicional no bloco AND abaixo para unificar.
 	}
 
-	query += " FROM materiais WHERE status = 'aprovado'"
+	query += " FROM materiais WHERE status = 'aprovado' AND pdf_url ILIKE '%%.pdf%%' AND capa_url NOT LIKE 'https://images.unsplash.com/%%'"
 
 	// Busca híbrida: FTS Rankado OR Fallback ILIKE em título/autor
 	if termo != "" {
@@ -129,6 +130,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 			&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
 			&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
 			&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID,
+			&m.Dificuldade, &m.XP, &m.Relevancia,
 		}
 		if termo != "" {
 			dest = append(dest, &rank)
@@ -146,7 +148,7 @@ func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, 
 	query := fmt.Sprintf(`SELECT %s
 	          FROM materiais m1
 	          JOIN materiais m2 ON m1.categoria = m2.categoria AND m1.id != m2.id
-	          WHERE m1.id = $1 AND m2.status = 'aprovado'
+	          WHERE m1.id = $1 AND m2.status = 'aprovado' AND m2.pdf_url ILIKE '%%.pdf%%' AND m2.capa_url NOT LIKE 'https://images.unsplash.com/%%'
 	          LIMIT $2`, "m2."+replaceColumns(materialColumns, "m2."))
 	rows, err := r.DB.QueryContext(ctx, query, materialID, limit)
 	if err != nil {
@@ -192,11 +194,11 @@ func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) erro
 	}
 	defer tx.Rollback()
 
-	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas)
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas, dificuldade, xp, relevancia)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 			  RETURNING id`
 	err = tx.QueryRowContext(ctx, query,
-		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ExternoID, m.Fonte, m.Paginas,
+		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ExternoID, m.Fonte, m.Paginas, m.Dificuldade, m.XP, m.Relevancia,
 	).Scan(&m.ID)
 	if err != nil {
 		return fmt.Errorf("erro ao criar material: %w", err)
@@ -290,7 +292,7 @@ func scanMaterial(scanner interface {
 	return scanner.Scan(
 		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
 		&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
-		&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID,
+		&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID, &m.Dificuldade, &m.XP, &m.Relevancia,
 	)
 }
 

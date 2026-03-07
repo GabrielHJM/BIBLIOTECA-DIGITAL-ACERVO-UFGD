@@ -109,7 +109,7 @@
 					</v-card>
 				</v-col>
 				<v-col cols="12" md="6">
-					<v-card class="study-hub-card notes premium-glow reader-rounding">
+					<v-card class="study-hub-card notes premium-glow reader-rounding cursor-pointer" @click="$router.push('/anotacoes')">
 						<div class="d-flex align-center pa-6">
 							<div class="hub-icon-wrap cyan">
 								<v-icon size="40" color="cyan">mdi-notebook-edit-outline</v-icon>
@@ -119,7 +119,7 @@
 								<p class="text-body-2 text-white opacity-60">Acesse todas as notas que você fez durante a leitura.</p>
 							</div>
 							<v-spacer></v-spacer>
-							<v-chip color="cyan" size="small" class="font-weight-bold">Em breve</v-chip>
+							<v-icon color="white" class="opacity-20">mdi-chevron-right</v-icon>
 						</div>
 					</v-card>
 				</v-col>

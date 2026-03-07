@@ -19,4 +19,7 @@ type Material struct {
 	Fonte           string   `json:"fonte"`
 	Status          string   `json:"status"`     // 'pendente', 'aprovado', 'rejeitado'
 	CuradorID       int      `json:"curador_id"` // ID do curador que aprovou
+	Dificuldade     int      `json:"dificuldade"`
+	XP              int      `json:"xp"`
+	Relevancia      int      `json:"relevancia"`
 }

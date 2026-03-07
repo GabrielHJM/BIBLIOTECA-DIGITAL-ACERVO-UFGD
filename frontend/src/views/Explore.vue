@@ -139,8 +139,9 @@ export default {
 			ano_inicio: null,
 			ano_fim: null
 		},
+		hasInitialFetchDone: false,
 
-		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'CONTABILIDADE', 'Artigo Periódico'],
+		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'Pesquisa Avançada'],
 		sortOptions: [
 			{ label: 'Relevância', value: '' },
 			{ label: 'Melhor Avaliados', value: 'rating' },
@@ -162,9 +163,23 @@ export default {
 		'$route.query': {
 			immediate: true,
 			handler(query) {
-				if (query.q) this.filters.q = query.q;
-				if (query.categoria) this.filters.categoria = query.categoria;
-				this.buscar();
+				// Prevent double fetching if already fetching
+				if (this.loading) return;
+				let changed = false;
+				if (query.q && query.q !== this.filters.q) {
+					this.filters.q = query.q;
+					changed = true;
+				}
+				if (query.categoria && query.categoria !== this.filters.categoria) {
+					this.filters.categoria = query.categoria;
+					changed = true;
+				}
+
+				// Fetch once correctly
+				if (changed || !this.hasInitialFetchDone) {
+					this.buscar();
+					this.hasInitialFetchDone = true;
+				}
 			}
 		}
 	},

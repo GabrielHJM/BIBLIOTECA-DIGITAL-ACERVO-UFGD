@@ -80,8 +80,7 @@
 							<v-icon size="18" class="mr-2">mdi-text-box-outline</v-icon> Resumo
 						</h3>
 						<div class="description-card">
-							<p class="text-body-1 text-white opacity-80 mb-0 line-height-relaxed">
-								{{ cleanText(material.descricao) || 'Nenhum resumo disponível para este material.' }}
+							<p class="text-body-1 text-white opacity-80 mb-0 line-height-relaxed" v-text="material.descricao || 'Nenhum resumo disponível para este material.'">
 							</p>
 						</div>
 					</div>
@@ -158,10 +157,6 @@ export default {
 		snackbarColor: 'success'
 	}),
 	methods: {
-		cleanText(text) {
-			if (!text) return '';
-			return text.replace(/<[^>]*>/g, '').trim();
-		},
 		getCitation(style) {
 			if (!this.material) return '';
 			const autor = this.material.autor || 'AUTOR DESCONHECIDO';
@@ -193,13 +188,17 @@ export default {
 		},
 		baixarPDF() {
 			if (!this.material || !this.material.pdf_url) return;
-			const link = document.createElement('a');
-			link.href = this.material.pdf_url;
-			link.setAttribute('download', `${this.material.titulo}.pdf`);
-			link.setAttribute('target', '_blank'); // fallback for external downloads
-			document.body.appendChild(link);
-			link.click();
-			document.body.removeChild(link);
+			// Clean programmatic interaction that doesn't leak DOM elements or event listeners
+			const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+			if(isIos) {
+				window.location.assign(this.material.pdf_url);
+			} else {
+				Object.assign(document.createElement('a'), {
+					href: this.material.pdf_url,
+					download: `${this.material.titulo || 'document'}.pdf`,
+					target: '_blank'
+				}).click();
+			}
 		},
 		goBack() {
 			window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/explorar');

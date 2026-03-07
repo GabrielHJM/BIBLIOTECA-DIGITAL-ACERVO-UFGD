@@ -13,7 +13,7 @@ api.interceptors.request.use(
 		const userStr = localStorage.getItem('user');
 		if (userStr) {
 			const user = JSON.parse(userStr);
-			if (user.token) {
+			if (user?.token) {
 				config.headers.Authorization = `Bearer ${user.token}`;
 			}
 		}
