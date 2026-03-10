@@ -2,7 +2,7 @@
   <div
     class="premium-card"
     :class="[
-      { 'premium-card-dark': $vuetify.theme.current.dark },
+      { 'premium-card-dark': isDarkTheme },
       { 'premium-card-blur': blur },
       { 'premium-card-hover': hover }
     ]"
@@ -33,6 +33,7 @@
 <script setup>
 /* global defineProps */
 import { computed } from 'vue';
+import { useTheme } from 'vuetify';
 
 const props = defineProps({
   title: String,
@@ -55,6 +56,9 @@ const props = defineProps({
   }
 });
 
+const theme = useTheme();
+const isDarkTheme = computed(() => theme.global.current.value.dark);
+
 const containerStyle = computed(() => ({
   padding: props.padding
 }));
@@ -62,28 +66,27 @@ const containerStyle = computed(() => ({
 
 <style scoped>
 .premium-card {
-  background: #ffffff;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   border-radius: 24px;
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
   position: relative;
   overflow: hidden;
+  color: #ffffff;
 }
 
 .premium-card-dark {
-  background: #1e1e1e;
+  background: var(--v-theme-surface);
   border-color: rgba(255, 255, 255, 0.05);
   color: white;
 }
 
 .premium-card-blur {
-  background: rgba(255, 255, 255, 0.8) !important;
-  backdrop-filter: blur(20px);
-}
-
-.premium-card-dark.premium-card-blur {
-  background: rgba(30, 30, 30, 0.7) !important;
+  background: var(--glass-bg) !important;
+  backdrop-filter: var(--glass-blur) !important;
 }
 
 .premium-card-hover:hover {

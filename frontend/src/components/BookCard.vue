@@ -1,8 +1,8 @@
 <template>
   <v-card
-    class="ios-item-card premium-shadow-hover"
-    elevation="12"
-    :style="cardStyle"
+    class="premium-card-blur premium-shadow-hover"
+    elevation="0"
+    :style="{ animationDelay: `${animationDelay}ms` }"
   >
     <v-row no-gutters>
       <!-- Image Section -->
@@ -13,7 +13,7 @@
             :alt="book.titulo"
             class="book-cover"
           />
-          <v-chip class="source-badge" size="x-small" color="cyan-darken-3" variant="flat">
+          <v-chip class="source-badge" size="x-small" color="primary" variant="flat">
             {{ book.fonte || 'Repositório' }}
           </v-chip>
         </div>
@@ -35,7 +35,8 @@
             color="amber"
             active-color="amber"
             size="small"
-            readonly
+            @update:model-value="$emit('rate', { book, nota: $event })"
+            hover
           ></v-rating>
 
           <div class="xp-badge ml-2">+{{ book.xp || 10 }} XP</div>
@@ -64,9 +65,9 @@
         variant="text"
         :color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'grey-darken-1')"
         size="small"
-        @click="$emit('toggle-favorite', book)"
+        @click="handleToggleFavorite"
       >
-        <v-icon>{{ isFavorited ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+        <v-icon ref="heartIcon">{{ isFavorited ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
       </v-btn>
 
       <div class="d-flex align-center gap-2">
@@ -91,9 +92,14 @@
   </v-card>
 </template>
 
+<script>
+const defaultCover = 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400';
+</script>
+
 <script setup>
-/* global defineProps, defineEmits */
-import { computed } from 'vue';
+/* eslint-disable no-undef */
+import { ref } from 'vue';
+import { gsap } from 'gsap';
 
 const props = defineProps({
   book: {
@@ -114,13 +120,20 @@ const props = defineProps({
   }
 });
 
-defineEmits(['toggle-favorite', 'share']);
+const emit = defineEmits(['toggle-favorite', 'share', 'rate']);
 
-const defaultCover = 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400';
+const heartIcon = ref(null);
 
-const cardStyle = computed(() => ({
-  animationDelay: `${props.animationDelay}ms`
-}));
+const handleToggleFavorite = () => {
+  if (heartIcon.value) {
+    const el = heartIcon.value.$el || heartIcon.value;
+    gsap.fromTo(el,
+      { scale: 1 },
+      { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "back.out(3)" }
+    );
+  }
+  emit('toggle-favorite', props.book);
+};
 </script>
 
 <style scoped>
@@ -138,9 +151,9 @@ const cardStyle = computed(() => ({
   transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.premium-glass-card:hover .book-cover {
+.premium-card-blur:hover .book-cover {
   transform: rotateY(-12deg) translateY(-5px) scale(1.08);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
 }
 
 .source-badge {
@@ -158,10 +171,11 @@ const cardStyle = computed(() => ({
   font-size: 1.1rem;
   font-weight: 700;
   line-height: 1.2;
-  color: white !important;
+  color: var(--v-theme-on-surface) !important;
   height: 2.6em;
   overflow: hidden;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -170,11 +184,15 @@ const cardStyle = computed(() => ({
   font-size: 0.85rem;
   margin-bottom: 2px;
   opacity: 0.9;
-  color: rgba(255, 255, 255, 0.8) !important;
+  color: var(--v-theme-on-surface) !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .ios-btn-open {
-  background: linear-gradient(135deg, #00BCD4 0%, #2196F3 100%) !important;
+  background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%) !important;
   color: white !important;
   text-transform: none;
   font-weight: 600;
@@ -211,8 +229,8 @@ const cardStyle = computed(() => ({
 }
 
 .dot.active {
-  background: #00BCD4;
-  box-shadow: 0 0 5px #00BCD4;
+  background: #007AFF;
+  box-shadow: 0 0 5px #007AFF;
 }
 
 .gap-2 {

@@ -2,8 +2,11 @@
   <!-- FAB Trigger -->
   <div
     class="a11y-fab"
-    :class="{ 'a11y-fab--active': state.panelOpen }"
-    @click="state.panelOpen = !state.panelOpen"
+    :class="{ 'a11y-fab--active': state.panelOpen, 'is-dragging': isDragging }"
+    @mousedown="onStart"
+    @touchstart="onStart"
+    @click="handleFabClick"
+    :style="fabStyle"
     role="button"
     aria-label="Abrir painel de acessibilidade"
     :aria-expanded="state.panelOpen"
@@ -32,12 +35,12 @@
 
   <!-- Panel -->
   <Transition name="a11y-panel">
-    <aside v-if="state.panelOpen" class="a11y-panel" role="dialog" aria-label="Painel de Acessibilidade" aria-modal="true">
+    <aside v-if="state.panelOpen" class="a11y-panel" :style="panelStyle" role="dialog" aria-label="Painel de Acessibilidade" aria-modal="true">
 
       <!-- Header -->
       <div class="a11y-header">
         <div class="a11y-header-icon">
-          <v-icon color="#00B8D4" size="22">mdi-tune</v-icon>
+          <v-icon color="primary" size="22">mdi-tune</v-icon>
         </div>
         <div>
           <div class="a11y-header-title">Acessibilidade</div>
@@ -63,7 +66,7 @@
           aria-pressed="state.highContrast"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.highContrast ? '#fff' : '#00B8D4'">mdi-contrast-circle</v-icon>
+            <v-icon size="22" :color="state.highContrast ? '#fff' : 'primary'">mdi-contrast-circle</v-icon>
           </div>
           <span class="a11y-btn-label">Alto Contraste</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.highContrast }"></div>
@@ -76,7 +79,7 @@
           aria-pressed="state.largeText"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.largeText ? '#fff' : '#00B8D4'">mdi-format-size</v-icon>
+            <v-icon size="22" :color="state.largeText ? '#fff' : 'primary'">mdi-format-size</v-icon>
           </div>
           <span class="a11y-btn-label">Texto Grande</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.largeText }"></div>
@@ -89,7 +92,7 @@
           aria-pressed="state.extraLargeText"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.extraLargeText ? '#fff' : '#00B8D4'">mdi-format-header-1</v-icon>
+            <v-icon size="22" :color="state.extraLargeText ? '#fff' : 'primary'">mdi-format-header-1</v-icon>
           </div>
           <span class="a11y-btn-label">Texto Extra Grande</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.extraLargeText }"></div>
@@ -102,7 +105,7 @@
           aria-pressed="state.dyslexiaFont"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.dyslexiaFont ? '#fff' : '#00B8D4'">mdi-format-font</v-icon>
+            <v-icon size="22" :color="state.dyslexiaFont ? '#fff' : 'primary'">mdi-format-font</v-icon>
           </div>
           <span class="a11y-btn-label">Fonte Dislexia</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.dyslexiaFont }"></div>
@@ -115,7 +118,7 @@
           aria-pressed="state.letterSpacing"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.letterSpacing ? '#fff' : '#00B8D4'">mdi-format-pilcrow</v-icon>
+            <v-icon size="22" :color="state.letterSpacing ? '#fff' : 'primary'">mdi-format-pilcrow</v-icon>
           </div>
           <span class="a11y-btn-label">Espaço Entre Letras</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.letterSpacing }"></div>
@@ -128,7 +131,7 @@
           aria-pressed="state.lineSpacing"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.lineSpacing ? '#fff' : '#00B8D4'">mdi-format-line-spacing</v-icon>
+            <v-icon size="22" :color="state.lineSpacing ? '#fff' : 'primary'">mdi-format-line-spacing</v-icon>
           </div>
           <span class="a11y-btn-label">Espaço Entre Linhas</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.lineSpacing }"></div>
@@ -141,7 +144,7 @@
           aria-pressed="state.highlightLinks"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.highlightLinks ? '#fff' : '#00B8D4'">mdi-link-variant</v-icon>
+            <v-icon size="22" :color="state.highlightLinks ? '#fff' : 'primary'">mdi-link-variant</v-icon>
           </div>
           <span class="a11y-btn-label">Destacar Links</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.highlightLinks }"></div>
@@ -154,7 +157,7 @@
           aria-pressed="state.largeCursor"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.largeCursor ? '#fff' : '#00B8D4'">mdi-cursor-default-outline</v-icon>
+            <v-icon size="22" :color="state.largeCursor ? '#fff' : 'primary'">mdi-cursor-default-outline</v-icon>
           </div>
           <span class="a11y-btn-label">Cursor Grande</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.largeCursor }"></div>
@@ -176,7 +179,7 @@
           aria-pressed="state.reduceMotion"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.reduceMotion ? '#fff' : '#00B8D4'">mdi-motion-pause</v-icon>
+            <v-icon size="22" :color="state.reduceMotion ? '#fff' : 'primary'">mdi-motion-pause</v-icon>
           </div>
           <span class="a11y-btn-label">Reduzir Animações</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.reduceMotion }"></div>
@@ -189,7 +192,7 @@
           aria-pressed="state.readingGuide"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.readingGuide ? '#fff' : '#00B8D4'">mdi-ray-start-arrow</v-icon>
+            <v-icon size="22" :color="state.readingGuide ? '#fff' : 'primary'">mdi-ray-start-arrow</v-icon>
           </div>
           <span class="a11y-btn-label">Guia de Leitura</span>
           <div class="a11y-toggle" :class="{ 'a11y-toggle--on': state.readingGuide }"></div>
@@ -211,7 +214,7 @@
           :aria-label="state.isSpeaking ? 'Parar leitura' : 'Ler página em voz alta'"
         >
           <div class="a11y-btn-icon">
-            <v-icon size="22" :color="state.isSpeaking ? '#fff' : '#00B8D4'">
+            <v-icon size="22" :color="state.isSpeaking ? '#fff' : 'primary'">
               {{ state.isSpeaking ? 'mdi-stop-circle' : 'mdi-text-to-speech' }}
             </v-icon>
           </div>
@@ -233,9 +236,142 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useAccessibility } from '@/composables/useAccessibility'
 
 const { state, toggle, resetAll, speakPage } = useAccessibility()
+
+// Draggable Logic
+const position = ref({ x: 0, y: 0 })
+const isDragging = ref(false)
+const dragStartTime = ref(0)
+const startOffset = ref({ x: 0, y: 0 })
+const hasMoved = ref(false)
+
+// Default position: Right center
+const initPosition = () => {
+  const saved = localStorage.getItem('a11y-fab-pos')
+  if (saved) {
+    try {
+      position.value = JSON.parse(saved)
+      return
+    } catch (e) { console.error('Error parsing position', e) }
+  }
+
+  // Default values if nothing saved
+  position.value = {
+    x: window.innerWidth - 80,
+    y: window.innerHeight / 2 - 28
+  }
+}
+
+const updatePosition = (x, y) => {
+  const fabSize = 56
+  // Constraints
+  const maxX = window.innerWidth - fabSize - 16
+  const maxY = window.innerHeight - fabSize - 16
+  const minX = 16
+  const minY = 16
+
+  position.value = {
+    x: Math.min(Math.max(x, minX), maxX),
+    y: Math.min(Math.max(y, minY), maxY)
+  }
+}
+
+const onStart = (e) => {
+  const clientX = e.type === 'touchstart' ? e.touches[0].clientX : e.clientX
+  const clientY = e.type === 'touchstart' ? e.touches[0].clientY : e.clientY
+
+  isDragging.value = true
+  hasMoved.value = false
+  dragStartTime.value = Date.now()
+
+  startOffset.value = {
+    x: clientX - position.value.x,
+    y: clientY - position.value.y
+  }
+
+  if (e.type === 'mousedown') {
+    window.addEventListener('mousemove', onMove)
+    window.addEventListener('mouseup', onEnd)
+  } else {
+    window.addEventListener('touchmove', onMove, { passive: false })
+    window.addEventListener('touchend', onEnd)
+  }
+}
+
+const onMove = (e) => {
+  if (!isDragging.value) return
+  if (e.cancelable) e.preventDefault()
+
+  const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX
+  const clientY = e.type === 'touchmove' ? e.touches[0].clientY : e.clientY
+
+  const newX = clientX - startOffset.value.x
+  const newY = clientY - startOffset.value.y
+
+  // Check if actually moved significantly to distinguish from click
+  if (Math.abs(newX - position.value.x) > 3 || Math.abs(newY - position.value.y) > 3) {
+    hasMoved.value = true
+  }
+
+  updatePosition(newX, newY)
+}
+
+const onEnd = () => {
+  isDragging.value = false
+  localStorage.setItem('a11y-fab-pos', JSON.stringify(position.value))
+
+  window.removeEventListener('mousemove', onMove)
+  window.removeEventListener('mouseup', onEnd)
+  window.removeEventListener('touchmove', onMove)
+  window.removeEventListener('touchend', onEnd)
+}
+
+const handleFabClick = () => {
+  // Only toggle if it wasn't a significant drag
+  const duration = Date.now() - dragStartTime.value
+  if (!hasMoved.value || duration < 200) {
+    state.panelOpen = !state.panelOpen
+  }
+}
+
+const fabStyle = computed(() => ({
+  left: `${position.value.x}px`,
+  top: `${position.value.y}px`,
+  transform: 'none', // Remove the static translate
+  transition: isDragging.value ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+}))
+
+const panelStyle = computed(() => {
+  const isRightSide = position.value.x > window.innerWidth / 2
+  const fabSize = 56
+
+  if (isRightSide) {
+    return {
+      right: `${window.innerWidth - position.value.x + 16}px`,
+      top: `${position.value.y}px`,
+      transform: 'translateY(-50%)'
+    }
+  } else {
+    return {
+      left: `${position.value.x + fabSize + 16}px`,
+      top: `${position.value.y}px`,
+      transform: 'translateY(-50%)'
+    }
+  }
+})
+
+// Lifecycle
+onMounted(() => {
+  initPosition()
+  window.addEventListener('resize', initPosition)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', initPosition)
+})
 </script>
 
 <style>
@@ -337,10 +473,8 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 =========================== */
 .a11y-fab {
   position: fixed;
-  right: 36px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #007AFF, #00B8D4);
+  z-index: 3000;
+  background: linear-gradient(135deg, #007AFF, #5AC8FA);
   width: 56px;
   height: 56px;
   border-radius: 50%;
@@ -353,17 +487,16 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
   box-shadow: 0 8px 24px rgba(0,122,255,0.45);
   user-select: none;
 }
-.a11y-fab:hover {
-  transform: translateY(-50%) scale(1.12);
+.a11y-fab:hover:not(.is-dragging) {
+  transform: scale(1.12);
   box-shadow: 0 12px 36px rgba(0,122,255,0.6);
 }
 .a11y-fab--active {
   background: linear-gradient(135deg, #FF3B30, #FF6B6B);
-  transform: translateY(-50%) rotate(15deg);
   box-shadow: 0 8px 24px rgba(255,59,48,0.4);
 }
-.a11y-fab--active:hover {
-  transform: translateY(-50%) rotate(15deg) scale(1.1);
+.a11y-fab--active:hover:not(.is-dragging) {
+  transform: scale(1.1);
 }
 
 .fab-pulse {
@@ -400,9 +533,6 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 =========================== */
 .a11y-panel {
   position: fixed;
-  right: 104px;
-  top: 50%;
-  transform: translateY(-50%);
   width: 320px;
   max-height: 85vh;
   overflow-y: auto;
@@ -411,7 +541,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
   border-radius: 28px;
   padding: 24px 20px;
   z-index: 2950;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,184,212,0.1);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,122,255,0.1);
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
@@ -422,7 +552,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 .a11y-panel-enter-active,
 .a11y-panel-leave-active { transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.23,1,0.32,1); }
 .a11y-panel-enter-from,
-.a11y-panel-leave-to { opacity: 0; transform: translateY(-50%) translateX(20px); }
+.a11y-panel-leave-to { opacity: 0; transform: translateY(-50%) scale(0.95); }
 
 /* Header */
 .a11y-header {
@@ -433,7 +563,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 }
 .a11y-header-icon {
   width: 40px; height: 40px;
-  background: rgba(0,184,212,0.12);
+  background: rgba(0,122,255,0.12);
   border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
@@ -511,11 +641,11 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 }
 .a11y-btn:hover {
   background: rgba(255,255,255,0.09);
-  border-color: rgba(0,184,212,0.25);
+  border-color: rgba(0,122,255,0.25);
 }
 .a11y-btn--on {
-  background: linear-gradient(135deg, rgba(0,184,212,0.25), rgba(0,122,255,0.2)) !important;
-  border-color: rgba(0,184,212,0.4) !important;
+  background: linear-gradient(135deg, rgba(0,122,255,0.25), rgba(90,200,250,0.2)) !important;
+  border-color: rgba(0,122,255,0.4) !important;
   color: white !important;
 }
 .a11y-btn--speaking {
@@ -532,7 +662,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
   flex-shrink: 0;
 }
 .a11y-btn--on .a11y-btn-icon {
-  background: rgba(0,184,212,0.2);
+  background: rgba(0,122,255,0.2);
 }
 
 .a11y-btn-label {
@@ -561,7 +691,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
   box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 .a11y-toggle--on {
-  background: #00B8D4;
+  background: #007AFF;
 }
 .a11y-toggle--on::after {
   transform: translateX(14px);

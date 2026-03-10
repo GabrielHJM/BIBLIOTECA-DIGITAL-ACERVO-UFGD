@@ -36,63 +36,68 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		wg           sync.WaitGroup
 	)
 
+	// Busca local (Banco de Dados)
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		materiais, localErr = uc.Repo.Pesquisar(ctx, termo, categoria, fonte, anoInicio, anoFim, tags, limit, offset, sort)
 	}()
 
-	// Só busca externo se não for uma busca com offset (paginação profunda geralmente é baseada em banco local)
-	// E se tivermos um Harvester configurado
-	if uc.Harvester != nil && offset == 0 {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			// Busca externa pode ser lenta, usamos um timeout específico se necessário ou o próprio ctx
-			externalMats, extErr = uc.Harvester.Search(ctx, termo, categoria, fonte, anoInicio, anoFim, limit)
-		}()
-	}
-
+	// Só busca externo se:
+	// 1. Harvester estiver configurado
+	// 2. For a primeira página (offset == 0)
+	// 3. Não for ordem aleatória (aleatório é local)
+	// Aguardamos a busca local terminar primeiro para decidir se precisamos da externa (Otimização de Latência)
 	wg.Wait()
 
 	if localErr != nil {
 		return nil, fmt.Errorf("erro na busca local: %w", localErr)
 	}
 
-	// Mesclar resultados
-	if extErr == nil && len(externalMats) > 0 {
-		// Mapa para evitar duplicados por ExternoID
-		seen := make(map[string]bool)
-		for _, m := range materiais {
-			if m.ExternoID != "" {
-				seen[m.ExternoID] = true
-			}
-		}
+	// Se temos poucos resultados locais e estamos na primeira página, disparamos a busca externa
+	if uc.Harvester != nil && offset == 0 && len(materiais) < limit && sort != "random" {
+		// Timeout estrito de 3 segundos para buscas externas (Fast Fail)
+		harvestCtx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
 
-		for i := range externalMats {
-			em := &externalMats[i]
-			if em.ExternoID != "" && seen[em.ExternoID] {
-				continue
-			}
+		externalMats, extErr = uc.Harvester.Search(harvestCtx, termo, categoria, fonte, anoInicio, anoFim, limit)
 
-			// Salva resultados externos no banco para gerar o ID sincornamente antes de retornar ao usuário
-			err := uc.Repo.Criar(ctx, em)
-			if err != nil {
-				// Material já existe ou falha no banco. O ID foi preenchido na struct pela lógica fallback do repo
-				fmt.Printf("Aviso ao salvar material externo: %v\n", err)
+		// Mesclar resultados externos se houver
+		if extErr == nil && len(externalMats) > 0 {
+			seen := make(map[string]bool)
+			for _, m := range materiais {
+				if m.ExternoID != "" {
+					seen[m.ExternoID] = true
+				}
 			}
 
-			if em.ExternoID != "" {
-				seen[em.ExternoID] = true
-			}
+			newMats := []material.Material{}
+			for i := range externalMats {
+				em := &externalMats[i]
+				if em.ExternoID != "" && seen[em.ExternoID] {
+					continue
+				}
 
-			if len(materiais) < limit {
-				materiais = append(materiais, *em)
+				// Salvamento ASSÍNCRONO no banco (Background) para não custar latência ao usuário
+				go func(mat material.Material) {
+					bgCtx, bgCancel := context.WithTimeout(context.Background(), 10*time.Second)
+					defer bgCancel()
+					_ = uc.Repo.Criar(bgCtx, &mat)
+				}(*em)
+
+				if em.ExternoID != "" {
+					seen[em.ExternoID] = true
+				}
+
+				if len(materiais)+len(newMats) < limit {
+					newMats = append(newMats, *em)
+				}
 			}
+			materiais = append(materiais, newMats...)
 		}
 	}
 
-	if uc.Cache != nil && sort != "random" {
+	if uc.Cache != nil && sort != "random" && len(materiais) > 0 {
 		uc.Cache.Set(cacheKey, materiais, 15*time.Minute)
 	}
 

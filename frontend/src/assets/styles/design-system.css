@@ -2,19 +2,22 @@
 	/* iOS / macOS Color Palette */
 	--ios-blue: #007AFF;
 	--ios-blue-rgb: 0, 122, 255;
-	--ios-cyan: #00B8D4;
-	--ios-cyan-rgb: 0, 184, 212;
+	--ios-cyan: #007AFF;
+	--ios-cyan-rgb: 0, 122, 255;
 	--ios-pink: #FF2D55;
 	--ios-orange: #FF9500;
-	--ios-bg: #F2F2F7;
-	--ios-bg-dark: #121212;
+	--ios-bg: #102136;
+	/* Darker professional blue (header style) */
+	--ios-bg-dark: #0B192C;
 
-	/* Glassmorphism Tokens */
-	--glass-bg: rgba(255, 255, 255, 0.7);
-	--glass-bg-dark: rgba(28, 28, 30, 0.75);
-	--glass-border: rgba(255, 255, 255, 0.3);
-	--glass-border-dark: rgba(255, 255, 255, 0.1);
-	--glass-blur: blur(20px) saturate(180%);
+	/* Glassmorphism Tokens - Standardized for high-end look */
+	--glass-bg: rgba(255, 255, 255, 0.05);
+	/* Very subtle white */
+	--glass-bg-dark: rgba(0, 0, 0, 0.2);
+	--glass-border: rgba(255, 255, 255, 0.1);
+	/* Subtle white border */
+	--glass-border-dark: rgba(255, 255, 255, 0.05);
+	--glass-blur: blur(25px) saturate(180%);
 
 	/* Shadows */
 	--ios-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);

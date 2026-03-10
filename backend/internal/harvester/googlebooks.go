@@ -58,7 +58,7 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		searchTerm = "science"
 	}
 
-	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks&maxResults=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks&lr=lang_pt&maxResults=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
 	if err != nil {
@@ -97,19 +97,15 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 			}
 		}
 
-		// Fallback to webReaderLink if it looks helpful, but prioritize direct PDFs
-		if pdfURL == "" && item.AccessInfo.Viewability == "ALL_PAGES" {
-			pdfURL = item.AccessInfo.WebReaderLink
-		}
-
 		if pdfURL == "" {
 			continue
 		}
 
-		// Ensure the link leads to a PDF visually in UI, even if google abstracts it
-		// If it's a google API link, we allow it (relaxed rule)
-		if !strings.HasSuffix(pdfURL, ".pdf") && !strings.Contains(pdfURL, "googleapis.com") {
-			// Skip unknown external non-pdf links
+		// Ensure the link leads to a PDF
+		// We still allow googleapis.com links as they are the direct download source,
+		// but we strip any non-pdf fallbacks like webReader
+		lowerPDF := strings.ToLower(pdfURL)
+		if !strings.HasSuffix(lowerPDF, ".pdf") && !strings.Contains(lowerPDF, "download") && !strings.Contains(lowerPDF, "acs") {
 			continue
 		}
 

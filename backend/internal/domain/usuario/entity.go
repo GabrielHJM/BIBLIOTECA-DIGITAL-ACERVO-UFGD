@@ -1,5 +1,7 @@
 package usuario
 
+import "time"
+
 type Usuario struct {
 	ID         int
 	Nome       string
@@ -8,4 +10,5 @@ type Usuario struct {
 	Tipo       int
 	Interesses []string
 	FotoURL    string
+	DeletedAt  *time.Time
 }

@@ -1,5 +1,10 @@
 <template>
 	<v-app class="ios-app">
+		<!-- Mesh Gradient Background -->
+		<div class="premium-bg">
+			<div class="mesh-gradient"></div>
+		</div>
+
 		<!-- Conditionally render App Bar -->
 		<v-app-bar app v-if="showBar" :elevation="0" class="glass-app-bar" height="80">
 			<!-- Logo Section -->
@@ -42,9 +47,76 @@
 
 			<!-- User Actions -->
 			<div class="nav-actions-wrapper d-flex align-center mr-2 mr-sm-8" style="gap: 8px;">
-				<v-btn icon variant="text" class="theme-toggle-btn" @click="toggleTheme">
-					<v-icon size="22">{{ isDarkTheme ? 'mdi-sun-side' : 'mdi-moon-waning-crescent' }}</v-icon>
-				</v-btn>
+
+				<!-- Notification Menu -->
+				<v-menu
+					v-model="notificationMenuOpen"
+					:close-on-content-click="false"
+					location="bottom end"
+					offset="12"
+					transition="slide-y-transition"
+				>
+					<template v-slot:activator="{ props }">
+						<v-btn icon variant="text" v-bind="props" class="notification-btn" @click="fetchNotifications">
+							<v-badge
+								v-if="unreadCount > 0"
+								:content="unreadCount"
+								color="primary"
+								offset-x="2"
+								offset-y="2"
+							>
+								<v-icon size="22">mdi-bell-outline</v-icon>
+							</v-badge>
+							<v-icon v-else size="22">mdi-bell-outline</v-icon>
+						</v-btn>
+					</template>
+
+					<v-card class="notification-dropdown-card" width="320" elevation="16">
+						<div class="pa-4 d-flex align-center justify-space-between">
+							<span class="text-subtitle-1 font-weight-bold">Notificações</span>
+							<div class="d-flex align-center" style="gap: 8px;">
+								<v-btn v-if="unreadCount > 0" variant="text" size="x-small" color="primary" class="text-none" @click="markAllAsRead">Lidas</v-btn>
+								<v-btn v-if="notifications.length > 0" variant="text" size="x-small" color="error" class="text-none" @click="clearAllNotifications">Limpar</v-btn>
+							</div>
+						</div>
+						<v-divider></v-divider>
+						<v-list v-if="notifications.length > 0" class="notification-list pa-0" max-height="400">
+							<v-list-item
+								v-for="n in notifications"
+								:key="n.id"
+								:class="{ 'unread-item': !n.lida }"
+								class="notification-item py-3"
+								@click="markAsRead(n)"
+							>
+								<template v-slot:prepend>
+									<v-avatar size="32" :color="getNotificationColor(n.tipo).bg" class="mr-3">
+										<v-icon size="18" :color="getNotificationColor(n.tipo).icon">{{ getNotificationIcon(n.tipo) }}</v-icon>
+									</v-avatar>
+								</template>
+								<v-list-item-title class="text-subtitle-2 font-weight-bold">{{ n.titulo }}</v-list-item-title>
+								<v-list-item-subtitle class="text-caption mt-1">{{ n.mensagem }}</v-list-item-subtitle>
+								<template v-slot:append>
+									<div class="d-flex flex-column align-end">
+										<div class="text-xxs opacity-40 mb-1">{{ formatTime(n.data_criacao) }}</div>
+										<v-btn
+											v-if="!n.lida"
+											icon="mdi-check"
+											size="x-small"
+											variant="text"
+											color="primary"
+											@click.stop="markAsRead(n)"
+											title="Marcar como lida"
+										></v-btn>
+									</div>
+								</template>
+							</v-list-item>
+						</v-list>
+						<div v-else class="pa-10 text-center opacity-40">
+							<v-icon size="48" class="mb-2">mdi-bell-off-outline</v-icon>
+							<div class="text-body-2">Nenhuma notificação por aqui</div>
+						</div>
+					</v-card>
+				</v-menu>
 
 				<!-- Dropdown de Usuário -->
 				<v-menu
@@ -72,14 +144,14 @@
 						<!-- Header do dropdown -->
 						<div class="dropdown-header pa-4 pb-3">
 							<div class="dropdown-avatar-row d-flex align-center mb-2" style="gap: 10px;">
-								<v-avatar size="38" color="rgba(0,184,212,0.15)">
+								<v-avatar size="38" color="rgba(0,122,255,0.15)">
 									<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
-									<v-icon v-else color="#00B8D4" size="22">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
+									<v-icon v-else color="#007AFF" size="22">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
 								</v-avatar>
 								<div>
 									<div class="dropdown-user-name">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
 									<div class="dropdown-user-role">
-										<v-chip v-if="isLoggedIn" size="x-small" :color="userRoleName === 'Professor' ? '#00E5FF' : 'white'" :variant="userRoleName === 'Professor' ? 'flat' : 'outlined'" class="mt-1 font-weight-bold" style="color: #0b192c !important;">
+										<v-chip v-if="isLoggedIn" size="x-small" :color="userRoleName === 'Professor' ? 'primary' : 'rgba(255,255,255,0.1)'" variant="flat" class="mt-1 font-weight-bold" style="color: white !important; border: 1px solid rgba(255,255,255,0.2);">
 											{{ userRoleName }}
 										</v-chip>
 										<span v-else>Não autenticado</span>
@@ -158,12 +230,44 @@
 									prepend-icon="mdi-heart-outline"
 									title="Favoritos"
 									class="dropdown-item"
-									@click="$router.push('/dashboard')"
+									@click="$router.push('/favoritos')"
 								>
 									<template v-slot:append>
 										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
 									</template>
 								</v-list-item>
+								<v-divider class="opacity-10 my-1"></v-divider>
+								<div class="px-4 py-2">
+									<div class="text-caption font-weight-bold opacity-60 mb-2">FAVORITOS RECENTES</div>
+									<v-list v-if="favoritos.length > 0" class="pa-0 bg-transparent">
+										<v-list-item
+											v-for="fav in favoritos.slice(0, 3)"
+											:key="fav.id"
+											:title="fav.titulo"
+											:subtitle="fav.autor"
+											density="compact"
+											class="fav-mini-item px-0"
+											@click="$router.push('/estudo/' + fav.id)"
+										>
+											<template v-slot:prepend>
+												<v-avatar size="32" rounded="sm" class="mr-2">
+													<v-img :src="fav.capa_url || 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=100'"></v-img>
+												</v-avatar>
+											</template>
+										</v-list-item>
+									</v-list>
+									<div v-else class="text-caption opacity-40 py-2">Nenhum favorito</div>
+									<v-btn
+										v-if="favoritos.length > 0"
+										variant="text"
+										size="x-small"
+										color="primary"
+										class="text-none mt-2 px-0"
+										@click="$router.push('/favoritos')"
+									>
+										Ver todos os favoritos
+									</v-btn>
+								</div>
 								<v-divider class="opacity-10 my-1"></v-divider>
 								<v-list-item
 									prepend-icon="mdi-logout"
@@ -228,10 +332,12 @@
 <script>
 import Footer from './components/Footer.vue'
 import AccessibilityPanel from './components/AccessibilityPanel.vue'
-import { ref, computed } from 'vue'
+import '@/assets/styles/premium.css'
+import { ref, computed, reactive } from 'vue'
 import auth, { state as authState } from '@/auth'
+import NotificationService from '@/services/NotificationService'
+import MaterialService from '@/services/MaterialService'
 import { useAccessibility } from '@/composables/useAccessibility'
-import { useTheme } from 'vuetify'
 
 export default {
 	name: 'App',
@@ -248,12 +354,18 @@ export default {
 				color: 'surface',
 				icon: 'mdi-information',
 				timeout: 4000
-			}
+			},
+			notificationMenuOpen: false,
+			notifications: [],
+			lastWelcomeId: null
 		}
 	},
 	provide() {
 		return {
-			notify: this.notify
+			notify: this.notify.bind(this),
+			fetchGlobalFavorites: this.fetchFavorites.bind(this),
+			getGlobalFavorites: this.fetchFavorites.bind(this),
+			globalFavorites: this.favoritesStore
 		}
 	},
 	methods: {
@@ -301,6 +413,134 @@ export default {
 				e.preventDefault();
 				this.$refs.globalSearch?.focus();
 			}
+		},
+		async fetchNotifications() {
+			if (!this.isLoggedIn) return;
+			try {
+				const res = await NotificationService.listar(authState.user.id);
+				this.notifications = res.data || [];
+			} catch (e) {
+				console.error(e);
+				this.notifications = [];
+			}
+		},
+		async markAsRead(n) {
+			if (n.lida) return;
+			try {
+				await NotificationService.marcarComoLida(n.id);
+				n.lida = true;
+			} catch (e) { console.error(e); }
+		},
+		async clearAllNotifications() {
+			try {
+				if (this.isLoggedIn) {
+					await NotificationService.limparTudo(authState.user.id);
+					this.notifications = [];
+				}
+			} catch (e) {
+				console.error('Erro ao limpar notificações:', e);
+			}
+		},
+		async markAllAsRead() {
+			const unread = this.notifications.filter(n => !n.lida);
+			for (const n of unread) {
+				await this.markAsRead(n);
+			}
+		},
+		getNotificationIcon(tipo) {
+			const icons = {
+				'boas-vindas': 'mdi-hand-wave',
+				'conquista': 'mdi-trophy',
+				'meta': 'mdi-target',
+				'info': 'mdi-information'
+			};
+			return icons[tipo] || 'mdi-bell';
+		},
+		getNotificationColor(tipo) {
+			const colors = {
+				'boas-vindas': { bg: 'rgba(0, 122, 255, 0.1)', icon: 'primary' },
+				'conquista': { bg: 'rgba(255, 193, 7, 0.1)', icon: 'amber' },
+				'meta': { bg: 'rgba(76, 175, 80, 0.1)', icon: 'green' },
+				'info': { bg: 'rgba(255, 255, 255, 0.05)', icon: 'white' }
+			};
+			return colors[tipo] || { bg: 'rgba(255, 255, 255, 0.05)', icon: 'white' };
+		},
+		formatTime(dateStr) {
+			if (!dateStr) return '';
+			// Garantir que a data do backend seja interpretada como UTC se vier sem timezone explicito
+			const date = new Date(dateStr.endsWith('Z') || dateStr.includes('+') ? dateStr : dateStr.replace(' ', 'T') + 'Z');
+			return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+		},
+		handleLoginEffect() {
+			if (this.isLoggedIn) {
+				const sessionKey = `welcome_notified_${authState.user.id}`;
+				if (sessionStorage.getItem(sessionKey)) return;
+
+				this.lastWelcomeId = authState.user.id;
+				sessionStorage.setItem(sessionKey, 'true');
+
+				const now = new Date();
+				const dateTime = now.toLocaleString('pt-BR', {
+					weekday: 'long',
+					day: 'numeric',
+					month: 'long',
+					hour: '2-digit',
+					minute: '2-digit'
+				});
+
+				// Dynamic notify
+				this.notify(`Bem-vindo de volta! Acesso em: ${dateTime}`, 'info');
+
+				// Create persistent welcome notification if it doesn't exist
+				NotificationService.criar({
+					usuario_id: authState.user.id,
+					titulo: 'Boas-vindas!',
+					mensagem: `Você acessou às ${now.toLocaleTimeString('pt-BR')}`,
+					tipo: 'boas-vindas'
+				}).then(() => this.fetchNotifications());
+			}
+		},
+		async checkNewAchievements(newStats) {
+			if (!newStats || !newStats.badges) return;
+
+			const storageKey = `badges_seen_${authState.user.id}`;
+			const seenBadges = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+			const newBadges = newStats.badges.filter(b => !seenBadges.includes(b));
+
+			if (newBadges.length > 0) {
+				newBadges.forEach(badge => {
+					this.notify(`Nova Conquista Desbloqueada: ${badge}!`, 'success');
+
+					// Persistir no banco como notificação também
+					NotificationService.criar({
+						usuario_id: authState.user.id,
+						titulo: 'Nova Conquista!',
+						mensagem: `Você desbloqueou a medalha: ${badge}`,
+						tipo: 'conquista'
+					});
+				});
+
+				localStorage.setItem(storageKey, JSON.stringify([...seenBadges, ...newBadges]));
+				this.fetchNotifications();
+			}
+		},
+		async fetchFavorites() {
+			if (!this.isLoggedIn) return;
+			try {
+				const res = await MaterialService.listarFavoritos(authState.user.id);
+				this.favoritesStore.list = res.data || [];
+			} catch (e) { console.error(e); }
+		},
+		startPolling() {
+			this.stopPolling(); // Safely clear existing
+			this.refreshInterval = setInterval(this.fetchNotifications, 60000);
+		},
+		stopPolling() {
+			if (this.refreshInterval) {
+				clearInterval(this.refreshInterval);
+				this.refreshInterval = null;
+			}
 		}
 	},
 	computed: {
@@ -316,13 +556,18 @@ export default {
 		},
 		userRoleName() {
 			const user = authState.user
-			if (user?.tipo_usuario_id === 1) return 'Aluno';
-			if (user?.tipo_usuario_id === 2) return 'Professor';
+			// 1: Aluno, 2: Professor (Baseado no fluxo de cadastro/banco)
+			if (user?.tipo === 1 || user?.tipo_usuario_id === 1) return 'Aluno';
+			if (user?.tipo === 2 || user?.tipo_usuario_id === 2) return 'Professor';
 			return 'Membro';
 		},
 		userAvatar() {
 			const user = authState.user
 			return user?.foto_url || null
+		},
+		unreadCount() {
+			if (!this.notifications || !Array.isArray(this.notifications)) return 0;
+			return this.notifications.filter(n => !n.lida).length;
 		}
 	},
 	watch: {
@@ -333,26 +578,35 @@ export default {
 		},
 		'$route.query.q'(val) {
 			if (val) this.searchInput = val
+		},
+		isLoggedIn(val) {
+			if (val) {
+				this.handleLoginEffect();
+				this.fetchNotifications();
+				this.fetchFavorites();
+				// Reinicia o polling se logar
+				this.startPolling();
+			} else {
+				this.notifications = [];
+				this.lastWelcomeId = null;
+				this.stopPolling();
+			}
 		}
 	},
 	setup() {
 		const loading = ref(false)
 		const { init } = useAccessibility()
-		const theme = useTheme()
 
-		const toggleTheme = () => {
-			theme.global.name.value = theme.global.current.value.dark ? 'light' : 'dark'
-		}
-
-		const isDarkTheme = computed(() => theme.global.current.value.dark)
+		const favoritesStore = reactive({
+			list: []
+		})
 
 		return {
 			loading,
 			init,
-			cleanupAccessibility: useAccessibility().cleanup,
-			theme,
-			toggleTheme,
-			isDarkTheme
+			favoritesStore,
+			favoritos: computed(() => favoritesStore.list),
+			cleanupAccessibility: useAccessibility().cleanup
 		}
 	},
 	mounted() {
@@ -373,9 +627,17 @@ export default {
 		this.$router.afterEach(() => {
 			setTimeout(() => { this.loading = false; }, 300);
 		});
+
+		if (this.isLoggedIn) {
+			this.handleLoginEffect();
+			this.fetchNotifications();
+			this.fetchFavorites();
+			this.startPolling();
+		}
 	},
 	beforeUnmount() {
 		window.removeEventListener('keydown', this.handleGlobalKeydown);
+		this.stopPolling();
 		if (this.cleanupAccessibility) {
 			this.cleanupAccessibility()
 		}
@@ -393,11 +655,12 @@ export default {
 		padding: 0;
 		font-family: 'Inter', var(--apple-font);
 		overflow-x: hidden;
+		background: radial-gradient(circle at 30% 30%, #102136 0%, #0B192C 100%) fixed !important;
+		color: #ffffff !important;
 		-webkit-font-smoothing: antialiased;
-		background-color: rgb(var(--v-theme-background));
 	}
 
-	.ios-app {
+	.v-application {
 		background: transparent !important;
 	}
 
@@ -418,7 +681,7 @@ export default {
 
 	.header-logo-container:hover {
 		transform: scale(1.03) translateY(-1px);
-		filter: drop-shadow(0 4px 12px rgba(0, 184, 212, 0.15));
+		filter: drop-shadow(0 4px 12px rgba(0, 122, 255, 0.15));
 	}
 
 	.header-logo-container:active {
@@ -450,7 +713,7 @@ export default {
 	}
 
 	.header-logo-container:hover .original-title {
-		color: #ffffff;
+		color: #007AFF;
 	}
 
 	.subtitle-accent {
@@ -475,17 +738,20 @@ export default {
 
 	.ios-search-field :deep(.v-field) {
 		background: rgba(var(--v-theme-on-surface), 0.05) !important;
-		border-radius: 14px !important;
-		height: 42px !important;
-		transition: all 0.3s var(--spring-easing);
-		border: 1px solid transparent !important;
+		backdrop-filter: blur(10px);
+		border-radius: 16px !important;
+		height: 44px !important;
+		transition: all 0.4s var(--spring-easing);
+		border: 1px solid rgba(255, 255, 255, 0.08) !important;
+		box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05);
 	}
 
 	.search-active :deep(.v-field) {
-		background: rgba(var(--v-theme-surface), 0.9) !important;
-		border-color: var(--ios-cyan) !important;
-		box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
-		transform: scale(1.02);
+		background: rgba(var(--v-theme-surface), 0.4) !important;
+		backdrop-filter: blur(25px) saturate(200%) !important;
+		border-color: rgba(0, 122, 255, 0.5) !important;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(0, 122, 255, 0.1) !important;
+		transform: translateY(-1px);
 	}
 
 	.search-kbd {
@@ -498,14 +764,6 @@ export default {
 		margin-right: 8px;
 	}
 
-	.theme-toggle-btn {
-		opacity: 0.7;
-		transition: opacity 0.2s;
-	}
-
-	.theme-toggle-btn:hover {
-		opacity: 1;
-	}
 
 	.header-avatar-glass {
 		border: 1.5px solid rgba(var(--v-theme-on-surface), 0.1);
@@ -622,5 +880,57 @@ export default {
 		border: 1px solid rgba(255, 255, 255, 0.1) !important;
 		box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2) !important;
 		color: rgb(var(--v-theme-on-surface)) !important;
+	}
+
+	.notification-dropdown-card,
+	.user-dropdown-card {
+		background: rgba(20, 30, 45, 0.7) !important;
+		backdrop-filter: blur(30px) saturate(210%) !important;
+		-webkit-backdrop-filter: blur(30px) saturate(210%) !important;
+		border: 1px solid rgba(255, 255, 255, 0.12) !important;
+		border-radius: 24px !important;
+		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05) inset !important;
+		overflow: hidden;
+		animation: menu-pop 0.4s var(--spring-easing);
+	}
+
+	@keyframes menu-pop {
+		from { opacity: 0; transform: translateY(10px) scale(0.95); }
+		to { opacity: 1; transform: translateY(0) scale(1); }
+	}
+
+	.dropdown-item, .notification-item {
+		transition: all 0.2s ease !important;
+		margin: 4px 8px !important;
+		border-radius: 12px !important;
+	}
+
+	.dropdown-item:hover, .notification-item:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		transform: translateX(4px);
+	}
+
+	.unread-item {
+		background: rgba(0, 122, 255, 0.05) !important;
+	}
+
+	.fav-mini-item {
+		min-height: 48px !important;
+		border-radius: 12px !important;
+		margin: 4px 8px !important;
+		transition: all 0.2s ease;
+	}
+	.fav-mini-item:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		transform: translateX(4px);
+	}
+	.fav-mini-item :deep(.v-list-item-title) {
+		font-size: 0.9rem !important;
+		font-weight: 600 !important;
+		color: white !important;
+	}
+	.fav-mini-item :deep(.v-list-item-subtitle) {
+		font-size: 0.75rem !important;
+		opacity: 0.7;
 	}
 </style>

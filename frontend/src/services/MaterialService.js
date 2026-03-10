@@ -13,9 +13,21 @@ export default {
 			}
 			cache.delete(url); // expired
 		}
+
 		const response = await api.get(url);
-		cache.set(url, { data: response, timestamp: now });
-		return response;
+
+		// Retornamos um objeto que simula a resposta do Axios (com .data)
+		const data = response.data !== undefined ? response.data : response;
+		const result = { ...response, data };
+
+		// Limit cache size to 50 entries to avoid memory bloat
+		if (cache.size > 50) {
+			const firstKey = cache.keys().next().value;
+			cache.delete(firstKey);
+		}
+
+		cache.set(url, { data: result, timestamp: now });
+		return result;
 	},
 
 	// Listar materiais com paginação
@@ -48,6 +60,15 @@ export default {
 			usuario_id: usuarioId,
 			material_id: materialId,
 			favoritar: status
+		});
+	},
+
+	// Avaliar material com nota (1-5)
+	avaliar(usuarioId, materialId, nota) {
+		return api.post('/materiais/avaliar', {
+			usuario_id: usuarioId,
+			material_id: materialId,
+			nota: nota
 		});
 	},
 

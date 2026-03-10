@@ -61,7 +61,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 	}
 
 	// Enforce has-full-text for much better PDF links
-	searchURL := fmt.Sprintf("%s?query=%s&filter=has-full-text:true&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	searchURL := fmt.Sprintf("%s?q=%s&filter=has-full-text:true,language:pt&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
 	if err != nil {
@@ -139,7 +139,8 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 			var pdfURL string
 			for _, link := range it.Link {
 				lowerURL := strings.ToLower(link.URL)
-				if strings.HasSuffix(lowerURL, ".pdf") || link.ContentType == "application/pdf" || link.IntendedApplication == "text-mining" {
+				// Strict PDF check: must end in .pdf or have explicit application/pdf content type
+				if strings.HasSuffix(lowerURL, ".pdf") || link.ContentType == "application/pdf" {
 					pdfURL = link.URL
 					break
 				}

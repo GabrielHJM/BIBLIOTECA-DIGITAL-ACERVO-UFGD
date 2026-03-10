@@ -1,6 +1,6 @@
 <template>
 	<v-container class="profile-container d-flex justify-center align-center">
-		<v-card class="ios-profile-card" elevation="12">
+		<v-card class="ios-profile-card" elevation="0">
 			<!-- Header -->
 			<div class="d-flex align-center mb-6">
 				<v-btn icon variant="text" color="white" @click="$router.back()" size="small" class="mr-2">
@@ -20,7 +20,7 @@
 						</div>
 					</v-avatar>
 				</div>
-				<v-chip size="small" :color="userRoleName === 'Professor' ? '#00E5FF' : 'white'" :variant="userRoleName === 'Professor' ? 'flat' : 'outlined'" class="mt-4 font-weight-bold" style="color: #0b192c !important;">
+				<v-chip size="small" :color="userRoleName === 'Professor' ? 'primary' : 'white'" :variant="userRoleName === 'Professor' ? 'flat' : 'outlined'" class="mt-4 font-weight-bold" style="color: #0b192c !important;">
 					<v-icon start size="16">{{ userRoleName === 'Professor' ? 'mdi-school' : 'mdi-account-school' }}</v-icon>
 					{{ userRoleName }}
 				</v-chip>
@@ -68,7 +68,7 @@
 				<v-list class="ios-modal-list bg-transparent">
 					<v-list-item @click="selectLocalFile" class="modal-item">
 						<template v-slot:prepend>
-							<v-icon color="#00B8D4">mdi-folder-outline</v-icon>
+							<v-icon color="primary">mdi-folder-outline</v-icon>
 						</template>
 						<v-list-item-title class="text-white">Arquivos Locais</v-list-item-title>
 					</v-list-item>
@@ -274,11 +274,13 @@ export default {
 .ios-profile-card {
 	width: 100%;
 	max-width: 450px;
-	background: rgba(45, 78, 115, 0.85) !important;
-	backdrop-filter: blur(20px);
+	background: var(--glass-bg) !important;
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 28px !important;
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--glass-border);
 	padding: 32px !important;
+	box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2) !important;
 }
 
 .avatar-wrapper {
@@ -323,19 +325,19 @@ export default {
 }
 
 .ios-input-field {
-	background: rgba(255, 255, 255, 0.1) !important;
+	background: rgba(255, 255, 255, 0.05) !important;
 	border: 1px solid rgba(255, 255, 255, 0.1) !important;
 	border-radius: 16px;
 	padding: 14px 20px;
 	font-size: 16px;
-	color: white;
+	color: #ffffff;
 	transition: all 0.2s ease;
 }
 
 .ios-input-field:focus {
 	outline: none;
 	background: rgba(255, 255, 255, 0.15) !important;
-	border-color: rgba(0, 184, 212, 0.5) !important;
+	border-color: rgba(0, 122, 255, 0.5) !important;
 }
 
 .ios-input--disabled {
@@ -344,7 +346,7 @@ export default {
 }
 
 .ios-action-btn {
-	background: linear-gradient(135deg, #00B8D4 0%, #0097A7 100%) !important;
+	background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%) !important;
 	color: white !important;
 	border-radius: 18px !important;
 	height: 56px !important;
@@ -356,10 +358,11 @@ export default {
 
 /* Modals */
 .ios-modal-card {
-	background: rgba(30, 60, 90, 0.95) !important;
-	backdrop-filter: blur(30px);
+	background: var(--glass-bg) !important;
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 24px !important;
-	border: 1px solid rgba(255, 255, 255, 0.1);
+	border: 1px solid var(--glass-border);
 }
 
 .modal-item {

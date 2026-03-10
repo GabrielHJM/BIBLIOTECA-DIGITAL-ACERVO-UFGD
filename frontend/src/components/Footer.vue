@@ -123,7 +123,7 @@ export default {
 	}
 
 	.ios-footer-link:hover {
-		color: var(--ios-cyan) !important;
+		color: var(--ios-blue) !important;
 		background: rgba(255, 255, 255, 0.05) !important;
 		transform: translateY(-2px);
 	}

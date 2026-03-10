@@ -6,7 +6,7 @@
 					<h1 class="text-h3 font-weight-black text-white mb-2">Painel do Curador</h1>
 					<p class="text-subtitle-1 text-white opacity-60">Gestão de Conteúdo e Métricas Globais</p>
 				</div>
-				<v-btn color="cyan" variant="tonal" prepend-icon="mdi-plus" rounded="lg" @click="dialogNovo = true">
+				<v-btn color="primary" variant="tonal" prepend-icon="mdi-plus" rounded="lg" @click="dialogNovo = true">
 					Novo Material
 				</v-btn>
 			</div>
@@ -22,7 +22,7 @@
 			</v-row>
 
 			<!-- Tabs for Moderation and Extended Metrics -->
-			<v-tabs v-model="tab" color="cyan" align-tabs="start" class="mb-6">
+			<v-tabs v-model="tab" color="primary" align-tabs="start" class="mb-6">
 				<v-tab value="pendentes">Moderação ({{ pendentes.length }})</v-tab>
 				<v-tab value="metricas">Estatísticas Detalhadas</v-tab>
 			</v-tabs>
@@ -45,7 +45,7 @@
 									<td class="font-weight-bold">{{ item.titulo }}</td>
 									<td>{{ item.autor }}</td>
 									<td>
-										<v-chip size="x-small" :color="item.fonte === 'Local' ? 'cyan' : 'amber'">
+										<v-chip size="x-small" :color="item.fonte === 'Local' ? 'primary' : 'amber'">
 											{{ item.fonte || 'Local' }}
 										</v-chip>
 									</td>
@@ -74,14 +74,14 @@
 								<div v-if="metricas" class="source-list">
 									<div v-for="(count, fonte) in metricas.fontes" :key="fonte" class="d-flex justify-space-between mb-2">
 										<span>{{ fonte || 'Manual/Local' }}</span>
-										<span class="font-weight-black text-cyan">{{ count }} obras</span>
+										<span class="font-weight-black text-primary">{{ count }} obras</span>
 									</div>
 								</div>
 							</v-card>
 						</v-col>
 						<v-col cols="12" md="6">
 							<v-card class="ios-glass-card pa-6 rounded-xl d-flex flex-column justify-center align-center h-100">
-								<v-icon size="64" color="cyan" class="mb-4 opacity-20">mdi-chart-timeline-variant</v-icon>
+								<v-icon size="64" color="primary" class="mb-4 opacity-20">mdi-chart-timeline-variant</v-icon>
 								<p class="text-center opacity-40">Gráficos de tendência em tempo real estarão disponíveis na v2.</p>
 							</v-card>
 						</v-col>
@@ -154,7 +154,7 @@ export default {
 
 	.metric-card {
 		background: rgba(255, 255, 255, 0.03) !important;
-		border: 1px solid rgba(0, 184, 212, 0.1);
+		border: 1px solid rgba(0, 122, 255, 0.1);
 	}
 
 	.ios-glass-card {
@@ -167,8 +167,8 @@ export default {
 	.admin-table th { color: rgba(255,255,255,0.4) !important; text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
 
 	.premium-glow:hover {
-		box-shadow: 0 0 30px rgba(0, 184, 212, 0.15) !important;
-		border-color: rgba(0, 184, 212, 0.4);
+		box-shadow: 0 0 30px rgba(0, 122, 255, 0.15) !important;
+		border-color: rgba(0, 122, 255, 0.4);
 		transform: translateY(-5px);
 	}
 </style>

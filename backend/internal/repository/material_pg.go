@@ -17,10 +17,11 @@ const materialColumns = `id, titulo, autor, COALESCE(isbn, ''), categoria, ano_p
                           disponivel, COALESCE(media_nota, 0.0), COALESCE(total_avaliacoes, 0),
                           COALESCE(paginas, 0), COALESCE(externo_id, ''), COALESCE(fonte, ''),
                           COALESCE(status, 'aprovado'), COALESCE(curador_id, 0),
-                          COALESCE(dificuldade, 1), COALESCE(xp, 10), COALESCE(relevancia, 0)`
+                          COALESCE(dificuldade, 1), COALESCE(xp, 10), COALESCE(relevancia, 0),
+                          data_criacao, deleted_at`
 
 func (r *MaterialPostgres) Listar(ctx context.Context, limit, offset int) ([]material.Material, error) {
-	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'aprovado' AND pdf_url ILIKE '%%.pdf%%' AND capa_url NOT LIKE 'https://images.unsplash.com/%%' LIMIT $1 OFFSET $2", materialColumns)
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL LIMIT $1 OFFSET $2", materialColumns)
 	rows, err := r.DB.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		return nil, err
@@ -40,9 +41,9 @@ func (r *MaterialPostgres) Listar(ctx context.Context, limit, offset int) ([]mat
 
 func (r *MaterialPostgres) BuscarPorID(ctx context.Context, id int) (*material.Material, error) {
 	var m material.Material
-	query := fmt.Sprintf("SELECT %s FROM materiais WHERE id = $1", materialColumns)
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE id = $1 AND deleted_at IS NULL", materialColumns)
 	err := r.DB.QueryRowContext(ctx, query, id).Scan(
-		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes, &m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID, &m.Dificuldade, &m.XP, &m.Relevancia)
+		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao, &m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes, &m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID, &m.Dificuldade, &m.XP, &m.Relevancia, &m.DataCriacao, &m.DeletedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -65,7 +66,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 		// Não adicionamos args aqui ainda porque reestruturamos a injeção condicional no bloco AND abaixo para unificar.
 	}
 
-	query += " FROM materiais WHERE status = 'aprovado' AND pdf_url ILIKE '%%.pdf%%' AND capa_url NOT LIKE 'https://images.unsplash.com/%%'"
+	query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
 
 	// Busca híbrida: FTS Rankado OR Fallback ILIKE em título/autor
 	if termo != "" {
@@ -130,7 +131,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 			&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
 			&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
 			&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID,
-			&m.Dificuldade, &m.XP, &m.Relevancia,
+			&m.Dificuldade, &m.XP, &m.Relevancia, &m.DataCriacao, &m.DeletedAt,
 		}
 		if termo != "" {
 			dest = append(dest, &rank)
@@ -148,7 +149,7 @@ func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, 
 	query := fmt.Sprintf(`SELECT %s
 	          FROM materiais m1
 	          JOIN materiais m2 ON m1.categoria = m2.categoria AND m1.id != m2.id
-	          WHERE m1.id = $1 AND m2.status = 'aprovado' AND m2.pdf_url ILIKE '%%.pdf%%' AND m2.capa_url NOT LIKE 'https://images.unsplash.com/%%'
+	          WHERE m1.id = $1 AND m2.status = 'aprovado' AND m2.deleted_at IS NULL
 	          LIMIT $2`, "m2."+replaceColumns(materialColumns, "m2."))
 	rows, err := r.DB.QueryContext(ctx, query, materialID, limit)
 	if err != nil {
@@ -168,43 +169,34 @@ func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, 
 }
 
 func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) error {
-	// O sistema verifica duplicatas no app e já preenche o ID se existir para o cache não quebrar
-	if m.ExternoID != "" {
-		err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE externo_id = $1", m.ExternoID).Scan(&m.ID)
-		if err == nil {
-			return fmt.Errorf("material já existe com esse ID externo")
-		}
-	} else {
-		if m.ISBN != "" {
-			err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE isbn = $1 limit 1", m.ISBN).Scan(&m.ID)
-			if err == nil {
-				return fmt.Errorf("material já existe por isbn")
-			}
-		} else {
-			err := r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE titulo = $1 AND autor = $2 limit 1", m.Titulo, m.Autor).Scan(&m.ID)
-			if err == nil {
-				return fmt.Errorf("material já existe por titulo e autor")
-			}
-		}
-	}
-
-	tx, err := r.DB.BeginTx(ctx, nil)
-	if err != nil {
-		return fmt.Errorf("erro ao iniciar transação: %w", err)
-	}
-	defer tx.Rollback()
-
 	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas, dificuldade, xp, relevancia)
 	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+			  ON CONFLICT (externo_id) WHERE externo_id IS NOT NULL DO UPDATE SET
+			    titulo = EXCLUDED.titulo,
+				autor = EXCLUDED.autor,
+				capa_url = COALESCE(EXCLUDED.capa_url, materiais.capa_url),
+				pdf_url = COALESCE(EXCLUDED.pdf_url, materiais.pdf_url)
 			  RETURNING id`
-	err = tx.QueryRowContext(ctx, query,
+
+	err := r.DB.QueryRowContext(ctx, query,
 		m.Titulo, m.Autor, m.ISBN, m.Categoria, m.AnoPublicacao, m.Descricao, m.CapaURL, m.PDFURL, m.Disponivel, m.ExternoID, m.Fonte, m.Paginas, m.Dificuldade, m.XP, m.Relevancia,
 	).Scan(&m.ID)
+
 	if err != nil {
+		if strings.Contains(err.Error(), "unique constraint") || strings.Contains(err.Error(), "já existe") {
+			// Se falhou por conflito de ISBN ou Titulo/Autor (que não estão no ON CONFLICT acima), tentamos buscar o ID
+			var id int
+			if m.ISBN != "" {
+				_ = r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE isbn = $1", m.ISBN).Scan(&id)
+			} else {
+				_ = r.DB.QueryRowContext(ctx, "SELECT id FROM materiais WHERE titulo = $1 AND autor = $2", m.Titulo, m.Autor).Scan(&id)
+			}
+			if id > 0 {
+				m.ID = id
+				return nil
+			}
+		}
 		return fmt.Errorf("erro ao criar material: %w", err)
-	}
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("erro ao commitar transação: %w", err)
 	}
 	return nil
 }
@@ -218,7 +210,7 @@ func (r *MaterialPostgres) Atualizar(ctx context.Context, m *material.Material) 
 }
 
 func (r *MaterialPostgres) Deletar(ctx context.Context, id int) error {
-	_, err := r.DB.ExecContext(ctx, "DELETE FROM materiais WHERE id=$1", id)
+	_, err := r.DB.ExecContext(ctx, "UPDATE materiais SET deleted_at = CURRENT_TIMESTAMP WHERE id=$1", id)
 	return err
 }
 
@@ -232,12 +224,53 @@ func (r *MaterialPostgres) RemoverFavorito(ctx context.Context, usuarioID, mater
 	return err
 }
 
+func (r *MaterialPostgres) Avaliar(ctx context.Context, usuarioID, materialID int, nota float64) error {
+	tx, err := r.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	// 1. Inserir ou atualizar a avaliação individual
+	_, err = tx.ExecContext(ctx, `
+		INSERT INTO avaliacoes (usuario_id, material_id, nota)
+		VALUES ($1, $2, $3)
+		ON CONFLICT (usuario_id, material_id) DO UPDATE SET nota = EXCLUDED.nota`,
+		usuarioID, materialID, nota)
+	if err != nil {
+		return err
+	}
+
+	// 2. Recalcular a média e o total para o material
+	var media float64
+	var total int
+	err = tx.QueryRowContext(ctx, `
+		SELECT COALESCE(AVG(nota), 0), COUNT(*)
+		FROM avaliacoes
+		WHERE material_id = $1`, materialID).Scan(&media, &total)
+	if err != nil {
+		return err
+	}
+
+	// 3. Atualizar a tabela de materiais
+	_, err = tx.ExecContext(ctx, `
+		UPDATE materiais
+		SET media_nota = $1, total_avaliacoes = $2
+		WHERE id = $3`, media, total, materialID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
 func (r *MaterialPostgres) ListarFavoritosPorUsuario(ctx context.Context, usuarioID int) ([]material.Material, error) {
 	query := fmt.Sprintf(`
 		SELECT %s
 		FROM materiais m
 		JOIN favoritos f ON m.id = f.material_id
-		WHERE f.usuario_id = $1`, replaceColumns(materialColumns, "m."))
+		WHERE f.usuario_id = $1 AND m.deleted_at IS NULL`, replaceColumns(materialColumns, "m."))
+
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID)
 	if err != nil {
 		return nil, err
@@ -264,11 +297,15 @@ func (r *MaterialPostgres) RegistrarLeitura(ctx context.Context, h *material.His
 
 func (r *MaterialPostgres) ListarHistoricoPorUsuario(ctx context.Context, usuarioID int) ([]material.Material, error) {
 	query := fmt.Sprintf(`
-		SELECT DISTINCT %s
-		FROM materiais m
-		JOIN historico_leitura h ON m.id = h.material_id
-		WHERE h.usuario_id = $1
-		ORDER BY m.id DESC`, replaceColumns(materialColumns, "m."))
+		SELECT %s FROM materiais m
+		JOIN (
+			SELECT material_id, MAX(data) as last_read
+			FROM historico_leitura
+			WHERE usuario_id = $1
+			GROUP BY material_id
+		) h ON m.id = h.material_id
+		WHERE m.deleted_at IS NULL
+		ORDER BY h.last_read DESC`, replaceColumns(materialColumns, "m."))
 	rows, err := r.DB.QueryContext(ctx, query, usuarioID)
 	if err != nil {
 		return nil, err
@@ -293,6 +330,7 @@ func scanMaterial(scanner interface {
 		&m.ID, &m.Titulo, &m.Autor, &m.ISBN, &m.Categoria, &m.AnoPublicacao,
 		&m.Descricao, &m.CapaURL, &m.PDFURL, &m.Disponivel, &m.MediaNota, &m.TotalAvaliacoes,
 		&m.Paginas, &m.ExternoID, &m.Fonte, &m.Status, &m.CuradorID, &m.Dificuldade, &m.XP, &m.Relevancia,
+		&m.DataCriacao, &m.DeletedAt,
 	)
 }
 
@@ -303,6 +341,9 @@ func replaceColumns(cols, alias string) string {
 		if strings.HasPrefix(p, "COALESCE(") {
 			// replace COALESCE(field, ...) with COALESCE(alias.field, ...)
 			parts[i] = strings.Replace(p, "COALESCE(", "COALESCE("+alias, 1)
+		} else if p == "" || p[0] == '\'' || (p[0] >= '0' && p[0] <= '9') {
+			// It's a literal or closing part of COALESCE, don't alias
+			parts[i] = p
 		} else {
 			parts[i] = alias + p
 		}
@@ -311,7 +352,7 @@ func replaceColumns(cols, alias string) string {
 }
 
 func (r *MaterialPostgres) ListarPendentes(ctx context.Context) ([]material.Material, error) {
-	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'pendente' ORDER BY id DESC", materialColumns)
+	query := fmt.Sprintf("SELECT %s FROM materiais WHERE status = 'pendente' AND deleted_at IS NULL ORDER BY id DESC", materialColumns)
 	rows, err := r.DB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
@@ -338,11 +379,20 @@ func (r *MaterialPostgres) AtualizarStatus(ctx context.Context, id int, status s
 func (r *MaterialPostgres) ObterMetricasGlobais(ctx context.Context) (map[string]interface{}, error) {
 	var totalUsuarios, totalMateriais, totalLeituras int
 
-	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM usuarios").Scan(&totalUsuarios)
-	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM materiais").Scan(&totalMateriais)
-	_ = r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM historico_leitura").Scan(&totalLeituras)
+	if err := r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM usuarios").Scan(&totalUsuarios); err != nil {
+		return nil, fmt.Errorf("erro ao contar usuários: %w", err)
+	}
+	if err := r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM materiais").Scan(&totalMateriais); err != nil {
+		return nil, fmt.Errorf("erro ao contar materiais: %w", err)
+	}
+	if err := r.DB.QueryRowContext(ctx, "SELECT COUNT(*) FROM historico_leitura").Scan(&totalLeituras); err != nil {
+		return nil, fmt.Errorf("erro ao contar leituras: %w", err)
+	}
 
-	rows, _ := r.DB.QueryContext(ctx, "SELECT fonte, COUNT(*) FROM materiais GROUP BY fonte")
+	rows, err := r.DB.QueryContext(ctx, "SELECT fonte, COUNT(*) FROM materiais GROUP BY fonte")
+	if err != nil {
+		return nil, fmt.Errorf("erro ao agrupar fontes: %w", err)
+	}
 	defer rows.Close()
 
 	fontes := make(map[string]int)

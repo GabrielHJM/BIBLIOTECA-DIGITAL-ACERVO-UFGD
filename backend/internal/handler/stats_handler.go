@@ -124,12 +124,14 @@ func RegisterStatsRoutes(mux *http.ServeMux, db *sql.DB) {
 			}
 		}
 
-		// 4. Progresso Semanal de Leitura (Últimos 7 dias)
+		// 4. Progresso Semanal de Leitura (Últimos 7 dias - Contando cada livro uma vez por semana para evitar soma excessiva)
 		err = db.QueryRowContext(r.Context(), `
-			SELECT COALESCE(SUM(m.paginas), 0)
-			FROM historico_leitura h
-			JOIN materiais m ON h.material_id = m.id
-			WHERE h.usuario_id = $1 AND h.data >= NOW() - INTERVAL '7 days'
+			SELECT COALESCE(SUM(paginas), 0) FROM (
+				SELECT DISTINCT material_id, m.paginas
+				FROM historico_leitura h
+				JOIN materiais m ON h.material_id = m.id
+				WHERE h.usuario_id = $1 AND h.data >= NOW() - INTERVAL '7 days'
+			) as unique_reads
 		`, usuarioID).Scan(&stats.PaginasLidasSemana)
 		if err != nil {
 			stats.PaginasLidasSemana = 0

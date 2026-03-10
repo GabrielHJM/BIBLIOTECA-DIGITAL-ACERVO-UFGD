@@ -25,13 +25,13 @@ import (
 	"fmt"
 	"net/http"
 	"runtime"
+	"strings"
 	"time"
 
 	"biblioteca-digital-api/config"
 	"biblioteca-digital-api/internal/handler"
 	"biblioteca-digital-api/internal/handler/middleware"
 	"biblioteca-digital-api/internal/harvester"
-	"biblioteca-digital-api/internal/pkg/ai"
 	"biblioteca-digital-api/internal/pkg/cache"
 	"biblioteca-digital-api/internal/pkg/logger"
 	"biblioteca-digital-api/internal/repository"
@@ -64,84 +64,90 @@ func main() {
 
 	defer db.Close()
 
+	// Configurar Timezone da Sessão
+	if _, err := db.Exec("SET TIMEZONE TO 'America/Sao_Paulo';"); err != nil {
+		logger.Error("Failed to set session timezone", zap.Error(err))
+	}
+
 	// Core Migrations
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS usuarios (
-			id SERIAL PRIMARY KEY,
-			nome TEXT NOT NULL,
-			email TEXT UNIQUE NOT NULL,
-			senha TEXT NOT NULL,
-			tipo INTEGER DEFAULT 1,
-			foto_url TEXT,
-			meta_paginas_semana INTEGER DEFAULT 100,
-			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
+	if _, err := db.Exec("CREATE EXTENSION IF NOT EXISTS unaccent;"); err != nil {
+		logger.Error("Failed to create unaccent extension", zap.Error(err))
+	}
 
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS materiais (
-			id SERIAL PRIMARY KEY,
-			titulo TEXT NOT NULL,
-			autor TEXT NOT NULL,
-			isbn TEXT,
-			categoria TEXT NOT NULL,
-			ano_publicacao INTEGER,
-			descricao TEXT,
-			capa_url TEXT,
-			pdf_url TEXT,
-			disponivel BOOLEAN DEFAULT TRUE,
-			media_nota NUMERIC(3,2) DEFAULT 0.0,
-			total_avaliacoes INTEGER DEFAULT 0,
-			paginas INTEGER DEFAULT 0,
-			externo_id TEXT UNIQUE,
-			fonte TEXT,
-			status TEXT DEFAULT 'aprovado',
-			curador_id INTEGER REFERENCES usuarios(id),
-			search_vector tsvector
-		);
-	`)
+	migrations := []struct {
+		name string
+		sql  string
+	}{
+		{"usuarios", `CREATE TABLE IF NOT EXISTS usuarios (
+			id SERIAL PRIMARY KEY, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha TEXT NOT NULL,
+			tipo INTEGER DEFAULT 1, foto_url TEXT, meta_paginas_semana INTEGER DEFAULT 100, data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"materiais", `CREATE TABLE IF NOT EXISTS materiais (
+			id SERIAL PRIMARY KEY, titulo TEXT NOT NULL, autor TEXT NOT NULL, isbn TEXT, categoria TEXT NOT NULL,
+			ano_publicacao INTEGER, descricao TEXT, capa_url TEXT, pdf_url TEXT, disponivel BOOLEAN DEFAULT TRUE,
+			media_nota NUMERIC(3,2) DEFAULT 0.0, total_avaliacoes INTEGER DEFAULT 0, paginas INTEGER DEFAULT 0,
+			externo_id TEXT UNIQUE, fonte TEXT, status TEXT DEFAULT 'aprovado', curador_id INTEGER REFERENCES usuarios(id),
+			dificuldade INTEGER DEFAULT 1, xp INTEGER DEFAULT 10, relevancia INTEGER DEFAULT 0, search_vector tsvector
+		);`},
+		{"flashcards", `CREATE TABLE IF NOT EXISTS flashcards (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+			material_id INTEGER REFERENCES materiais(id) ON DELETE SET NULL, pergunta TEXT NOT NULL,
+			resposta TEXT NOT NULL, dificuldade INTEGER DEFAULT 0, proxima_revisao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"favoritos", `CREATE TABLE IF NOT EXISTS favoritos (
+			usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE, PRIMARY KEY (usuario_id, material_id)
+		);`},
+		{"historico", `CREATE TABLE IF NOT EXISTS historico_leitura (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"interesses", `CREATE TABLE IF NOT EXISTS interesses_usuario (
+			usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, interesse TEXT NOT NULL, PRIMARY KEY (usuario_id, interesse)
+		);`},
+		{"notificacoes", `CREATE TABLE IF NOT EXISTS notificacoes (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+			titulo TEXT NOT NULL, mensagem TEXT NOT NULL, tipo TEXT DEFAULT 'info', lida BOOLEAN DEFAULT FALSE, data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"avaliacoes", `CREATE TABLE IF NOT EXISTS avaliacoes (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+			nota INTEGER CHECK (nota >= 1 AND nota <= 5), comentario TEXT, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"emprestimos", `CREATE TABLE IF NOT EXISTS emprestimos (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+			data_emprestimo TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data_devolucao TIMESTAMP, status TEXT DEFAULT 'ativo'
+		);`},
+		{"curtidas", `CREATE TABLE IF NOT EXISTS curtidas (
+			usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+			data TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (usuario_id, material_id)
+		);`},
+		{"comentarios", `CREATE TABLE IF NOT EXISTS comentarios (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE CASCADE,
+			texto TEXT NOT NULL, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"amizades", `CREATE TABLE IF NOT EXISTS amizades (
+			usuario_id1 INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, usuario_id2 INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+			status TEXT DEFAULT 'pendente', data_solicitacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (usuario_id1, usuario_id2), CHECK (usuario_id1 != usuario_id2)
+		);`},
+		{"anotacoes", `CREATE TABLE IF NOT EXISTS anotacoes (
+			id SERIAL PRIMARY KEY, usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE, material_id INTEGER REFERENCES materiais(id) ON DELETE SET NULL,
+			titulo TEXT, conteudo TEXT NOT NULL, cor TEXT DEFAULT '#FFFFFF', data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+		{"mensagens", `CREATE TABLE IF NOT EXISTS mensagens (
+			id SERIAL PRIMARY KEY, remetente_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, destinatario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
+			material_id INTEGER REFERENCES materiais(id) ON DELETE SET NULL, conteudo TEXT, lida BOOLEAN DEFAULT FALSE, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+		);`},
+	}
 
-	// Study & Social Tables
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS flashcards (
-			id SERIAL PRIMARY KEY,
-			usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
-			material_id INTEGER REFERENCES materiais(id),
-			pergunta TEXT NOT NULL,
-			resposta TEXT NOT NULL,
-			dificuldade INTEGER DEFAULT 0,
-			proxima_revisao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS favoritos (
-			usuario_id INTEGER REFERENCES usuarios(id),
-			material_id INTEGER REFERENCES materiais(id),
-			PRIMARY KEY (usuario_id, material_id)
-		);
-	`)
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS historico_leitura (
-			id SERIAL PRIMARY KEY,
-			usuario_id INTEGER REFERENCES usuarios(id),
-			material_id INTEGER REFERENCES materiais(id),
-			data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-		);
-	`)
-	_, _ = db.Exec(`
-		CREATE TABLE IF NOT EXISTS interesses_usuario (
-			usuario_id INTEGER REFERENCES usuarios(id),
-			interesse TEXT,
-			PRIMARY KEY (usuario_id, interesse)
-		);
-	`)
+	for _, m := range migrations {
+		if _, err := db.Exec(m.sql); err != nil {
+			logger.Error("Migration failed", zap.String("table", m.name), zap.Error(err))
+		}
+	}
 
 	// FTS Trigger & Index
-	_, _ = db.Exec(`
-		CREATE INDEX IF NOT EXISTS idx_materiais_search_vector ON materiais USING gin(search_vector);
-	`)
-	_, _ = db.Exec(`
+	if _, err := db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_search_vector ON materiais USING gin(search_vector);`); err != nil {
+		logger.Error("Failed to create FTS index", zap.Error(err))
+	}
+	if _, err := db.Exec(`
 		CREATE OR REPLACE FUNCTION materiais_search_trigger() RETURNS trigger AS $$
 		begin
 		  new.search_vector :=
@@ -151,21 +157,31 @@ func main() {
 		  return new;
 		end
 		$$ LANGUAGE plpgsql;
-	`)
-	_, _ = db.Exec(`
+	`); err != nil {
+		logger.Error("Failed to create FTS trigger function", zap.Error(err))
+	}
+	if _, err := db.Exec(`
 		DROP TRIGGER IF EXISTS tsvectorupdate ON materiais;
 		CREATE TRIGGER tsvectorupdate BEFORE INSERT OR UPDATE
 		ON materiais FOR EACH ROW EXECUTE FUNCTION materiais_search_trigger();
-	`)
+	`); err != nil {
+		logger.Error("Failed to create FTS trigger", zap.Error(err))
+	}
 
 	// Additional Indexes for Performance
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_fonte ON materiais(fonte);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_ano ON materiais(ano_publicacao);`)
-	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;`)
-
-	geminiClient := ai.NewGeminiClient(cfg.GeminiAPIKey)
+	indexes := []string{
+		"CREATE INDEX IF NOT EXISTS idx_materiais_status ON materiais(status);",
+		"CREATE INDEX IF NOT EXISTS idx_materiais_categoria ON materiais(categoria);",
+		"CREATE INDEX IF NOT EXISTS idx_materiais_fonte ON materiais(fonte);",
+		"CREATE INDEX IF NOT EXISTS idx_materiais_ano ON materiais(ano_publicacao);",
+		"CREATE INDEX IF NOT EXISTS idx_materiais_externo_id ON materiais(externo_id) WHERE externo_id IS NOT NULL;",
+	}
+	for _, idx := range indexes {
+		if _, err := db.Exec(idx); err != nil {
+			logger.Error("Index creation failed", zap.String("sql", idx), zap.Error(err))
+		}
+	}
+	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_historico_usuario ON historico_leitura(usuario_id);`)
 
 	// Inicia o worker de sincronização em segundo plano
 	go startBackgroundSync(db)
@@ -216,12 +232,13 @@ func main() {
 	}
 
 	handler.RegisterUsuarioRoutes(mux, db)
-	handler.RegisterMaterialRoutes(mux, db, geminiClient, c)
+	handler.RegisterMaterialRoutes(mux, db, c)
 
 	handler.RegisterStatsRoutes(mux, db)
-	handler.RegisterEstudoRoutes(mux, db, geminiClient)
+	handler.RegisterEstudoRoutes(mux, db)
 	handler.RegisterAdminRoutes(mux, db)
 	handler.RegisterAnotacaoRoutes(mux, db)
+	handler.RegisterNotificacaoRoutes(mux, db)
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
@@ -261,12 +278,17 @@ func syncBooks(repo *repository.MaterialPostgres, mh *harvester.MultiSourceHarve
 	}
 	defer syncMu.Unlock()
 
-	categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
+	categories := []string{"TECNOLOGIA BRASIL", "SAÚDE PÚBLICA BRASIL", "DIREITO BRASILEIRO", "LITERATURA BRASILEIRA", "HISTÓRIA DO BRASIL", "CIÊNCIAS", "MATEMÁTICA", "CONTABILIDADE"}
 	for _, cat := range categories {
 		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 5)
 		if err == nil {
 			for i := range mats {
-				_ = repo.Criar(context.Background(), &mats[i])
+				if err := repo.Criar(context.Background(), &mats[i]); err != nil {
+					// Duplicatas são esperadas e não devem poluir o log como erro crítico
+					if !strings.Contains(err.Error(), "já existe") {
+						logger.Debug("Sync: Failed to save material", zap.String("title", mats[i].Titulo), zap.Error(err))
+					}
+				}
 			}
 		} else {
 			logger.Error("Harvester search failed during sync", zap.String("category", cat), zap.Error(err))

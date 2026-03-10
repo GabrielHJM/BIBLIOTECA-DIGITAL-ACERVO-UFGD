@@ -33,17 +33,17 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseC := strings.ToLower(category)
 
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "computer science OR software OR technology"
+		refinedQuery = "tecnologia OR computer science OR software OR technology"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "health OR medicine OR biology"
+		refinedQuery = "saúde OR medicina OR health OR medicine OR biology"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
-		refinedQuery = "science OR physics OR chemistry"
+		refinedQuery = "ciências OR science OR physics OR chemistry"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
-		refinedQuery = "mathematics OR algebra OR geometry"
+		refinedQuery = "matemática OR mathematics OR algebra OR geometry"
 	} else if lowercaseQ == "história" || lowercaseC == "história" {
-		refinedQuery = "history OR archaeology OR humanity"
+		refinedQuery = "história OR history OR archaeology OR humanity"
 	} else if lowercaseQ == "educação" || lowercaseC == "educação" {
-		refinedQuery = "education OR pedagogical OR teaching"
+		refinedQuery = "educação OR pedagogical OR teaching"
 	}
 
 	var allMaterials []material.Material
@@ -101,6 +101,17 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	seen := make(map[string]bool)
 
 	for _, m := range allMaterials {
+		// Global Strict PDF Filter
+		lowerLink := strings.ToLower(m.PDFURL)
+		isPDF := strings.HasSuffix(strings.Split(lowerLink, "?")[0], ".pdf") ||
+			strings.Contains(lowerLink, "pdf") ||
+			strings.Contains(lowerLink, "download") ||
+			strings.Contains(lowerLink, "googleapis.com")
+
+		if !isPDF {
+			continue
+		}
+
 		id := m.ExternoID
 		if id == "" {
 			id = m.Titulo + ":" + m.Autor

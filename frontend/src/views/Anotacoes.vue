@@ -16,8 +16,8 @@
         </div>
         <div class="d-flex align-center justify-space-between flex-wrap gap-4">
           <div>
-            <h1 class="page-title text-white">Minhas Anotações</h1>
-            <p class="page-subtitle text-white opacity-60">Seu caderno digital de estudos</p>
+            <h1 class="page-title text-primary-darken-4">Minhas Anotações</h1>
+            <p class="page-subtitle text-primary opacity-70">Seu caderno digital de estudos</p>
           </div>
           <v-btn
             class="nova-btn font-weight-bold"
@@ -35,7 +35,7 @@
     <v-container class="content-area mt-4">
       <!-- Loading -->
       <div v-if="loading" class="d-flex justify-center align-center" style="min-height:300px">
-        <v-progress-circular indeterminate color="cyan-accent-3" size="64"></v-progress-circular>
+        <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
       </div>
 
       <!-- Empty state -->
@@ -58,25 +58,25 @@
           <div class="note-card" @click="abrirModal(nota)">
             <div class="note-card-top">
               <div class="d-flex justify-space-between align-start">
-                <h3 class="note-title text-white">{{ nota.titulo || 'Sem Título' }}</h3>
+                <h3 class="note-title text-primary-darken-4">{{ nota.titulo || 'Sem Título' }}</h3>
                 <v-btn
                   icon="mdi-delete-outline"
                   variant="text"
                   size="x-small"
-                  color="white"
+                  color="primary"
                   class="delete-btn opacity-50"
                   @click.stop="deletarAnotacao(nota.id)"
                 ></v-btn>
               </div>
-              <p class="note-content text-white opacity-80 mt-2">{{ nota.conteudo }}</p>
+              <p class="note-content text-primary-darken-2 opacity-80 mt-2">{{ nota.conteudo }}</p>
             </div>
             <div class="note-footer d-flex justify-space-between align-center">
               <div v-if="nota.material_id" class="d-flex align-center">
-                <v-icon size="12" color="white" class="mr-1 opacity-60">mdi-book-open-variant</v-icon>
-                <span class="text-caption text-white opacity-50">Vinculado</span>
+                <v-icon size="12" color="primary" class="mr-1 opacity-60">mdi-book-open-variant</v-icon>
+                <span class="text-caption text-primary opacity-50">Vinculado</span>
               </div>
               <div v-else></div>
-              <span class="text-caption text-white opacity-40">{{ formatData(nota.data_atualizacao) }}</span>
+              <span class="text-caption text-primary opacity-40">{{ formatData(nota.data_atualizacao) }}</span>
             </div>
           </div>
         </v-col>
@@ -106,7 +106,7 @@
             label="Título da anotação"
             placeholder="Ex: Resumo de Capítulo 3..."
             variant="outlined"
-            color="cyan-accent-3"
+            color="primary"
             class="mb-4"
             maxlength="80"
             counter
@@ -119,7 +119,7 @@
             label="Conteúdo"
             placeholder="Escreva aqui seus resumos, ideias ou pontos importantes..."
             variant="outlined"
-            color="cyan-accent-3"
+            color="primary"
             rows="5"
             auto-grow
             class="mb-5"
@@ -158,7 +158,7 @@ const loading = ref(true);
 const modalAberto = ref(false);
 const salvando = ref(false);
 
-const notaVazia = { id: null, titulo: '', conteudo: '', cor: 'rgba(0,188,212,0.25)', material_id: null };
+const notaVazia = { id: null, titulo: '', conteudo: '', cor: 'rgba(0,122,255,0.25)', material_id: null };
 const notaAtual = ref({ ...notaVazia });
 
 const carregarAnotacoes = async () => {
@@ -231,8 +231,8 @@ onMounted(carregarAnotacoes);
 
 /* ── Header compacto e arredondado ─────────────────────────── */
 .page-header {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: 20px;
   padding: 16px 20px 20px;
 }
@@ -258,17 +258,17 @@ onMounted(carregarAnotacoes);
 
 /* ── Botão padrão Nova Anotação ────────────────────────────── */
 .nova-btn {
-  background: linear-gradient(135deg, #00BCD4, #00838F) !important;
+  background: linear-gradient(135deg, #007AFF, #0056B3) !important;
   color: white !important;
   border-radius: 12px !important;
   text-transform: none !important;
   letter-spacing: 0.3px !important;
-  box-shadow: 0 4px 15px rgba(0, 188, 212, 0.3) !important;
+  box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3) !important;
   transition: all 0.3s ease !important;
 }
 .nova-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 188, 212, 0.4) !important;
+  box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4) !important;
 }
 
 /* ── Content ────────────────────────────────────────────────── */
@@ -277,8 +277,8 @@ onMounted(carregarAnotacoes);
 
 /* ── Note Cards ─────────────────────────────────────────────── */
 .note-card {
-  background: rgba(0, 188, 212, 0.1);
-  border: 1px solid rgba(0, 188, 212, 0.2);
+  background: rgba(var(--ios-blue-rgb), 0.05);
+  border: 1px solid rgba(var(--ios-blue-rgb), 0.1);
   border-radius: 20px;
   padding: 20px;
   min-height: 180px;
@@ -299,14 +299,14 @@ onMounted(carregarAnotacoes);
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: linear-gradient(135deg, rgba(0,188,212,0.05) 0%, transparent 60%);
+  background: linear-gradient(135deg, rgba(0,122,255,0.05) 0%, transparent 60%);
   pointer-events: none;
 }
 
 .note-card:hover {
   transform: translateY(-6px) scale(1.01);
-  border-color: rgba(0, 188, 212, 0.5);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0,188,212,0.2), 0 0 30px rgba(0,188,212,0.1) !important;
+  border-color: rgba(0, 122, 255, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0,122,255,0.2), 0 0 30px rgba(0,122,255,0.1) !important;
 }
 
 .note-card-top { flex: 1; overflow: hidden; }

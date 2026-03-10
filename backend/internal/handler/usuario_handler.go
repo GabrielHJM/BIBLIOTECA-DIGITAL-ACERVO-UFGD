@@ -40,15 +40,7 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-		if err := validation.ValidateName(req.Nome); err != nil {
-			JSONError(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err := validation.ValidateEmail(req.Email); err != nil {
-			JSONError(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		if err := validation.ValidatePassword(req.Senha); err != nil {
+		if err := validation.ValidateStruct(req); err != nil {
 			JSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -99,15 +91,16 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			return
 		}
 
+		if err := validation.ValidateStruct(req); err != nil {
+			logger.Warn("Login: Dados inválidos", zap.Error(err))
+			JSONError(w, "Dados de login inválidos", http.StatusBadRequest)
+			return
+		}
+
 		logger.Info("Tentativa de login", zap.String("email", req.Email))
 
 		// O loginUC.Execute já deve validar a senha. Idealmente retornaria o usuário também.
 		token, err := loginUC.Execute(r.Context(), req.Email, req.Senha)
-		if err != nil {
-			logger.Warn("Login falhou", zap.String("email", req.Email), zap.Error(err))
-			JSONError(w, "Login inválido: credenciais incorretas", http.StatusUnauthorized)
-			return
-		}
 
 		// Otimização: Buscar dados apenas se o login UC não retornar.
 		// Se o Repository suportar busca por email (como já suporta), usamos aqui.
@@ -133,6 +126,10 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		var req dto.RedefinirSenhaRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+		if err := validation.ValidateStruct(req); err != nil {
+			JSONError(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 		err := redefinirSenhaUC.Execute(r.Context(), req.Email, req.Senha)

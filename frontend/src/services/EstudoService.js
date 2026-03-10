@@ -14,5 +14,13 @@ export default {
 
 	revisarFlashcard(id, dificuldade) {
 		return api.put('/estudo/flashcards/revisar', { id, dificuldade });
+	},
+
+	criarFlashcard(data) {
+		return api.post('/estudo/flashcards', data);
+	},
+
+	deletarFlashcard(id, usuarioId) {
+		return api.delete(`/estudo/flashcards?id=${id}&usuario_id=${usuarioId}`);
 	}
 };

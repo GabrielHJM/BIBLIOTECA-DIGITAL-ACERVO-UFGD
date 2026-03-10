@@ -2,8 +2,15 @@ package validation
 
 import (
 	"errors"
-	"net/mail"
 	"strings"
+	"sync"
+
+	"github.com/go-playground/validator/v10"
+)
+
+var (
+	validate *validator.Validate
+	once     sync.Once
 )
 
 // Erros comuns de validação
@@ -13,16 +20,28 @@ var (
 	ErrNameTooShort     = errors.New("o nome deve ter pelo menos 3 caracteres")
 )
 
-// ValidateEmail verifica se o email é válido
+func GetValidator() *validator.Validate {
+	once.Do(func() {
+		validate = validator.New()
+	})
+	return validate
+}
+
+// ValidateStruct valida um struct usando tags
+func ValidateStruct(s interface{}) error {
+	return GetValidator().Struct(s)
+}
+
+// Funções legadas para compatibilidade (podem ser removidas após refatoração total)
+
 func ValidateEmail(email string) error {
-	_, err := mail.ParseAddress(email)
+	err := GetValidator().Var(email, "required,email")
 	if err != nil {
 		return ErrInvalidEmail
 	}
 	return nil
 }
 
-// ValidatePassword verifica a força da senha
 func ValidatePassword(password string) error {
 	if len(strings.TrimSpace(password)) < 6 {
 		return ErrPasswordTooShort
@@ -30,7 +49,6 @@ func ValidatePassword(password string) error {
 	return nil
 }
 
-// ValidateName verifica o nome
 func ValidateName(name string) error {
 	if len(strings.TrimSpace(name)) < 3 {
 		return ErrNameTooShort

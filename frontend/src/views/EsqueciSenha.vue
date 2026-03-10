@@ -157,8 +157,8 @@ export default {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		background: radial-gradient(circle at top left, rgba(0, 184, 212, 0.08), transparent 40%),
-					radial-gradient(circle at bottom right, rgba(0, 184, 212, 0.05), transparent 40%);
+		background: radial-gradient(circle at top left, rgba(0, 122, 255, 0.08), transparent 40%),
+					radial-gradient(circle at bottom right, rgba(0, 122, 255, 0.05), transparent 40%);
 		overflow: hidden;
 		height: 100vh;
 		width: 100vw;
@@ -173,7 +173,7 @@ export default {
 	}
 	.blob-1 {
 		width: 300px; height: 300px;
-		background: rgba(0, 184, 212, 0.4);
+		background: rgba(0, 122, 255, 0.4);
 		top: -50px; left: -100px;
 	}
 	.blob-2 {
@@ -258,8 +258,8 @@ export default {
 	.ios-input-modern:focus {
 		outline: none;
 		background: rgba(0, 0, 0, 0.4);
-		border-color: rgba(0, 184, 212, 0.6);
-		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15);
+		border-color: rgba(0, 122, 255, 0.6);
+		box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.15);
 	}
 
 	.password-wrapper {
@@ -272,7 +272,7 @@ export default {
 		position: absolute;
 		right: 6px;
 		opacity: 0.7;
-		color: #00B8D4 !important;
+		color: #007AFF !important;
 		transition: all 0.2s ease;
 	}
 	.password-toggle-btn:hover {
@@ -285,7 +285,7 @@ export default {
 	}
 
 	.ios-primary-btn {
-		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;
+		background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%) !important;
 		color: white !important;
 		border-radius: 20px !important;
 		text-transform: none !important;
@@ -293,7 +293,7 @@ export default {
 		font-weight: 700 !important;
 		letter-spacing: -0.2px;
 		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
-		box-shadow: 0 12px 24px rgba(0, 184, 212, 0.3) !important;
+		box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3) !important;
 	}
 
 	.ios-primary-btn:active {
@@ -308,7 +308,7 @@ export default {
 	}
 
 	.accent-text {
-		color: #00B8D4;
+		color: #007AFF;
 		font-weight: 700;
 	}
 

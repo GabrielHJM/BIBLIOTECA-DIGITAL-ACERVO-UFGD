@@ -1,8 +1,6 @@
 <template>
 	<div class="login-absolute-center">
-		<!-- Ambient Background Blobs for Glassmorphism -->
-		<div class="ambient-blob blob-1"></div>
-		<div class="ambient-blob blob-2"></div>
+		<!-- Ambient mesh gradient is now handled globally in App.vue -->
 
 		<div class="content-wrapper">
 			<v-card class="ios-login-card position-relative" elevation="0">
@@ -22,7 +20,7 @@
 				<div class="login-form">
 					<div class="input-group mb-4">
 						<label class="ios-label">E-MAIL</label>
-						<input v-model="email" type="email" placeholder="exemplo@email.com" class="ios-input-modern" />
+						<input v-model="email" type="email" placeholder="exemplo@email.com" class="ios-input-modern" @keyup.enter="login" />
 					</div>
 
 					<div class="input-group mb-4 position-relative">
@@ -33,6 +31,7 @@
 								:type="mostrarSenha ? 'text' : 'password'"
 								placeholder="••••••••"
 								class="ios-input-modern pr-12"
+								@keyup.enter="login"
 							/>
 							<v-btn
 								icon
@@ -134,30 +133,13 @@ export default {
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		background: radial-gradient(circle at top left, rgba(0, 184, 212, 0.08), transparent 40%),
-					radial-gradient(circle at bottom right, rgba(0, 184, 212, 0.05), transparent 40%);
+		background: transparent;
 		overflow: hidden;
 		height: 100vh;
 		width: 100vw;
 	}
 
-	.ambient-blob {
-		position: absolute;
-		border-radius: 50%;
-		filter: blur(80px);
-		z-index: 0;
-		opacity: 0.6;
-	}
-	.blob-1 {
-		width: 300px; height: 300px;
-		background: rgba(0, 184, 212, 0.4);
-		top: -50px; left: -100px;
-	}
-	.blob-2 {
-		width: 400px; height: 400px;
-		background: rgba(144, 202, 249, 0.2);
-		bottom: -100px; right: -100px;
-	}
+	/* Blobs removed to avoid background clutter over the new vibrant mesh */
 
 	.content-wrapper {
 		width: 100%;
@@ -173,13 +155,13 @@ export default {
 	.ios-login-card {
 		width: 100%;
 		max-width: 440px;
-		background: rgba(255, 255, 255, 0.03) !important;
-		backdrop-filter: blur(40px) saturate(180%);
-		-webkit-backdrop-filter: blur(40px) saturate(180%);
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur);
+		-webkit-backdrop-filter: var(--glass-blur);
 		border-radius: clamp(24px, 4vw, 32px) !important;
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		border: 1px solid var(--glass-border);
 		padding: clamp(16px, 4vw, 32px) clamp(16px, 4vw, 30px) !important;
-		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4) !important;
+		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.2) !important;
 		max-height: calc(100vh - 32px);
 		overflow-y: auto;
 	}
@@ -217,14 +199,14 @@ export default {
 		font-weight: 800;
 		letter-spacing: -1px;
 		margin-bottom: 4px;
-		color: #ffffff;
+		color: var(--v-theme-on-surface);
 	}
 
 	.login-subtitle {
 		font-size: 16px;
 		opacity: 0.7;
 		font-weight: 500;
-		color: #ffffff;
+		color: var(--v-theme-on-surface);
 	}
 
 	.ios-label {
@@ -235,14 +217,14 @@ export default {
 		margin-bottom: 8px;
 		margin-left: 8px;
 		opacity: 0.6;
-		color: #ffffff;
+		color: var(--v-theme-on-surface);
 	}
 
 	.ios-input-modern {
 		width: 100%;
 		box-sizing: border-box;
-		background: rgba(0, 0, 0, 0.25);
-		border: 1px solid rgba(255, 255, 255, 0.08);
+		background: rgba(255, 255, 255, 0.05); /* Lighter glass for inputs */
+		border: 1px solid rgba(255, 255, 255, 0.1);
 		border-radius: 16px;
 		padding: 16px 20px;
 		font-size: 15px;
@@ -256,14 +238,14 @@ export default {
 
 	.ios-input-modern:focus {
 		outline: none;
-		background: rgba(0, 0, 0, 0.4);
-		border-color: rgba(0, 184, 212, 0.6);
-		box-shadow: 0 0 0 4px rgba(0, 184, 212, 0.15);
+		background: rgba(255, 255, 255, 0.1);
+		border-color: var(--ios-blue);
+		box-shadow: 0 0 0 4px rgba(var(--ios-blue-rgb), 0.2);
 	}
 
 	.forgot-link {
 		font-size: 14px;
-		color: #00B8D4;
+		color: #007AFF;
 		text-decoration: none;
 		font-weight: 600;
 		transition: opacity 0.2s;
@@ -280,7 +262,7 @@ export default {
 		position: absolute;
 		right: 6px;
 		opacity: 0.7;
-		color: #00B8D4 !important;
+		color: #007AFF !important;
 		transition: all 0.2s ease;
 	}
 	.password-toggle-btn:hover {
@@ -293,7 +275,7 @@ export default {
 	}
 
 	.ios-primary-btn {
-		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;
+		background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%) !important;
 		color: white !important;
 		border-radius: 20px !important;
 		text-transform: none !important;
@@ -301,7 +283,7 @@ export default {
 		font-weight: 700 !important;
 		letter-spacing: -0.2px;
 		transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s !important;
-		box-shadow: 0 12px 24px rgba(0, 184, 212, 0.3) !important;
+		box-shadow: 0 12px 24px rgba(0, 122, 255, 0.3) !important;
 	}
 
 	.ios-primary-btn:active {
@@ -311,12 +293,13 @@ export default {
 	.signup-link {
 		font-size: 15px;
 		text-decoration: none;
-		color: rgba(255, 255, 255, 0.6);
+		color: var(--v-theme-on-surface);
+		opacity: 0.6;
 		font-weight: 500;
 	}
 
 	.accent-text {
-		color: #00B8D4;
+		color: #007AFF;
 		font-weight: 700;
 	}
 
@@ -327,7 +310,7 @@ export default {
 	.back-btn {
 		opacity: 0.6;
 		transition: opacity 0.2s;
-		color: white;
+		color: var(--v-theme-on-surface);
 	}
 
 	.back-btn:hover {

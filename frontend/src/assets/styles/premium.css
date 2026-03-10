@@ -1,0 +1,103 @@
+:root {
+	--premium-gradient: radial-gradient(circle at top left, #102136, #0B192C);
+	--ios-blue: #0A84FF;
+	/* Vibrant iOS Blue */
+	--ios-cyan: #64D2FF;
+	--ios-blue-rgb: 10, 132, 255;
+	--ios-amber: #FFD60A;
+	--ios-pink: #FF375F;
+	--glass-bg: rgba(255, 255, 255, 0.06);
+	--glass-border: rgba(255, 255, 255, 0.1);
+	--spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-bg {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: -1;
+	background: radial-gradient(circle at 30% 30%, #102136 0%, #0B192C 100%);
+	overflow: hidden;
+}
+
+.mesh-gradient {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	background: radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.3) 0, transparent 60%),
+		radial-gradient(at 100% 0%, rgba(100, 210, 255, 0.2) 0, transparent 60%),
+		radial-gradient(at 100% 100%, rgba(10, 132, 255, 0.2) 0, transparent 60%),
+		radial-gradient(at 0% 100%, rgba(100, 210, 255, 0.3) 0, transparent 60%);
+	filter: blur(80px);
+	opacity: 0.8;
+	animation: mesh-float 20s ease-in-out infinite alternate;
+}
+
+@keyframes mesh-float {
+	0% {
+		transform: scale(1) translate(0, 0);
+	}
+
+	100% {
+		transform: scale(1.1) translate(20px, 20px);
+	}
+}
+
+.premium-card-blur {
+	background: rgba(255, 255, 255, 0.03) !important;
+	backdrop-filter: blur(20px) saturate(180%);
+	border: 1px solid rgba(255, 255, 255, 0.08) !important;
+	border-radius: 24px !important;
+	transition: all 0.4s var(--spring-easing) !important;
+}
+
+.premium-card-blur:hover {
+	background: rgba(255, 255, 255, 0.06) !important;
+	border-color: rgba(0, 122, 255, 0.4) !important;
+	transform: translateY(-8px) scale(1.02);
+	box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3) !important;
+}
+
+.stat-icon-wrap {
+	width: 48px;
+	height: 48px;
+	border-radius: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.amber-bg {
+	background: rgba(255, 171, 0, 0.1);
+}
+
+.cyan-bg {
+	background: rgba(0, 122, 255, 0.1);
+}
+
+.glow-text-amber {
+	text-shadow: 0 0 20px rgba(255, 171, 0, 0.3);
+}
+
+.glow-text-cyan {
+	text-shadow: 0 0 20px rgba(0, 122, 255, 0.3);
+}
+
+.amber-grad {
+	background: linear-gradient(90deg, #FFAB00, #FFD600) !important;
+}
+
+.cyan-grad {
+	background: linear-gradient(90deg, #007AFF, #5AC8FA) !important;
+}
+
+.badge-chip-premium {
+	background: rgba(255, 171, 0, 0.1) !important;
+	border: 1px solid rgba(255, 171, 0, 0.2) !important;
+	font-weight: 800 !important;
+	font-size: 11px !important;
+	color: #FFAB00 !important;
+	border-radius: 12px !important;
+}

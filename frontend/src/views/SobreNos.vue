@@ -6,7 +6,7 @@
 				<v-col cols="12" md="10" class="text-center">
 					<div class="header-reveal">
 						<h1 class="text-premium-gradient text-h2 font-weight-black mb-4">Conheça Nossa História</h1>
-						<p class="text-subtitle-1 text-white opacity-70 max-width-600 mx-auto">
+						<p class="text-subtitle-1 opacity-70 max-width-600 mx-auto text-white">
 							Unindo a tradição do conhecimento com o futuro da tecnologia digital.
 						</p>
 					</div>
@@ -73,7 +73,7 @@
 								<div class="d-flex align-center justify-center">
 									<div class="text-center">
 										<div class="text-subtitle-1 font-weight-bold text-white">Gabriel Henrique Jesus de Melo</div>
-										<div class="text-caption text-white opacity-60">Desenvolvedor & Criador</div>
+										<div class="text-caption opacity-60 text-white">Desenvolvedor & Criador</div>
 									</div>
 								</div>
 							</v-col>
@@ -101,18 +101,17 @@ export default {
 <style scoped>
 	.sobre-container {
 		min-height: 100vh;
-		background: radial-gradient(circle at top right, rgba(0, 184, 212, 0.1), transparent 40%),
-					radial-gradient(circle at bottom left, rgba(0, 122, 255, 0.1), transparent 40%);
-		background-color: transparent;
+		background: transparent;
 		padding-top: 2rem;
 	}
 
 	.text-premium-gradient {
-		background: linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.7) 100%);
+		background: linear-gradient(135deg, #ffffff 0%, rgba(255, 255, 255, 0.7) 100%);
 		-webkit-background-clip: text;
 		background-clip: text;
 		-webkit-text-fill-color: transparent;
 		letter-spacing: -1.5px !important;
+		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.1));
 	}
 
 	.max-width-600 {
@@ -120,22 +119,22 @@ export default {
 	}
 
 	.text-accent-cyan {
-		color: var(--ios-cyan) !important;
+		color: var(--ios-blue) !important;
 		letter-spacing: -0.5px;
 	}
 
 	.ios-glass-card {
-		background: rgba(var(--v-theme-surface), 0.4) !important;
-		backdrop-filter: blur(30px) saturate(160%) !important;
-		-webkit-backdrop-filter: blur(30px) saturate(160%) !important;
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur) !important;
+		-webkit-backdrop-filter: var(--glass-blur) !important;
 		border-radius: 48px !important;
-		border: 1px solid rgba(255, 255, 255, 0.1) !important;
+		border: 1px solid var(--glass-border) !important;
 		box-shadow: 0 32px 64px rgba(0, 0, 0, 0.3) !important;
 		overflow: hidden;
 	}
 
 	.premium-body-text {
-		color: white;
+		color: #ffffff;
 		opacity: 0.85;
 		font-size: 1.15rem;
 		line-height: 1.8;
@@ -144,13 +143,13 @@ export default {
 	}
 
 	.glass-divider {
-		border-color: rgba(255, 255, 255, 0.1) !important;
+		border-color: var(--glass-border) !important;
 	}
 
 	.value-card {
 		padding: 24px;
 		text-align: center;
-		color: white;
+		color: #ffffff;
 		border-right: 1px solid rgba(255, 255, 255, 0.1);
 		transition: transform 0.3s ease;
 	}
@@ -171,20 +170,20 @@ export default {
 	}
 
 	.tech-chip {
-		background: rgba(0, 184, 212, 0.1) !important;
-		border: 1px solid rgba(0, 184, 212, 0.2) !important;
+		background: rgba(0, 122, 255, 0.1) !important;
+		border: 1px solid rgba(0, 122, 255, 0.2) !important;
 		font-weight: 600;
 	}
 
 	.border-premium {
-		border: 2px solid rgba(0, 184, 212, 0.4) !important;
+		border: 2px solid rgba(0, 122, 255, 0.4) !important;
 	}
 
 	.ios-premium-btn {
-		background: rgba(255, 255, 255, 0.1) !important;
-		backdrop-filter: blur(10px);
-		color: white !important;
-		border: 1px solid rgba(255, 255, 255, 0.2) !important;
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur);
+		color: var(--v-theme-on-surface) !important;
+		border: 1px solid var(--glass-border) !important;
 		border-radius: 20px !important;
 		padding: 0 32px !important;
 		height: 56px !important;
@@ -242,6 +241,6 @@ export default {
 		border-radius: 50% !important;
 		aspect-ratio: 1/1;
 		object-fit: cover;
-		border: 4px solid rgba(0, 184, 212, 0.4);
+		border: 4px solid rgba(0, 122, 255, 0.4);
 	}
 </style>

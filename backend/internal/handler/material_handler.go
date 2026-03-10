@@ -2,7 +2,6 @@ package handler
 
 import (
 	"biblioteca-digital-api/internal/harvester"
-	"biblioteca-digital-api/internal/pkg/ai"
 	"biblioteca-digital-api/internal/pkg/cache"
 	"biblioteca-digital-api/internal/repository"
 	"biblioteca-digital-api/internal/usecase/material"
@@ -17,7 +16,7 @@ import (
 	"time"
 )
 
-func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiClient, c cache.Cache) {
+func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	repo := &repository.MaterialPostgres{DB: db}
 	mh := harvester.NewMultiSourceHarvester()
 
@@ -27,19 +26,55 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c}
 	favoritarUC := &material.FavoritarMaterialUseCase{Repo: repo}
 	historicoUC := &material.HistoricoLeituraUseCase{Repo: repo}
+	avaliarUC := &material.AvaliarMaterialUseCase{Repo: repo}
 
 	mux.HandleFunc("GET /materiais", func(w http.ResponseWriter, r *http.Request) {
 		termo := r.URL.Query().Get("q")
 		categoria := r.URL.Query().Get("categoria")
 		fonte := r.URL.Query().Get("fonte")
-		anoInicio, _ := strconv.Atoi(r.URL.Query().Get("ano_inicio"))
-		anoFim, _ := strconv.Atoi(r.URL.Query().Get("ano_fim"))
-
-		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-		if limit == 0 {
-			limit = 10
+		anoInicioStr := r.URL.Query().Get("ano_inicio")
+		var anoInicio int
+		if anoInicioStr != "" {
+			var err error
+			anoInicio, err = strconv.Atoi(anoInicioStr)
+			if err != nil || anoInicio < 0 {
+				JSONError(w, "Ano de início inválido", http.StatusBadRequest)
+				return
+			}
 		}
-		offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
+
+		anoFimStr := r.URL.Query().Get("ano_fim")
+		var anoFim int
+		if anoFimStr != "" {
+			var err error
+			anoFim, err = strconv.Atoi(anoFimStr)
+			if err != nil || anoFim < 0 {
+				JSONError(w, "Ano de fim inválido", http.StatusBadRequest)
+				return
+			}
+		}
+
+		limitStr := r.URL.Query().Get("limit")
+		limit := 10
+		if limitStr != "" {
+			var err error
+			limit, err = strconv.Atoi(limitStr)
+			if err != nil || limit <= 0 {
+				JSONError(w, "Limite (limit) deve ser um número positivo", http.StatusBadRequest)
+				return
+			}
+		}
+
+		offsetStr := r.URL.Query().Get("offset")
+		var offset int
+		if offsetStr != "" {
+			var err error
+			offset, err = strconv.Atoi(offsetStr)
+			if err != nil || offset < 0 {
+				JSONError(w, "Deslocamento (offset) deve ser um número não negativo", http.StatusBadRequest)
+				return
+			}
+		}
 		sortParam := r.URL.Query().Get("sort")
 
 		var materiais interface{}
@@ -116,13 +151,37 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 	})
 
 	mux.HandleFunc("GET /materiais/favoritos", func(w http.ResponseWriter, r *http.Request) {
-		usuarioID, _ := strconv.Atoi(r.URL.Query().Get("usuario_id"))
+		uIDStr := r.URL.Query().Get("usuario_id")
+		usuarioID, err := strconv.Atoi(uIDStr)
+		if err != nil || usuarioID <= 0 {
+			JSONError(w, "ID de usuário inválido", http.StatusBadRequest)
+			return
+		}
 		favoritos, err := favoritarUC.Listar(r.Context(), usuarioID)
 		if err != nil {
 			JSONError(w, "Erro ao listar favoritos", http.StatusInternalServerError)
 			return
 		}
 		JSONSuccess(w, favoritos, http.StatusOK)
+	})
+
+	mux.HandleFunc("POST /materiais/avaliar", func(w http.ResponseWriter, r *http.Request) {
+		var req struct {
+			UsuarioID  int     `json:"usuario_id"`
+			MaterialID int     `json:"material_id"`
+			Nota       float64 `json:"nota"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			JSONError(w, "JSON inválido", http.StatusBadRequest)
+			return
+		}
+
+		if err := avaliarUC.Execute(r.Context(), req.UsuarioID, req.MaterialID, req.Nota); err != nil {
+			JSONError(w, "Erro ao avaliar material: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		JSONSuccess(w, nil, http.StatusOK)
 	})
 
 	mux.HandleFunc("/materiais/historico", func(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +201,12 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, gemini *ai.GeminiCli
 			}
 			JSONSuccess(w, nil, http.StatusOK)
 		case http.MethodGet:
-			usuarioID, _ := strconv.Atoi(r.URL.Query().Get("usuario_id"))
+			uIDStr := r.URL.Query().Get("usuario_id")
+			usuarioID, err := strconv.Atoi(uIDStr)
+			if err != nil || usuarioID <= 0 {
+				JSONError(w, "ID de usuário inválido", http.StatusBadRequest)
+				return
+			}
 			historico, err := historicoUC.Listar(r.Context(), usuarioID)
 			if err != nil {
 				JSONError(w, "Erro ao listar histórico: "+err.Error(), http.StatusInternalServerError)

@@ -8,7 +8,7 @@
 		<section class="hero-section">
 			<div class="hero-content">
 				<div class="hero-badge-pill mb-6">
-					<v-icon size="14" color="var(--ios-cyan)" class="mr-2">mdi-sparkles</v-icon>
+					<v-icon size="14" color="primary" class="mr-2">mdi-sparkles</v-icon>
 					O Conhecimento ao seu alcance
 				</div>
 				<h1 class="hero-title-modern">A Sua Biblioteca<br><span class="accent-gradient">Digital Inteligente</span></h1>
@@ -44,9 +44,19 @@
 		<section class="categories-section">
 			<div class="section-header-flex">
 				<div class="section-header-title">
-					<v-icon size="28" color="var(--ios-cyan)">mdi-book-open-page-variant-outline</v-icon>
+					<v-icon size="28" color="primary">mdi-book-open-page-variant-outline</v-icon>
 					<h3 class="section-title">Comece Seus Estudos</h3>
 				</div>
+
+				<v-btn
+					variant="text"
+					color="primary"
+					class="explorar-todos-btn text-none"
+					@click="$router.push('/explorar')"
+				>
+					Explorar Tudo
+					<v-icon end icon="mdi-arrow-right" size="18"></v-icon>
+				</v-btn>
 			</div>
 
 
@@ -66,7 +76,7 @@
 							<v-icon :color="cat.iconColor" size="24" class="icon-bounce">{{ cat.icon }}</v-icon>
 						</div>
 						<h3 class="category-name">{{ cat.nome }}</h3>
-						<v-btn icon="mdi-chevron-right" variant="text" size="small" color="cyan" class="chevron-btn"></v-btn>
+						<v-btn icon="mdi-chevron-right" variant="text" size="small" color="primary" class="chevron-btn"></v-btn>
 					</div>
 
 					<!-- Books list -->
@@ -214,7 +224,7 @@ export default {
 				{ value: '24/7', label: 'Disponível' }
 			],
 			categoriasMock: [
-				{ nome: 'TECNOLOGIA', livros: [], icon: 'mdi-laptop', iconColor: '#00B8D4' },
+				{ nome: 'TECNOLOGIA', livros: [], icon: 'mdi-laptop', iconColor: '#007AFF' },
 				{ nome: 'SAÚDE', livros: [], icon: 'mdi-heart-pulse', iconColor: '#FF6B9D' },
 				{ nome: 'MATEMÁTICA', livros: [], icon: 'mdi-calculator-variant', iconColor: '#FFD60A' },
 				{ nome: 'CIÊNCIAS', livros: [], icon: 'mdi-flask', iconColor: '#39FF14' },
@@ -222,7 +232,7 @@ export default {
 				{ nome: 'CONTABILIDADE', livros: [], icon: 'mdi-currency-usd', iconColor: '#FF9F0A' }
 			],
 			features: [
-				{ title: 'Sem Limites', desc: 'Acesse quantos livros quiser, sem restrições.', icon: 'mdi-infinity', iconColor: '#00F2FE', bg: 'rgba(0,242,254,0.12)', animType: 'infinity' },
+				{ title: 'Sem Limites', desc: 'Acesse quantos livros quiser, sem restrições.', icon: 'mdi-infinity', iconColor: '#007AFF', bg: 'rgba(0,122,255,0.12)', animType: 'infinity' },
 				{ title: 'Acesso Instantâneo', desc: 'Leitura online sem necessidade de download.', icon: 'mdi-timer-outline', iconColor: '#39FF14', bg: 'rgba(57,255,20,0.12)', animType: 'timer' },
 				{ title: 'Personalização', desc: 'Favoritos, histórico e recomendações.', icon: 'mdi-palette-outline', iconColor: '#BF5AF2', bg: 'rgba(191,90,242,0.12)', animType: 'personalization' },
 				{ title: 'Sem Taxas Ocultas', desc: '100% gratuito, sempre e para todos.', icon: 'mdi-currency-usd-off', iconColor: '#FF6B6B', bg: 'rgba(255,107,107,0.12)', animType: 'security' },
@@ -251,7 +261,7 @@ export default {
 			this.loading = true;
 			try {
 				// Simula um pequeno delay para mostrar os esqueletos (UX mais "smooth")
-				await new Promise(resolve => setTimeout(resolve, 800));
+				await new Promise(resolve => setTimeout(resolve, 200));
 
 				const promises = this.categoriasMock.map(async (cat) => {
 					try {
@@ -328,7 +338,7 @@ export default {
    BASE
 =========================== */
 .home-wrapper {
-	background-color: rgb(var(--v-theme-background));
+	background-color: transparent;
 	min-height: 100vh;
 	position: relative;
 	overflow-x: hidden;
@@ -359,6 +369,27 @@ export default {
 	margin: 0;
 }
 
+.explorar-todos-btn {
+	font-weight: 800 !important;
+	letter-spacing: 0.5px !important;
+	background: linear-gradient(135deg, #007AFF, #00C7FF) !important;
+	color: white !important;
+	border-radius: 14px !important;
+	padding: 0 20px !important;
+	height: 40px !important;
+	transition: all 0.4s var(--spring-easing) !important;
+	box-shadow: 0 4px 15px rgba(0, 122, 255, 0.3) !important;
+	border: none !important;
+	text-transform: uppercase;
+	font-size: 11px !important;
+}
+
+.explorar-todos-btn:hover {
+	transform: translateY(-2px) scale(1.05);
+	box-shadow: 0 8px 25px rgba(0, 122, 255, 0.5) !important;
+	filter: brightness(1.1);
+}
+
 /* Hero Styles */
 .hero-section {
 	padding: 80px 24px 60px;
@@ -376,7 +407,7 @@ export default {
 	border-radius: 100px;
 	font-size: 13px;
 	font-weight: 700;
-	color: var(--ios-cyan);
+	color: var(--ios-blue);
 }
 
 .hero-title-modern {
@@ -385,10 +416,11 @@ export default {
 	letter-spacing: -2px;
 	line-height: 0.95;
 	margin-bottom: 24px;
+	color: var(--v-theme-on-surface);
 }
 
 .accent-gradient {
-	background: linear-gradient(135deg, var(--ios-cyan), #007AFF);
+	background: linear-gradient(135deg, #007AFF, #5AC8FA);
 	-webkit-background-clip: text;
 	background-clip: text;
 	-webkit-text-fill-color: transparent;
@@ -403,19 +435,19 @@ export default {
 }
 
 .ios-btn-main {
-	background: var(--ios-cyan);
+	background: var(--ios-blue);
 	color: white;
 	padding: 16px 32px;
 	border-radius: 100px;
 	font-weight: 700;
 	font-size: 16px;
-	box-shadow: 0 10px 30px rgba(0, 184, 212, 0.3);
+	box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3);
 	transition: all 0.3s var(--spring-easing);
 }
 
 .ios-btn-main:hover {
 	transform: translateY(-4px);
-	box-shadow: 0 15px 40px rgba(0, 184, 212, 0.4);
+	box-shadow: 0 15px 40px rgba(0, 122, 255, 0.4);
 }
 
 .ios-btn-secondary {
@@ -437,11 +469,14 @@ export default {
 	justify-content: center;
 	flex-wrap: wrap;
 	max-width: fit-content;
-	background: rgba(var(--v-theme-surface), 0.5);
-	backdrop-filter: blur(20px);
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 24px;
-	border: 1px solid rgba(var(--v-border-color), 0.1);
+	border: 1px solid var(--glass-border);
 	padding: 8px;
+	box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+	background: rgba(255, 255, 255, 0.03) !important;
 }
 
 .stat-unit {
@@ -475,11 +510,12 @@ export default {
 	max-width: 1200px;
 	margin: 40px auto;
 	padding: 40px 48px;
-	background: rgba(255, 255, 255, 0.02);
-	backdrop-filter: blur(20px) saturate(150%);
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 32px;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--glass-border);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
 }
 
 .categories-grid {
@@ -491,11 +527,12 @@ export default {
 
 /* Category Cards – white card style matching the mockup */
 .category-card {
-	background: rgba(255,255,255,0.05);
-	border: 1px solid rgba(255,255,255,0.08);
-	border-radius: 28px; /* Mais arredondado */
+	background: rgba(255, 255, 255, 0.03) !important;
+	border: 1px solid var(--glass-border);
+	border-radius: 28px;
 	padding: 24px;
-	backdrop-filter: blur(30px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 	opacity: 0;
 	position: relative;
@@ -510,9 +547,9 @@ export default {
 }
 .category-card:hover {
 	transform: translateY(-8px) scale(1.02);
-	background: rgba(255,255,255,0.12);
-	box-shadow: 0 30px 60px rgba(0,0,0,0.4);
-	border-color: rgba(255,255,255,0.2);
+	background: rgba(255,255,255,0.1);
+	box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+	border-color: rgba(255,255,255,0.3);
 }
 
 .category-card-header {
@@ -548,7 +585,7 @@ export default {
 .category-name {
 	font-size: 0.9rem;
 	font-weight: 800;
-	color: white;
+	color: var(--v-theme-on-surface);
 	letter-spacing: 1px;
 	flex: 1;
 }
@@ -573,8 +610,8 @@ export default {
 	display: flex;
 	align-items: center;
 	gap: 16px;
-	background: rgba(255,255,255,0.03);
-	border: 1px solid rgba(255,255,255,0.04);
+	background: var(--glass-bg);
+	border: 1px solid var(--glass-border);
 	border-radius: 16px;
 	padding: 12px 16px;
 	cursor: pointer;
@@ -582,7 +619,7 @@ export default {
 }
 .book-row:hover {
 	background: rgba(255,255,255,0.08);
-	border-color: rgba(0,184,212,0.3);
+	border-color: rgba(0,122,255,0.3);
 	transform: translateX(6px);
 }
 .book-cover {
@@ -603,17 +640,26 @@ export default {
 .book-title {
 	font-size: 0.9rem;
 	font-weight: 700;
-	color: white;
-	white-space: nowrap;
+	color: var(--v-theme-on-surface);
+	display: -webkit-box;
+	line-clamp: 2;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
 	overflow: hidden;
-	text-overflow: ellipsis;
+	line-height: 1.2;
+	height: 2.4em; /* Approx 2 lines */
 }
 .book-author {
 	font-size: 0.72rem;
 	color: rgba(255,255,255,0.55);
-	display: flex;
-	align-items: center;
 	margin-top: 3px;
+	display: -webkit-box;
+	line-clamp: 2;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	line-height: 1.4;
+	max-height: 2.8em;
 }
 .book-meta-row {
 	display: flex;
@@ -669,14 +715,14 @@ export default {
 	position: relative;
 	z-index: 1;
 	max-width: 1200px;
-	margin: 50px auto 40px; /* Reduced distance from categories */
+	margin: 50px auto 40px;
 	padding: 50px 48px;
-	background: rgba(0,184,212,0.08); /* Similar to cta-inner */
-	backdrop-filter: blur(24px) saturate(160%);
-	-webkit-backdrop-filter: blur(24px) saturate(160%);
-	border-radius: 32px; /* Same as cta-inner */
-	border: 1px solid rgba(0,184,212,0.25); /* Same as cta-inner */
-	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
+	border-radius: 32px;
+	border: 1px solid var(--glass-border);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.1);
 }
 .features-inner {
 	max-width: 1100px;
@@ -736,7 +782,7 @@ export default {
 .features-headline {
 	font-size: 1.9rem;
 	font-weight: 900;
-	color: white;
+	color: var(--v-theme-on-surface);
 	line-height: 1.25;
 	margin-bottom: 14px;
 }
@@ -749,14 +795,12 @@ export default {
 .features-cards-col { display: flex; flex-direction: column; gap: 12px; }
 
 .feature-pill {
-	display: flex;
-	align-items: center;
-	gap: 14px;
-	background: rgba(255,255,255,0.06);
-	border: 1px solid rgba(255,255,255,0.1);
+	background: rgba(255, 255, 255, 0.03) !important;
+	border: 1px solid var(--glass-border);
 	border-radius: 16px;
 	padding: 14px 18px;
-	backdrop-filter: blur(10px);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 	opacity: 0;
 	cursor: default;
@@ -801,7 +845,7 @@ export default {
 .feature-pill-title {
 	font-size: 0.95rem;
 	font-weight: 700;
-	color: white;
+	color: var(--v-theme-on-surface);
 }
 .feature-pill-desc {
 	font-size: 0.78rem;
@@ -818,11 +862,12 @@ export default {
 	max-width: 1200px;
 	margin: 0 auto 100px;
 	padding: 80px 48px;
-	background: rgba(255, 255, 255, 0.02);
-	backdrop-filter: blur(20px) saturate(150%);
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 32px;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--glass-border);
+	box-shadow: 0 40px 100px rgba(0, 0, 0, 0.4);
 	text-align: center;
 }
 .cta-inner {
@@ -860,7 +905,7 @@ export default {
 =========================== */
 .btn-white {
 	background: white;
-	color: #00B8D4;
+	color: var(--ios-blue);
 	border: none;
 	padding: 16px 32px;
 	border-radius: 100px;
@@ -991,12 +1036,13 @@ export default {
 	position: relative;
 	width: 100%;
 	overflow: hidden;
-	background: rgba(var(--v-theme-surface), 0.4);
-	backdrop-filter: blur(24px) saturate(180%);
+	background: var(--glass-bg);
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 32px;
 	padding: 32px 0;
-	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05);
-	border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
+	box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+	border: 1px solid var(--glass-border);
 }
 
 .news-carousel-container::before,
@@ -1044,14 +1090,16 @@ export default {
 	flex: 0 0 320px;
 	display: flex;
 	flex-direction: column;
-	background: rgba(var(--v-theme-surface), 0.8);
+	background: rgba(255, 255, 255, 0.03) !important;
+	backdrop-filter: var(--glass-blur);
+	-webkit-backdrop-filter: var(--glass-blur);
 	border-radius: 20px;
 	overflow: hidden;
 	text-decoration: none;
 	color: inherit;
 	transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
-	border: 1px solid rgba(var(--v-theme-on-surface), 0.05);
-	box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+	border: 1px solid var(--glass-border);
+	box-shadow: 0 4px 15px rgba(0,0,0,0.1);
 }
 
 .news-card:hover {
@@ -1090,7 +1138,7 @@ export default {
 	font-size: 0.75rem;
 	font-weight: 700;
 	text-transform: uppercase;
-	color: var(--ios-cyan);
+	color: var(--ios-blue);
 	letter-spacing: 0.5px;
 }
 
@@ -1111,6 +1159,7 @@ export default {
 	line-height: 1.5;
 	margin: 0;
 	display: -webkit-box;
+	line-clamp: 3;
 	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;

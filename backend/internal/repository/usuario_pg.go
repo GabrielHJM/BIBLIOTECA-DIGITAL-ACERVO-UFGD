@@ -30,9 +30,9 @@ func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error 
 }
 
 func (r *UsuarioPostgres) BuscarPorEmail(ctx context.Context, email string) (*usuario.Usuario, error) {
-	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, '') FROM usuarios WHERE LOWER(email) = LOWER($1)"
+	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, ''), deleted_at FROM usuarios WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL"
 	u := &usuario.Usuario{}
-	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL)
+	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL, &u.DeletedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -65,19 +65,19 @@ func (r *UsuarioPostgres) AtualizarSenha(ctx context.Context, email string, nova
 }
 
 func (r *UsuarioPostgres) Atualizar(ctx context.Context, u *usuario.Usuario) error {
-	query := "UPDATE usuarios SET nome = $1, email = $2, foto_url = $3 WHERE id = $4"
+	query := "UPDATE usuarios SET nome = $1, email = $2, foto_url = $3 WHERE id = $4 AND deleted_at IS NULL"
 	_, err := r.DB.ExecContext(ctx, query, u.Nome, u.Email, u.FotoURL, u.ID)
 	return err
 }
 
 func (r *UsuarioPostgres) AtualizarMeta(ctx context.Context, id int, meta int) error {
-	query := "UPDATE usuarios SET meta_paginas_semana = $1 WHERE id = $2"
+	query := "UPDATE usuarios SET meta_paginas_semana = $1 WHERE id = $2 AND deleted_at IS NULL"
 	_, err := r.DB.ExecContext(ctx, query, meta, id)
 	return err
 }
 
 func (r *UsuarioPostgres) Deletar(ctx context.Context, id int) error {
-	query := "DELETE FROM usuarios WHERE id = $1"
+	query := "UPDATE usuarios SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1"
 	_, err := r.DB.ExecContext(ctx, query, id)
 	return err
 }

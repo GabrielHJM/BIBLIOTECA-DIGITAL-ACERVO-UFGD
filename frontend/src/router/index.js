@@ -55,6 +55,14 @@ const routes = [
 		}
 	},
 	{
+		path: '/favoritos',
+		name: 'favoritos',
+		component: () => import(/* webpackChunkName: "secure" */ '@/views/Favoritos.vue'),
+		beforeEnter: (to, from, next) => {
+			auth.isAuthenticated() ? next() : next('/login')
+		}
+	},
+	{
 		path: '/estudo/:id',
 		name: 'estudo',
 		component: () => import(/* webpackChunkName: "study" */ '@/views/Estudo.vue'),

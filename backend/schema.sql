@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS usuarios (
     tipo INTEGER DEFAULT 1, -- 1: Estudante, 2: Professor, 3: Admin
     foto_url TEXT,
     meta_paginas_semana INTEGER DEFAULT 100,
-    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 -- Tabela de Materiais (Livros/Artigos)
@@ -51,7 +52,9 @@ CREATE TABLE IF NOT EXISTS materiais (
     dificuldade INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 10,
     relevancia INTEGER DEFAULT 0,
-    search_vector tsvector
+    search_vector tsvector,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP
 );
 
 -- Tabela de Flashcards
@@ -156,6 +159,17 @@ CREATE TABLE IF NOT EXISTS mensagens (
     conteudo TEXT,
     lida BOOLEAN DEFAULT FALSE,
     data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Tabela de Notificações
+CREATE TABLE IF NOT EXISTS notificacoes (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
+    titulo TEXT NOT NULL,
+    mensagem TEXT NOT NULL,
+    tipo TEXT DEFAULT 'info', -- 'info', 'conquista', 'meta', 'boas-vindas'
+    lida BOOLEAN DEFAULT FALSE,
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for Performance

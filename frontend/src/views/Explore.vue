@@ -3,88 +3,139 @@
 		<v-container fluid class="px-4 py-0">
 			<!-- Advanced Header Section -->
 			<v-row dense align="center" class="mt-2 mb-2">
-				<v-col cols="12" md="8" lg="9">
+				<v-col cols="12">
 					<div class="search-premium-box d-flex align-center">
 						<v-text-field
 							v-model="filters.q"
 							prepend-inner-icon="mdi-magnify"
 							placeholder="Busque por título, autor, DOI ou assunto..."
 							variant="solo"
-							class="ios-search-bar"
+							class="ios-search-bar flex-grow-1"
 							hide-details
 							@update:modelValue="onSearchInput"
-							@keyup.enter="buscar"
+							@keyup.enter="buscar(true)"
 							density="comfortable"
 						></v-text-field>
+
 						<v-btn
-							class="search-btn ml-3"
-							@click="buscar"
-							:loading="loading"
+							class="ios-filter-toggle-premium ml-3"
+							variant="tonal"
+							icon="mdi-tune-variant"
+							@click="showFilters = true"
+							height="48"
+							width="48"
+							rounded="lg"
+						></v-btn>
+
+						<v-btn
+							class="search-btn ml-3 hidden-sm-and-down"
+							@click="buscar(true)"
+							:loading="loading && (livros?.length === 0)"
 							height="48"
 							rounded="lg"
+							min-width="120"
 						>
 							EXPLORAR
 						</v-btn>
 					</div>
-				</v-col>
-				<v-col cols="12" md="4" lg="3">
-					<v-btn
-						class="ios-filter-toggle w-100"
-						variant="tonal"
-						prepend-icon="mdi-tune-variant"
-						@click="showFilters = !showFilters"
-						height="48"
-						rounded="lg"
-					>
-						Filtros
-						<v-chip size="x-small" color="cyan" class="ml-2" v-if="activeFiltersCount > 0">
-							{{ activeFiltersCount }}
+
+					<div v-if="activeFiltersCount > 0" class="d-flex flex-wrap gap-2 mt-3 mb-1">
+						<v-chip
+							v-if="filters.categoria"
+							closable
+							size="small"
+							color="primary"
+							variant="tonal"
+							@click:close="filters.categoria = ''; buscar(true)"
+						>
+							Categoria: {{ filters.categoria }}
 						</v-chip>
-					</v-btn>
+						<v-chip
+							v-if="filters.ano_inicio"
+							closable
+							size="small"
+							color="primary"
+							variant="tonal"
+							@click:close="filters.ano_inicio = null; buscar(true)"
+						>
+							Desde: {{ filters.ano_inicio }}
+						</v-chip>
+					</div>
 				</v-col>
 			</v-row>
 
-			<!-- Expandable Filter Panel -->
-			<v-expand-transition>
-				<div v-show="showFilters" class="filter-panel mb-4">
-					<v-card class="ios-glass-card pa-4" rounded="lg">
-						<v-row dense>
-							<v-col cols="12" sm="6">
-								<v-select
-									v-model="filters.ano_inicio"
-									:items="yearsList"
-									label="Ano de Publicação"
-									variant="filled"
-									density="compact"
-									hide-details
-									clearable
-								></v-select>
-							</v-col>
-							<v-col cols="12" sm="6">
-								<v-select
-									v-model="filters.sort"
-									:items="sortOptions"
-									item-title="label"
-									item-value="value"
-									label="Ordenar Por"
-									variant="filled"
-									density="compact"
-									hide-details
-									@update:modelValue="buscar"
-								></v-select>
-							</v-col>
-						</v-row>
-						<div class="d-flex justify-end mt-3 gap-2">
-							<v-btn variant="text" size="small" @click="limparFiltros">Limpar</v-btn>
-							<v-btn color="cyan" size="small" @click="buscar">Aplicar</v-btn>
-						</div>
-					</v-card>
+			<!-- Modern Filter Drawer -->
+			<v-navigation-drawer
+				v-model="showFilters"
+				location="right"
+				temporary
+				width="320"
+				class="filter-drawer-premium"
+			>
+				<div class="pa-6">
+					<div class="d-flex align-center justify-space-between mb-8">
+						<h2 class="text-h6 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">Refinar Busca</h2>
+						<v-btn icon="mdi-close" variant="text" size="small" @click="showFilters = false"></v-btn>
+					</div>
+
+					<div class="filter-section mb-6">
+						<label class="filter-label mb-3 d-block">Categoria</label>
+						<v-select
+							v-model="filters.categoria"
+							:items="categoriasMock"
+							placeholder="Todas as categorias"
+							variant="solo-filled"
+							density="comfortable"
+							rounded="lg"
+							hide-details
+							clearable
+							class="filter-select-premium"
+						></v-select>
+					</div>
+
+					<div class="filter-section mb-6">
+						<label class="filter-label mb-3 d-block">Ano de Publicação</label>
+						<v-select
+							v-model="filters.ano_inicio"
+							:items="yearsList"
+							placeholder="Qualquer ano"
+							variant="solo-filled"
+							density="comfortable"
+							rounded="lg"
+							hide-details
+							clearable
+							class="filter-select-premium"
+						></v-select>
+					</div>
+
+					<div class="filter-section mb-10">
+						<label class="filter-label mb-3 d-block">Ordenar Resultados</label>
+						<v-select
+							v-model="filters.sort"
+							:items="sortOptions"
+							item-title="label"
+							item-value="value"
+							variant="solo-filled"
+							density="comfortable"
+							rounded="lg"
+							hide-details
+							class="filter-select-premium"
+						></v-select>
+					</div>
+
+					<v-btn color="primary" block @click="buscar(true); showFilters = false" height="48" class="font-weight-bold">
+						APLICAR FILTROS
+					</v-btn>
+
+					<v-btn variant="text" block @click="limparFiltros" class="mt-2 text-none opacity-60">
+						Limpar tudo
+					</v-btn>
 				</div>
-			</v-expand-transition>
+			</v-navigation-drawer>
 
 			<!-- Quick Categories -->
 			<div class="category-row mb-4" v-if="!showFilters">
-				<v-chip-group v-model="filters.categoria" @update:modelValue="buscar" mandatory color="cyan">
+				<v-chip-group v-model="filters.categoria" @update:modelValue="buscar" mandatory color="primary">
 					<v-chip value="" class="premium-chip" variant="tonal" filter>Todos</v-chip>
 					<v-chip v-for="cat in categoriasMock" :key="cat" :value="cat" class="premium-chip" variant="tonal" filter>
 						{{ cat }}
@@ -93,29 +144,33 @@
 			</div>
 
 			<!-- Content Grid -->
-			<v-row dense v-if="!loading">
-				<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" sm="6" md="4" lg="3" class="pa-2">
-					<BookCard
-						:book="livro"
-						:animation-delay="index * 30"
-						@toggle-favorite="onToggleFavorite"
-						@share="shareBook(livro.id)"
-					/>
-				</v-col>
+			<div class="results-container" v-infinite-scroll="[loadMore, { distance: 300 }]">
+				<v-row dense>
+					<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" sm="6" md="4" lg="3" class="pa-2">
+						<BookCard
+							:book="livro"
+							:animation-delay="index * 30"
+							:is-favorited="isBookFavorited(livro.id)"
+							@toggle-favorite="onToggleFavorite"
+							@rate="onRateBook"
+							@share="shareBook(livro.id)"
+						/>
+					</v-col>
 
-				<v-col cols="12" v-if="livros.length === 0" class="text-center py-12">
-					<v-icon size="64" color="cyan" class="mb-4 opacity-50">mdi-text-search-variant</v-icon>
-					<h3 class="text-white">Nenhum resultado</h3>
-					<p class="text-white opacity-60">Tente outros termos ou filtros.</p>
-				</v-col>
-			</v-row>
+					<v-col cols="12" v-if="(!livros || livros.length === 0) && !loading" class="text-center py-12">
+						<v-icon size="64" color="primary" class="mb-4 opacity-50">mdi-text-search-variant</v-icon>
+						<h3 :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">Nenhum resultado</h3>
+						<p :class="isDarkTheme ? 'text-white' : 'text-primary-darken-2'" class="opacity-60">Tente outros termos ou filtros.</p>
+					</v-col>
+				</v-row>
 
-			<!-- Skeleton -->
-			<v-row dense v-else>
-				<v-col v-for="n in 8" :key="n" cols="12" sm="6" md="4" lg="3" class="pa-2">
-					<v-skeleton-loader type="card" theme="dark" class="rounded-xl"></v-skeleton-loader>
-				</v-col>
-			</v-row>
+				<!-- Loading More Shimmer -->
+				<v-row dense v-if="loading">
+					<v-col v-for="n in 4" :key="'skeleton-more-'+n" cols="12" sm="6" md="4" lg="3" class="pa-2">
+						<v-skeleton-loader type="card" :theme="isDarkTheme ? 'dark' : 'light'" class="rounded-xl"></v-skeleton-loader>
+					</v-col>
+				</v-row>
+			</div>
 		</v-container>
 	</div>
 </template>
@@ -123,9 +178,12 @@
 <script>
 import MaterialService from '@/services/MaterialService'
 import BookCard from '@/components/BookCard.vue'
+import { computed } from 'vue'
+import { useTheme } from 'vuetify'
 
 export default {
 	name: 'ExplorePageExtended',
+	inject: ['notify', 'fetchGlobalFavorites', 'getGlobalFavorites', 'globalFavorites'],
 	components: {
 		BookCard
 	},
@@ -137,11 +195,15 @@ export default {
 			q: '',
 			categoria: '',
 			ano_inicio: null,
-			ano_fim: null
+			ano_fim: null,
+			sort: ''
 		},
 		hasInitialFetchDone: false,
+		offset: 0,
+		limit: 16,
+		hasMore: true,
 
-		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'Pesquisa Avançada'],
+		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'JURÍDICO', 'LITERATURA', 'CONTABILIDADE'],
 		sortOptions: [
 			{ label: 'Relevância', value: '' },
 			{ label: 'Melhor Avaliados', value: 'rating' },
@@ -151,7 +213,15 @@ export default {
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
 		searchTimeout: null
 	}),
+	setup() {
+		const theme = useTheme();
+		const isDarkTheme = computed(() => theme.global.current.value.dark);
+		return { isDarkTheme };
+	},
 	computed: {
+		favoritos() {
+			return this.globalFavorites?.list || [];
+		},
 		activeFiltersCount() {
 			let count = 0;
 			if (this.filters.ano_inicio) count++;
@@ -184,64 +254,145 @@ export default {
 		}
 	},
 	methods: {
-		async buscar() {
+		async buscar(reset = true) {
+			if (reset) {
+				this.offset = 0;
+				this.livros = [];
+				this.hasMore = true;
+			}
+
+			if (!this.hasMore && !reset) return;
+
 			if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
 			this.loading = true
 			try {
+				// Sincronizar favoritos se necessário
+				const userStr = localStorage.getItem('user');
+				if (userStr && this.favoritos.length === 0) {
+					await this.fetchGlobalFavorites();
+				}
+
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
 					this.filters.categoria,
 					'', // fonte
 					this.filters.ano_inicio,
 					this.filters.ano_fim,
-					20,   // limit
-					0,    // offset
+					this.limit,
+					this.offset,
 					this.filters.sort
 				)
-				this.livros = response.data || []
+
+				const novosLivros = response.data || [];
+				if (reset) {
+					this.livros = novosLivros;
+				} else {
+					this.livros = [...this.livros, ...novosLivros];
+				}
+
+				this.hasMore = novosLivros.length === this.limit;
+				this.offset += this.limit;
+
+				if (reset && this.livros.length === 0) {
+					this.notify('Nenhum material encontrado para sua busca.', 'info')
+				}
 			} catch (error) {
 				console.error('Erro na pesquisa avançada:', error)
+				this.notify('Erro ao realizar busca. Tente novamente.', 'error')
 			} finally {
 				this.loading = false
 			}
+		},
+		async loadMore() {
+			if (this.loading || !this.hasMore) return;
+			await this.buscar(false);
 		},
 		onSearchInput() {
 			if (this.searchTimeout) clearTimeout(this.searchTimeout);
 			this.searchTimeout = setTimeout(() => {
 				this.buscar();
-			}, 600);
+			}, 400);
 		},
 		limparFiltros() {
 			this.filters = { q: this.filters.q, categoria: '', ano_inicio: null, ano_fim: null };
 			this.buscar();
 		},
 		async onToggleFavorite(livro) {
-			// Simples implementação de feedback, já que favoritos exigem login
-			// Esta view pode ser acessada por visitantes
 			try {
-				const user = JSON.parse(localStorage.getItem('user'))
-				if (!user) {
-					alert('Faça login para favoritar materiais!')
+				const userStr = localStorage.getItem('user')
+				if (!userStr) {
+					this.notify('Faça login para favoritar materiais!', 'warning')
 					return
 				}
-				await MaterialService.favoritar(user.id, livro.id, true)
+				const user = JSON.parse(userStr)
+				const currentlyFavorited = this.isBookFavorited(livro.id)
+
+				await MaterialService.favoritar(user.id, livro.id, !currentlyFavorited)
+
+				// Atualiza lista global
+				await this.fetchGlobalFavorites()
+
+				if (currentlyFavorited) {
+					this.notify('Removido dos favoritos', 'info')
+				} else {
+					this.notify('Adicionado aos favoritos!', 'success')
+				}
 			} catch (err) {
 				console.error(err)
+				this.notify('Erro ao atualizar favorito', 'error')
 			}
+		},
+		async onRateBook({ book, nota }) {
+			try {
+				const userStr = localStorage.getItem('user')
+				if (!userStr) {
+					this.notify('Faça login para avaliar!', 'warning')
+					return
+				}
+				const user = JSON.parse(userStr)
+				await MaterialService.avaliar(user.id, book.id, nota)
+				this.notify('Avaliação enviada!', 'success')
+
+				// Opcional: atualizar a média localmente ou re-buscar
+				book.media_nota = nota;
+			} catch (err) {
+				console.error(err)
+				this.notify('Erro ao enviar avaliação', 'error')
+			}
+		},
+		isBookFavorited(bookId) {
+			return this.favoritos.some(f => f.id === bookId)
 		},
 		shareBook(id) {
 			const link = `${window.location.origin}/estudo/${id}`
 			navigator.clipboard.writeText(link).then(() => {
-				alert('Link copiado!')
+				this.notify('Link copiado para a área de transferência!', 'success')
 			})
 		}
+	},
+	beforeUnmount() {
+		if (this.searchTimeout) clearTimeout(this.searchTimeout);
 	}
 }
 </script>
 
 <style scoped>
-	.explore-container { min-height: calc(100vh - 80px); padding-bottom: 40px; margin-top: -12px; }
-	.search-premium-box { width: 100%; }
+	.explore-container {
+		min-height: calc(100vh - 80px);
+		padding-bottom: 40px;
+		margin-top: 0;
+		background: transparent;
+	}
+	.results-container {
+		background: var(--glass-bg);
+		backdrop-filter: var(--glass-blur);
+		-webkit-backdrop-filter: var(--glass-blur);
+		border-radius: 32px;
+		padding: 32px;
+		border: 1px solid var(--glass-border);
+		margin-top: 24px;
+	}
 
 	.category-scroll-container {
 		overflow-x: auto;
@@ -251,27 +402,27 @@ export default {
 	.category-scroll-container::-webkit-scrollbar { display: none; }
 
 	.premium-chip {
-		background: rgba(255, 255, 255, 0.05) !important;
-		backdrop-filter: blur(10px);
-		border: 1px solid rgba(255, 255, 255, 0.1) !important;
-		color: white !important;
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur);
+		border: 1px solid var(--glass-border) !important;
+		color: #ffffff !important;
 		transition: all 0.3s ease;
 	}
 	.premium-chip.v-chip--active {
-		background: linear-gradient(135deg, rgba(0, 184, 212, 0.3), rgba(0, 122, 153, 0.5)) !important;
-		border-color: rgba(0, 184, 212, 0.5) !important;
-		box-shadow: 0 4px 12px rgba(0, 184, 212, 0.2);
+		background: linear-gradient(135deg, rgba(0, 122, 255, 0.3), rgba(0, 122, 153, 0.5)) !important;
+		border-color: rgba(0, 122, 255, 0.5) !important;
+		box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
 	}
 
 	.ios-search-bar :deep(.v-field) {
-		background: rgba(255, 255, 255, 0.08) !important;
+		background: rgba(255, 255, 255, 0.05) !important;
 		border-radius: 20px !important;
 		border: 1px solid rgba(255, 255, 255, 0.1);
-		color: white !important;
+		color: #ffffff !important;
 	}
 
 	.search-btn {
-		background: linear-gradient(135deg, #00B8D4 0%, #007A99 100%) !important;
+		background: linear-gradient(135deg, #007AFF 0%, #0056B3 100%) !important;
 		color: white !important;
 		font-weight: 800 !important;
 	}
@@ -283,40 +434,41 @@ export default {
 	}
 
 	.ios-glass-card {
-		background: rgba(255, 255, 255, 0.05) !important;
-		backdrop-filter: blur(20px);
-		border: 1px solid rgba(255, 255, 255, 0.1);
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur);
+		border: 1px solid var(--glass-border);
 	}
 
 	.filter-label {
 		display: block;
 		font-size: 11px;
 		font-weight: 700;
-		color: rgba(255, 255, 255, 0.5);
+		color: var(--v-theme-on-surface);
+		opacity: 0.5;
 		text-transform: uppercase;
 		letter-spacing: 1px;
 		margin-left: 4px;
 	}
 
 	:deep(.ios-item-card) {
-		background: rgba(30, 41, 59, 0.7) !important;
-		backdrop-filter: blur(16px);
-		border: 1px solid rgba(255, 255, 255, 0.15) !important;
+		background: var(--glass-bg) !important;
+		backdrop-filter: var(--glass-blur);
+		border: 1px solid var(--glass-border) !important;
 		border-radius: 20px !important;
 		transition: all 0.3s ease;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
 	}
 	:deep(.ios-item-card:hover) {
 		transform: translateY(-5px);
-		background: rgba(30, 41, 59, 0.9) !important;
-		border-color: #00B8D4 !important;
+		background: rgba(255, 255, 255, 0.1) !important;
+		border-color: var(--ios-blue) !important;
 	}
 
 	.item-title {
 		font-size: 1.1rem;
 		font-weight: 800;
 		letter-spacing: -0.5px;
-		color: rgb(var(--v-theme-on-surface));
+		color: #ffffff;
 		line-height: 1.2;
 		height: 2.4em;
 		overflow: hidden;
@@ -326,7 +478,7 @@ export default {
 		-webkit-box-orient: vertical;
 	}
 
-	.item-details { color: rgba(var(--v-theme-on-surface), 0.6); font-size: 13px; font-weight: 500; }
+	.item-details { color: rgba(255, 255, 255, 0.7); font-size: 13px; font-weight: 500; }
 
 	.ios-btn-open { font-size: 11px !important; font-weight: 700 !important; }
 
