@@ -1,83 +1,121 @@
-# Biblioteca Digital - Ecossistema de Comunicação
+# Biblioteca Digital - Ecossistema do Projeto
 
-Este documento descreve como o projeto funciona agora que foi **totalmente simplificado**, com a **remoção completa do Docker** e otimizado para **execução nativa** (localhost) com máxima velocidade.
-
-## Arquitetura Local Estabilizada
-
-```mermaid
-graph LR
-    subgraph Frontend [Port: 8081]
-        V[Vue.js App]
-    end
-    subgraph Backend [Port: 8080]
-        G[Go API]
-        M[Automated Migrations]
-        H[CAPES Harvester]
-    end
-    subgraph Database [Port: 5432]
-        P[PostgreSQL Local]
-    end
-
-    V -- API Calls --> G
-    G -- Queries --> P
-    G -- Auto Setup --> M
-    G -- Fetch --> H
-    H -- Results --> G
-```
-
-## Automação de Inicialização (Zero Config)
-
-O projeto foi transformado em uma solução **Native-First**, eliminando a sobrecarga de containers e automatizando toda a infraestrutura:
-
-1. **Remoção de Docker**: Todos os arquivos de configuração Docker foram removidos para simplificar o ambiente e aumentar a velocidade de desenvolvimento.
-2. **Dependências**: O comando `npm run install-all` instala tudo o que é necessário para o frontend e backend.
-3. **Banco de Dados**: O backend detecta automaticamente se o banco de dados `BibliotecaDigital_BD` existe no PostgreSQL local. Se não existir, ele o cria.
-4. **Migrações Automáticas**: No startup, o backend cria todas as tabelas, extensões e índices necessários.
-
-## Como Executar
-
-Certifique-se de que o **PostgreSQL**, **Node.js** e **Go** estão instalados e rodando em sua máquina.
-
-1. **Abra o terminal na raiz do projeto.**
-2. **Execute o comando unificado:**
-   ```powershell
-   npm start
-   ```
-3. **Acesse as interfaces:**
-   - **Interface do Usuário**: [http://localhost:8081](http://localhost:8081)
-   - **Documentação da API (Swagger)**: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
-
-
-## Credenciais de Acesso (Teste)
-
-Para acessar o sistema localmente, utilize o seguinte usuário pré-cadastrado:
-- **E-mail**: `gabriel@biblioteca.com`
-- **Senha**: `123456`
-
-> [!TIP]
-> **Rapidez no Acesso**: Na tela de login, você pode simplesmente digitar suas credenciais e pressionar **Enter** para entrar, sem necessidade de clicar no botão.
-
-## Integrações e APIs
-
-### 1. APIs de Integração (Fontes Externas)
-O backend utiliza um sistema de *Harvester* para consolidar dados de múltiplas fontes:
-- **CAPES**: Fonte principal de materiais acadêmicos e periódicos.
-- **Google Books**: Complemento de metadados, capas e descrições.
-- **ArXiv & Semantic Scholar**: Busca de artigos científicos e dados de citações.
-
-### 2. APIs Internas (Backend Endpoints)
-Principais serviços disponibilizados para o Frontend:
-- **Materiais**: `/materiais` (Busca, filtros, recomendações).
-- **Estudo**: `/estudo` (Acesso a materiais e ferramentas de estudo).
-- **Anotações**: `/anotacoes` (Gerenciamento de notas pessoais).
-- **Usuários**: `/usuarios` (Autenticação e perfis).
-- **Estatísticas**: `/stats` (Métricas de leitura e engajamento).
+Bem-vindo à documentação completa do ecossistema da **Biblioteca Digital**. Este documento detalha de ponta a ponta o funcionamento, as tecnologias e as funcionalidades deste projeto. O sistema foi projetado para ser **Native-First**, rápido, fácil de rodar localmente e livre de configurações complexas (como Docker).
 
 ---
 
-## Otimizações de Desenvolvimento
+## 🏗️ 1. Arquitetura Geral do Sistema
 
-- **Comando Único**: Uso do `concurrently` para gerenciar frontend e backend em um único terminal.
-- **Sincronização**: O backend sincroniza automaticamente com a API da CAPES a cada 30 minutos em segundo plano.
-- **Busca Avançada**: Suporte nativo a Full-Text Search (FTS) em português com índices otimizados.
+O projeto é dividido em duas partes principais que rodam de forma independente, mas se comunicam via API RESTful.
 
+```mermaid
+graph TD
+    subgraph Frontend [Port: 8081]
+        V[Vue.js 3 App]
+        VR[Vue Router]
+        VU[Vuetify 3 + GSAP]
+        PWA[Service Worker / PWA]
+    end
+
+    subgraph Backend [Port: 8080]
+        G[Go 1.25 API]
+        M[Automated Migrations]
+        H[Harvester Background Sync]
+    end
+
+    subgraph Database [Port: 5432]
+        P[PostgreSQL Local]
+        FTS[Full-Text Search engine]
+    end
+
+    V -- Requisições HTTP (Axios) --> G
+    G -- Queries & Migrations --> P
+    G -- Auto Setup --> M
+    G -- Fetch (A cada 30min) --> H
+    H -- Dados Novos (Livros/Artigos) --> G
+    P -- tsvector / Índices --> FTS
+```
+
+---
+
+## 🚀 2. Como Rodar o Projeto (Zero Config)
+
+Toda a complexidade de setup foi abstraída. Desde que você tenha **Node.js**, **Go** e **PostgreSQL** instalados, o comando principal faz tudo.
+
+1. Instale todas as dependências de ambos os lados:
+   ```bash
+   npm run install-all
+   ```
+2. Inicialize o projeto de forma unificada (Frontend + Backend juntos usando `concurrently`):
+   ```bash
+   npm start
+   ```
+
+Acessos Locais:
+- **Aplicação Web:** [http://localhost:8081](http://localhost:8081)
+- **Documentação da API (Swagger):** [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
+
+**Credenciais de Teste:**
+* **E-mail:** `gabriel@biblioteca.com`
+* **Senha:** `123456`
+
+---
+
+## 💻 3. O Frontend (Interface de Usuário)
+
+O frontend foi desenvolvido com foco em performance e uma UI interativa e moderna.
+
+### Tecnologias:
+- **Vue.js 3:** Framework reativo e moderno.
+- **Vuetify 3:** Biblioteca de componentes de UI padronizada.
+- **GSAP:** Biblioteca profissional de animações para micro-interações.
+- **Axios:** Para comunicação assíncrona com o backend.
+- **PWA Ready:** Possui um registro nativo de *Service Worker*, permitindo que a aplicação seja "instalada" e funcione com suporte offline no futuro.
+
+### Telas e Funcionalidades:
+O Vue Router gerencia dezenas de telas, incluindo:
+- **Home & Dashboard:** Paineis de entrada para visões gerais de leitura e métricas.
+- **Explore:** Descoberta de novos materiais com buscas rápidas.
+- **Estudo:** Interface dedicada para leitura e consumo do material.
+- **Anotações & Flashcards:** Ferramentas integradas para registrar ideias e memorização de conteúdo.
+- **Favoritos:** Gerenciador das obras salvas pelo usuário.
+- **Perfil & AdminDashboard:** Edição de dados do usuário e painel de administração geral do sistema.
+
+---
+
+## ⚙️ 4. O Backend (Regras de Negócio e API)
+
+O backend é construído em **Go (Golang) 1.25**, focado na máxima eficiência e uso extremamente baixo de memória, suportando alta concorrência. Ele adota um padrão de arquitetura dividida em *Domain, Repository, Usecase e Handler*.
+
+### Destaques e Diferenciais:
+
+1. **Auto-Migração Inteligente:**
+   O Go cria e gerencia as tabelas no PostgreSQL dinamicamente no momento do boot. Tudo, desde `usuarios` até `amizades` e `mensagens`, é provisionado se não existir, evitando a necessidade de scripts manuais.
+
+2. **Harvester (Sincronização em Segundo Plano):**
+   O backend tem uma _goroutine_ que roda a cada 30 minutos capturando livros e artigos de várias APIs externas (como CAPES, Google Books, ArXiv) e popula o banco de dados automaticamente nas categorias pré-definidas (Saúde Pública, Direito, Tecnologia, etc.).
+
+3. **Busca Avançada Otimizada (FTS - Full-Text Search):**
+   Utiliza a extensão `unaccent` e vetores de texto (`tsvector`) no PostgreSQL (idioma português) com pesos para diferentes áreas (*A* para Título, *B* para Autor, *C* para Descrição). Isso torna a barra de busca incrivelmente rápida e resistente a erros de acentuação/digitação.
+
+4. **Tratamento Seguro de Dados (Middlewares):**
+   A API implementa middlewares modernos incluindo Logs (`zap`), Rate Limiting (prevenindo abusos), CORS configurado e Segurança de Cabeçalhos HTTP avançada. O Cache pode operar internamente na memória ou se conectar ao *Redis* de acordo com as variáveis de ambiente.
+
+### Estrutura do Banco de Dados:
+A automação garante o ecossistema das seguintes entidades principais:
+- **Usuários, Interesses, Amizades e Mensagens.**
+- **Materiais Acadêmicos** (com controle de curadoria, categorias, autores).
+- **Relacionais de Estudo:** Histórico de Leitura, Avaliações, Favoritos.
+- **Ferramentas Pessoais:** Flashcards, Anotações, Empréstimos.
+
+---
+
+## 🔧 5. Variáveis de Ambiente e Configuração
+
+Na inicialização, o backend procura nativamente pelo arquivo `.env`. Se ele não existir, ele usará os recursos padrão do sistema (Postgres via `localhost`). É possível expandir a configuração para adicionar URLs do Redis ou chaves específicas para as APIs externas do Harvester.
+
+---
+
+### Resumo do Ecossistema
+
+Esta biblioteca é um produto de ponta a ponta inteligente: o Frontend oferece uma experiência rápida como aplicativo (PWA com animações fluídas), e o Backend Go provê escalabilidade corporativa puxando dados do mundo acadêmico automaticamente de forma agendada (_Harvester_), centralizando perfeitamente na experiência de autoestudo livre e limpa.
