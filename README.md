@@ -6,11 +6,16 @@
   [![Vue.js](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vue.js&logoColor=4FC08D)](https://vuejs.org/)
   [![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-  [![Status](https://img.shields.io/badge/Status-TCC_Concluído-success?style=for-the-badge)](#)
+  [![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+  [![Gemini](https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white)](https://deepmind.google/technologies/gemini/)
 
   <p align="center">
     <strong>A Biblioteca Digital Colaborativa unifica acervos acadêmicos da UFGD em uma única plataforma. Com arquitetura robusta em Go, Vue.js e PostgreSQL, ela moderniza a pesquisa. O sistema democratiza o acesso à informação, centralizando buscas e a leitura de materiais para transformar o estudo universitário de forma ágil, eficiente e inovadora.</strong>
   </p>
+
+  <a href="#-como-rodar-o-projeto">🚀 Começar Agora</a> •
+  <a href="#-arquitetura-do-sistema">⚙️ Arquitetura</a> •
+  <a href="#-funcionalidades-de-destaque">✨ Funcionalidades</a>
 </div>
 
 ---
@@ -18,69 +23,72 @@
 # 📖 PARTE I: APRESENTAÇÃO DO PROJETO
 
 ## O Resgate do Conhecimento Centralizado
-Historicamente, as bibliotecas físicas eram o ponto central inquestionável do saber acadêmico. Com a digitalização, paradoxalmente, o conhecimento fragmentou-se. Livros, teses e artigos acabaram isolados em dezenas de repositórios institucionais que não se comunicam. 
+O cenário acadêmico atual sofre com a fragmentação do conhecimento: livros, artigos e teses estão espalhados em múltiplos repositórios que não se comunicam. 
 
-Desenvolvido como Trabalho de Conclusão de Curso (TCC) em Sistemas de Informação pela Universidade Federal da Grande Dourados (UFGD), este projeto tem uma visão clara: **resgatar o valor do acervo unificado**, utilizando tecnologia de ponta para centralizar o ecossistema educacional. A solução otimiza o tempo do estudante, conectando-o diretamente à fonte de estudo.
+Desenvolvido como Trabalho de Conclusão de Curso (TCC) em Sistemas de Informação pela Universidade Federal da Grande Dourados (UFGD), este projeto resolve esse problema. A plataforma atua como um hub inteligente, unificando o acervo de diversas fontes (Google Books, ArXiv, CAPES, Semantic Scholar) em um ecossistema ágil e focado na experiência do estudante.
 
-## 💻 Telas e Interface (Native-First)
+## 💻 Telas e Interface (PWA Ready)
 
-A experiência do usuário foi priorizada para ser fluida, livre de distrações e orientada à conversão em leitura.
+A interface foi projetada como uma *Single-Page Application* (SPA) limpa, livre de distrações e orientada ao aprendizado.
 
-| Autenticação Segura | Vitrine Virtual | Leitura e Download |
+| Dashboard & Explorar | Leitura & Estudo | Ferramentas Ativas |
 | :---: | :---: | :---: |
-| <img src="docs/login.png" width="250" alt="Login"> | <img src="docs/home.png" width="250" alt="Home"> | <img src="docs/detalhes.png" width="250" alt="Detalhes"> |
-| *Acesso restrito e seguro.* | *Exploração em tempo real.* | *Acesso imediato ao material.* |
+| <img src="frontend/public/logo-biblioteca.png" width="150" alt="Home"> | <img src="frontend/src/assets/images/site-images/content/book-image-3.jpg" width="150" alt="Detalhes"> | <img src="frontend/src/assets/images/site-images/content/book-image-2.jpg" width="150" alt="Flashcards"> |
+| *Vitrine inteligente e busca em tempo real.* | *Consumo imersivo do material.* | *Anotações, flashcards e gamificação.* |
 
-> **Nota para deploy:** Substituir `docs/*.png` pelas imagens reais armazenadas no repositório.
+> **Nota para deploy:** Adicione prints reais das telas na pasta `frontend/src/assets/images/site-images/` para ilustrar a documentação perfeitamente.
 
-## ✨ Visão Geral das Funcionalidades
-- 📚 **Vitrine Inteligente:** Organização visual intuitiva por áreas do conhecimento.
-- 🧠 **Espaço de Estudo:** Suporte a Flashcards, marcações de favoritos e anotações.
-- 📱 **PWA Ready:** Experiência de aplicativo instalável via Service Workers.
+## ✨ Funcionalidades de Destaque
+- 🤖 **Multi-Harvester Automático:** Robôs em *background* sincronizam dados continuamente de fontes externas.
+- 🧠 **Integração IA (Gemini):** Processamento inteligente de textos para otimizar resumos e estudos.
+- 🔍 **Full-Text Search (FTS):** Motor de busca ultrarrápido nativo do PostgreSQL.
+- 📚 **Espaço de Estudo:** Gestão de Flashcards, histórico de leitura e painel de anotações.
 
 ---
 
 # ⚙️ PARTE II: ESPECIFICAÇÕES TÉCNICAS
 
-Esta seção detalha a engenharia por trás da plataforma, construída para suportar alta concorrência com o mínimo de sobrecarga de hardware.
+O ecossistema foi projetado utilizando *Clean Architecture*, garantindo alta concorrência, baixo uso de memória e escalabilidade.
 
 ## 🛠️ Stack Tecnológica
 
 <div align="center">
   <table>
     <tr>
-      <td align="center" width="33%"><b>Frontend (Port: 8081)</b><br><br>Vue.js 3 (Composition API)<br>Vuetify 3<br>GSAP<br>Axios</td>
-      <td align="center" width="33%"><b>Backend (Port: 8080)</b><br><br>Golang 1.25<br>Clean Architecture<br>Middlewares (Zap, Cors)</td>
-      <td align="center" width="33%"><b>Database & Infra (Port: 5432)</b><br><br>PostgreSQL<br>Redis (Cache Opcional)<br>Node.js (Concurrently)</td>
+      <td align="center" width="33%"><b>Frontend (Port: 8081)</b><br><br>Vue.js 3<br>Vuetify 3<br>Vue Router<br>Service Workers (PWA)</td>
+      <td align="center" width="33%"><b>Backend (Port: 8080)</b><br><br>Golang 1.25<br>Clean Architecture<br>Google Gemini SDK<br>JWT & Rate Limiting</td>
+      <td align="center" width="33%"><b>Database & Infra</b><br><br>PostgreSQL (FTS)<br>Redis (Cache)<br>Swagger (Docs)<br>Node.js (Concurrently)</td>
     </tr>
   </table>
 </div>
 
 ## 🏗️ Arquitetura do Sistema
 
-O ecossistema é dividido em aplicações independentes que se comunicam estritamente via API RESTful. 
+Os motores de Front e Back rodam de forma independente, comunicando-se via API RESTful.
 
 ```mermaid
 graph TD
-    subgraph Frontend [SPA / PWA]
-        V[Vue.js 3 App]
-        VR[Vue Router]
+    subgraph Frontend [Vue.js PWA]
+        UI[Views & Components]
+        API_Client[Axios Client]
     end
 
-    subgraph Backend [Golang API]
-        G[Go 1.25 HTTP Handlers]
-        M[Automated Migrations]
-        H[Harvester Background Sync]
+    subgraph Backend [Golang Clean API]
+        HND[Handlers & Middlewares]
+        UC[Usecases & AI Gemini]
+        REP[Postgres & Redis Repositories]
+        HARV[Multi-Harvester CRON]
     end
 
-    subgraph Database [Relational & Search]
-        P[PostgreSQL Local]
-        FTS[Full-Text Search Engine]
+    subgraph External [APIs Externas]
+        GB[Google Books]
+        ARX[ArXiv]
+        CAP[CAPES / Semantic Scholar]
     end
 
-    V -- Axios (JSON HTTP) --> G
-    G -- Queries & GORM --> P
-    G -- Boot Setup --> M
-    G -- Goroutine (30min) --> H
-    H -- Sync APIs Externas --> G
-    P -- tsvector / unaccent --> FTS
+    UI --> API_Client
+    API_Client -- JSON HTTP --> HND
+    HND --> UC
+    UC --> REP
+    HARV -- Fetch Background --> GB & ARX & CAP
+    HARV -- Ingest --> REP
