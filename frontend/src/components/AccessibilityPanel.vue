@@ -253,16 +253,16 @@ const initPosition = () => {
   const saved = localStorage.getItem('a11y-fab-pos')
   if (saved) {
     try {
-      position.value = JSON.parse(saved)
-      return
+      const parsed = JSON.parse(saved)
+      if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+        updatePosition(parsed.x, parsed.y)
+        return
+      }
     } catch (e) { console.error('Error parsing position', e) }
   }
 
   // Default values if nothing saved
-  position.value = {
-    x: window.innerWidth - 80,
-    y: window.innerHeight / 2 - 28
-  }
+  updatePosition(window.innerWidth - 80, window.innerHeight / 2 - 28)
 }
 
 const updatePosition = (x, y) => {
