@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -43,6 +44,8 @@ func NewSemanticScholarHarvester() *SemanticScholarHarvester {
 }
 
 func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+	time.Sleep(1500 * time.Millisecond) // Prevents HTTP 429 Too Many Requests
+
 	searchTerm := query
 	if searchTerm == "" {
 		searchTerm = category

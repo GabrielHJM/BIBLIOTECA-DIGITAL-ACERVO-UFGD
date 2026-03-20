@@ -58,6 +58,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)
 				mu.Unlock()
+			} else {
+				logger.Error("CAPES Harvester falhou", zap.Error(err))
 			}
 		},
 		func() {
@@ -66,6 +68,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)
 				mu.Unlock()
+			} else {
+				logger.Error("SemanticScholar Harvester falhou", zap.Error(err))
 			}
 		},
 		func() {
@@ -74,6 +78,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)
 				mu.Unlock()
+			} else {
+				logger.Error("ArXiv Harvester falhou", zap.Error(err))
 			}
 		},
 		func() {
@@ -82,6 +88,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				mu.Lock()
 				allMaterials = append(allMaterials, mats...)
 				mu.Unlock()
+			} else {
+				logger.Error("GoogleBooks Harvester falhou", zap.Error(err))
 			}
 		},
 	}

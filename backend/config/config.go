@@ -15,7 +15,7 @@ func Load() *Config {
 	return &Config{
 		DBUrl:         getEnv("DATABASE_URL", "postgres://postgres@localhost:5432/postgres?sslmode=disable"),
 		Port:          getEnv("PORT", "8080"),
-		RedisURL:      getEnv("REDIS_URL", "localhost:6379"),
+		RedisURL:      getEnv("REDIS_URL", ""),
 		RedisPassword: getEnv("REDIS_PASSWORD", ""),
 	}
 }

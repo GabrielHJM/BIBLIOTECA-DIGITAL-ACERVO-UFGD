@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"go.uber.org/zap"
@@ -58,7 +59,12 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		searchTerm = "science"
 	}
 
-	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks&lr=lang_pt&maxResults=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	apiKey := os.Getenv("GOOGLE_BOOKS_API_KEY")
+	keyParam := ""
+	if apiKey != "" {
+		keyParam = "&key=" + apiKey
+	}
+	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks&langRestrict=pt&maxResults=%d%s", h.BaseURL, url.QueryEscape(searchTerm), limit, keyParam)
 
 	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
 	if err != nil {
