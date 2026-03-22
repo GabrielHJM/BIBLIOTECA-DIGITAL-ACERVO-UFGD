@@ -7,7 +7,6 @@
   [![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
-  [![Gemini](https://img.shields.io/badge/Gemini_AI-8E75B2?style=for-the-badge&logo=googlebard&logoColor=white)](https://deepmind.google/technologies/gemini/)
 
   <p align="center">
     <strong>A Biblioteca Digital Colaborativa unifica acervos acadêmicos da UFGD em uma única plataforma. Com arquitetura robusta em Go, Vue.js e PostgreSQL, ela moderniza a pesquisa. O sistema democratiza o acesso à informação, centralizando buscas e a leitura de materiais para transformar o estudo universitário de forma ágil, eficiente e inovadora.</strong>
@@ -42,7 +41,6 @@ A interface foi projetada como uma *Single-Page Application* (SPA) limpa, livre 
 
 ## ✨ Funcionalidades de Destaque
 - 🤖 **Multi-Harvester Automático:** Robôs em *background* sincronizam dados continuamente de fontes externas.
-- 🧠 **Integração IA (Gemini):** Processamento inteligente de textos para otimizar resumos e estudos.
 - 🔍 **Full-Text Search (FTS):** Motor de busca ultrarrápido nativo do PostgreSQL.
 - 📚 **Espaço de Estudo:** Gestão de Flashcards, histórico de leitura e painel de anotações.
 
@@ -58,7 +56,7 @@ O ecossistema foi projetado utilizando *Clean Architecture*, garantindo alta con
   <table>
     <tr>
       <td align="center" width="33%"><b>Frontend (Port: 8081)</b><br><br>Vue.js 3<br>Vuetify 3<br>Vue Router<br>Service Workers (PWA)</td>
-      <td align="center" width="33%"><b>Backend (Port: 8080)</b><br><br>Golang 1.25<br>Clean Architecture<br>Google Gemini SDK<br>JWT & Rate Limiting</td>
+      <td align="center" width="33%"><b>Backend (Port: 8080)</b><br><br>Golang 1.25<br>Clean Architecture<br>JWT & Rate Limiting</td>
       <td align="center" width="33%"><b>Database & Infra</b><br><br>PostgreSQL (FTS)<br>Redis (Cache)<br>Swagger (Docs)<br>Node.js (Concurrently)</td>
     </tr>
   </table>
@@ -77,7 +75,7 @@ graph TD
 
     subgraph Backend [Golang Clean API]
         HND[Handlers & Middlewares]
-        UC[Usecases & AI Gemini]
+        UC[Usecases]
         REP[Postgres & Redis Repositories]
         HARV[Multi-Harvester CRON]
     end
