@@ -253,14 +253,18 @@ func main() {
 		c = cache.NewMemoryCache()
 	}
 
-	handler.RegisterUsuarioRoutes(mux, db)
-	handler.RegisterMaterialRoutes(mux, db, c)
+	// Create a sub-mux for API routes
+	apiMux := http.NewServeMux()
+	handler.RegisterUsuarioRoutes(apiMux, db)
+	handler.RegisterMaterialRoutes(apiMux, db, c)
+	handler.RegisterStatsRoutes(apiMux, db)
+	handler.RegisterEstudoRoutes(apiMux, db)
+	handler.RegisterAdminRoutes(apiMux, db)
+	handler.RegisterAnotacaoRoutes(apiMux, db)
+	handler.RegisterNotificacaoRoutes(apiMux, db)
 
-	handler.RegisterStatsRoutes(mux, db)
-	handler.RegisterEstudoRoutes(mux, db)
-	handler.RegisterAdminRoutes(mux, db)
-	handler.RegisterAnotacaoRoutes(mux, db)
-	handler.RegisterNotificacaoRoutes(mux, db)
+	// Mount the API sub-mux at /api
+	mux.Handle("/api/", http.StripPrefix("/api", apiMux))
 
 	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
