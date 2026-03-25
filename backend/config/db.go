@@ -28,6 +28,14 @@ import (
 )
 
 func InitDB(cfg *Config) *sql.DB {
+	// Log sanitized DB info
+	u, err := url.Parse(cfg.DBUrl)
+	if err == nil {
+		log.Printf("Tentando conectar ao banco de dados em: %s:%s%s", u.Hostname(), u.Port(), u.Path)
+	} else {
+		log.Printf("URL do banco de dados inválida ou vazia.")
+	}
+
 	// 1. Tentar conectar ao banco principal
 	db, err := sql.Open("postgres", cfg.DBUrl)
 	if err != nil {
