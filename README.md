@@ -92,3 +92,52 @@ graph TD
     UC --> REP
     HARV -- Fetch Background --> GB & ARX & CAP
     HARV -- Ingest --> REP
+
+---
+
+# 🚀 PARTE III: COMO RODAR E FAZER DEPLOY
+
+O sistema agora possui integração completa com **Docker**, facilitando tanto o desenvolvimento local quanto a publicação online.
+
+## 🐳 Rodando Localmente com Docker (Recomendado)
+
+Para subir o ecossistema completo (Frontend + Backend + Banco de Dados) com um único comando:
+
+```powershell
+docker-compose up --build
+```
+
+- **Frontend & Backend:** [http://localhost:8080](http://localhost:8080)
+- **Banco de Dados:** Rodando no container (porta interna 5432, externa 5433).
+
+## ☁️ Deploy Público (Render)
+
+Este repositório está pronto para deploy automático no **Render** via Blueprint:
+
+1.  Crie um novo **Blueprint** no dashboard do Render.
+2.  Conecte este repositório.
+3.  O Render configurará automaticamente o Web Service (Docker) e o PostgreSQL.
+
+---
+
+# 🧪 PARTE IV: CONTRIBUIÇÃO E TESTES
+
+## 🛠️ Desenvolvimento Manual (Sem Docker)
+
+### Backend
+```powershell
+cd backend
+go run cmd/server/main.go
+```
+
+### Frontend
+```powershell
+cd frontend
+npm install
+npm run serve
+```
+
+---
+
+## 📄 Licença
+Desenvolvido por **Gabriel** como projeto de TCC - Sistemas de Informação - UFGD.
