@@ -12,6 +12,8 @@
 backend/.env
 backend/build_test
 backend/bin/
+backend/tmp/
+backend/build/
 
 # Frontend exclusions
 frontend/node_modules/

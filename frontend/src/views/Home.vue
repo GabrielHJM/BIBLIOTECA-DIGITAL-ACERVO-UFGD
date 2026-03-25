@@ -96,20 +96,13 @@
 								class="book-row"
 								@click="$router.push('/estudo/' + livro.id)"
 							>
-								<div class="book-cover">
-									<v-img
-										:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=100'"
-										width="48"
-										height="68"
-										cover
-										class="rounded-lg shadow-sm"
-									>
-										<template v-slot:placeholder>
-											<div class="d-flex align-center justify-center fill-height bg-glass-dark">
-												<v-icon color="rgba(255,255,255,0.2)">mdi-book-open-variant</v-icon>
-											</div>
-										</template>
-									</v-img>
+								<div class="mini-premium-cover-ios">
+									<div class="mesh-gradient-mini"></div>
+									<div class="glass-overlay-mini">
+										<v-icon size="14" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
+										<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
+										<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+									</div>
 								</div>
 								<div class="book-info">
 									<div class="book-title">{{ livro.titulo }}</div>
@@ -117,11 +110,8 @@
 										{{ livro.autor }}
 									</div>
 									<div class="book-meta-row">
-										<span class="book-tag">{{ livro.ano_publicacao }}</span>
-										<span v-if="livro.media_nota" class="book-rating">
-											<v-icon size="10" color="amber" class="mr-1">mdi-star</v-icon>
-											{{ livro.media_nota.toFixed(1) }}
-										</span>
+										<span class="book-tag" v-if="livro.ano_publicacao">{{ livro.ano_publicacao }}</span>
+										<span class="book-tag source-tag">{{ livro.fonte || 'Repositório Público' }}</span>
 									</div>
 								</div>
 								<v-icon size="18" class="book-arrow">mdi-chevron-right</v-icon>
@@ -328,6 +318,17 @@ export default {
 				'--mouse-x': '50%',
 				'--mouse-y': '50%'
 			};
+		},
+		getBookIcon(category, title) {
+			const text = ((category || '') + ' ' + (title || '')).toLowerCase();
+			if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';
+			if (text.includes('saúde') || text.includes('medicina') || text.includes('biolog') || text.includes('enferm') || text.includes('médic')) return 'mdi-heart-pulse';
+			if (text.includes('direito') || text.includes('lei') || text.includes('juríd') || text.includes('advog')) return 'mdi-gavel';
+			if (text.includes('matemát') || text.includes('física') || text.includes('cálculo') || text.includes('engenh')) return 'mdi-calculator';
+			if (text.includes('história') || text.includes('socio') || text.includes('psico') || text.includes('filo')) return 'mdi-bank';
+			if (text.includes('literat') || text.includes('poesia') || text.includes('romance')) return 'mdi-feather';
+			if (text.includes('educação') || text.includes('ensino') || text.includes('pedagog')) return 'mdi-school';
+			return 'mdi-book-open-page-variant';
 		}
 	}
 }
@@ -616,22 +617,80 @@ export default {
 	padding: 12px 16px;
 	cursor: pointer;
 	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+	position: relative;
+	overflow: hidden;
 }
+
 .book-row:hover {
 	background: rgba(255,255,255,0.08);
 	border-color: rgba(0,122,255,0.3);
 	transform: translateX(6px);
 }
-.book-cover {
-	border-radius: 10px;
+
+.mini-premium-cover-ios {
+	width: 48px;
+	height: 68px;
+	border-radius: 8px;
+	position: relative;
 	overflow: hidden;
-	box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+	background: #000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	flex-shrink: 0;
-	transition: transform 0.3s ease;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
-.book-row:hover .book-cover {
-	transform: scale(1.05) rotate(1deg);
+
+.mesh-gradient-mini {
+	position: absolute;
+	inset: -50%;
+	background: 
+		radial-gradient(circle at 30% 30%, #007AFF 0%, transparent 60%),
+		radial-gradient(circle at 70% 70%, #5AC8FA 0%, transparent 60%);
+	filter: blur(15px);
+	opacity: 0.8;
 }
+
+.glass-overlay-mini {
+	position: absolute;
+	inset: 2px;
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px) saturate(180%);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 6px;
+	z-index: 2;
+	padding: 2px;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+}
+
+.cover-title-ios-mini {
+	color: #ffffff;
+	font-family: 'Outfit', sans-serif;
+	font-size: 0.4rem;
+	font-weight: 800;
+	line-height: 1.1;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	margin-bottom: 1px;
+}
+
+.cover-summary-ios-mini {
+	color: rgba(255, 255, 255, 0.5);
+	font-size: 0.3rem;
+	font-weight: 500;
+	line-height: 1.2;
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+}
+
 .bg-glass-dark {
 	background: rgba(0, 0, 0, 0.3);
 	backdrop-filter: blur(5px);
@@ -642,12 +701,11 @@ export default {
 	font-weight: 700;
 	color: var(--v-theme-on-surface);
 	display: -webkit-box;
-	line-clamp: 2;
-	-webkit-line-clamp: 2;
+	line-clamp: 3;
+	-webkit-line-clamp: 3;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
 	line-height: 1.2;
-	height: 2.4em; /* Approx 2 lines */
 }
 .book-author {
 	font-size: 0.72rem;
@@ -674,12 +732,12 @@ export default {
 	border-radius: 6px;
 	padding: 2px 7px;
 }
-.book-rating {
-	font-size: 0.65rem;
-	color: rgba(255,255,255,0.65);
-	display: flex;
-	align-items: center;
+.book-tag.source-tag {
+	background: rgba(0, 122, 255, 0.15);
+	color: #00D4E8;
+	font-weight: 700;
 }
+
 .book-arrow { color: rgba(255,255,255,0.25); flex-shrink: 0; }
 
 /* Skeleton */

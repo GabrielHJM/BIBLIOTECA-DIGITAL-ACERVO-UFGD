@@ -8,11 +8,19 @@
       <!-- Image Section -->
       <v-col cols="5" class="pa-3">
         <div class="book-cover-wrapper position-relative">
-          <img
-            :src="book.capa_url || defaultCover"
-            :alt="book.titulo"
-            class="book-cover"
-          />
+          <!-- Premium Mandatory Glass Cover -->
+          <div class="premium-book-cover-ios">
+            <div class="mesh-gradient"></div>
+            <div class="glass-overlay-ios">
+              <div class="cover-content-ios">
+                <v-icon class="cover-icon-ios mb-1" size="28" color="rgba(255,255,255,0.8)">{{ getBookIcon(book.categoria, book.titulo) }}</v-icon>
+                <div class="cover-title-ios">{{ book.titulo }}</div>
+                <div class="cover-summary-ios">{{ book.resumo }}</div>
+              </div>
+            </div>
+            <div class="glass-shine"></div>
+          </div>
+
           <v-chip class="source-badge" size="x-small" color="primary" variant="flat">
             {{ book.fonte || 'Repositório' }}
           </v-chip>
@@ -21,39 +29,16 @@
 
       <!-- Info Section -->
       <v-col cols="7" class="pa-3 text-left">
-        <h3 class="item-title mb-1 text-truncate">{{ book.titulo }}</h3>
+        <h3 class="item-title mb-2" :title="book.titulo">{{ book.titulo }}</h3>
         <div class="item-details">
           <p class="text-truncate"><strong>Autor:</strong> {{ book.autor }}</p>
           <p><strong>Categoria:</strong> {{ book.categoria }}</p>
           <p v-if="book.ano_publicacao"><strong>Ano:</strong> {{ book.ano_publicacao }}</p>
         </div>
 
-        <div class="mt-2 d-flex align-center justify-space-between">
-          <v-rating
-            :model-value="book.media_nota || 0"
-            density="compact"
-            color="amber"
-            active-color="amber"
-            size="small"
-            @update:model-value="$emit('rate', { book, nota: $event })"
-            hover
-          ></v-rating>
 
-          <div class="xp-badge ml-2">+{{ book.xp || 10 }} XP</div>
-        </div>
 
-        <div class="mt-2 text-caption d-flex align-center">
-          <v-icon size="small" color="blue-lighten-3" class="mr-1">mdi-brain</v-icon>
-          <span class="difficulty-text">Dificuldade: </span>
-          <div class="difficulty-dots ml-1">
-            <span
-              v-for="i in 5"
-              :key="i"
-              class="dot"
-              :class="{ 'active': i <= (book.dificuldade || 1) }"
-            ></span>
-          </div>
-        </div>
+
       </v-col>
     </v-row>
 
@@ -92,10 +77,6 @@
   </v-card>
 </template>
 
-<script>
-const defaultCover = 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=400';
-</script>
-
 <script setup>
 /* eslint-disable no-undef */
 import { ref } from 'vue';
@@ -116,11 +97,11 @@ const props = defineProps({
   },
   actionLabel: {
     type: String,
-    default: 'Ler Agora'
+    default: 'Mais Detalhes'
   }
 });
 
-const emit = defineEmits(['toggle-favorite', 'share', 'rate']);
+const emit = defineEmits(['toggle-favorite', 'share']);
 
 const heartIcon = ref(null);
 
@@ -134,6 +115,18 @@ const handleToggleFavorite = () => {
   }
   emit('toggle-favorite', props.book);
 };
+
+const getBookIcon = (category, title) => {
+  const text = ((category || '') + ' ' + (title || '')).toLowerCase();
+  if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';
+  if (text.includes('saúde') || text.includes('medicina') || text.includes('biolog') || text.includes('enferm') || text.includes('médic')) return 'mdi-heart-pulse';
+  if (text.includes('direito') || text.includes('lei') || text.includes('juríd') || text.includes('advog')) return 'mdi-gavel';
+  if (text.includes('matemát') || text.includes('física') || text.includes('cálculo') || text.includes('engenh')) return 'mdi-calculator';
+  if (text.includes('história') || text.includes('socio') || text.includes('psico') || text.includes('filo')) return 'mdi-bank';
+  if (text.includes('literat') || text.includes('poesia') || text.includes('romance')) return 'mdi-feather';
+  if (text.includes('educação') || text.includes('ensino') || text.includes('pedagog')) return 'mdi-school';
+  return 'mdi-book-open-page-variant';
+};
 </script>
 
 <style scoped>
@@ -142,18 +135,109 @@ const handleToggleFavorite = () => {
   height: 150px;
 }
 
-.book-cover {
+.premium-book-cover-ios {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  position: relative;
+  overflow: hidden;
   border-radius: 12px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.premium-card-blur:hover .book-cover {
-  transform: rotateY(-12deg) translateY(-5px) scale(1.08);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+.mesh-gradient {
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: 
+    radial-gradient(circle at 20% 20%, #007AFF 0%, transparent 40%),
+    radial-gradient(circle at 80% 25%, #5AC8FA 0%, transparent 40%),
+    radial-gradient(circle at 30% 80%, #0051FF 0%, transparent 40%),
+    radial-gradient(circle at 75% 75%, #00D4E8 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #0033FF 0%, transparent 50%);
+  filter: blur(40px);
+  animation: mesh-rotate 15s linear infinite;
+  opacity: 0.7;
+}
+
+@keyframes mesh-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.glass-overlay-ios {
+  position: absolute;
+  inset: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  text-align: center;
+}
+
+.cover-content-ios {
+  position: relative;
+  z-index: 3;
+}
+
+.cover-title-ios {
+  color: #ffffff;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.1;
+  max-width: 100%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  margin-bottom: 4px;
+}
+
+.cover-summary-ios {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.55rem;
+  font-weight: 500;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-align: center;
+}
+
+.glass-shine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.premium-card-blur:hover .premium-book-cover-ios {
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.premium-card-blur:hover .mesh-gradient {
+  opacity: 1;
+  animation-duration: 8s;
 }
 
 .source-badge {
@@ -168,16 +252,15 @@ const handleToggleFavorite = () => {
 
 .item-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  line-height: 1.2;
+  line-height: 1.3;
   color: var(--v-theme-on-surface) !important;
-  height: 2.6em;
-  overflow: hidden;
   display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .item-details p {
@@ -200,38 +283,9 @@ const handleToggleFavorite = () => {
   padding: 0 16px;
 }
 
-.xp-badge {
-  background: rgba(0, 255, 157, 0.1);
-  color: #00ff9d !important;
-  border: 1px solid rgba(0, 255, 157, 0.3);
-  padding: 2px 8px;
-  border-radius: 8px;
-  font-size: 0.75rem;
-  font-weight: 800;
-  font-family: 'Outfit', sans-serif;
-}
 
-.difficulty-text {
-  font-weight: 600;
-  opacity: 0.8;
-}
 
-.difficulty-dots {
-  display: flex;
-  gap: 3px;
-}
 
-.dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.dot.active {
-  background: #007AFF;
-  box-shadow: 0 0 5px #007AFF;
-}
 
 .gap-2 {
   gap: 8px;

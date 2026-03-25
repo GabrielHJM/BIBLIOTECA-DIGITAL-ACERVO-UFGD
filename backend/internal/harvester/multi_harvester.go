@@ -33,17 +33,21 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseC := strings.ToLower(category)
 
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "tecnologia OR computer science OR software OR technology"
+		refinedQuery = "tecnologia OR computer science OR software OR technology OR artificial intelligence OR web development"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "saúde OR medicina OR health OR medicine OR biology"
+		refinedQuery = "saúde OR medicina OR health OR medicine OR nursing OR pharmacy OR public health"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
-		refinedQuery = "ciências OR science OR physics OR chemistry"
+		refinedQuery = "ciências OR science OR physics OR chemistry OR biology OR astronomy"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
-		refinedQuery = "matemática OR mathematics OR algebra OR geometry"
+		refinedQuery = "matemática OR mathematics OR algebra OR calculus OR statistics"
 	} else if lowercaseQ == "história" || lowercaseC == "história" {
-		refinedQuery = "história OR history OR archaeology OR humanity"
+		refinedQuery = "história OR history OR archaeology OR humanity OR anthropology"
 	} else if lowercaseQ == "educação" || lowercaseC == "educação" {
-		refinedQuery = "educação OR pedagogical OR teaching"
+		refinedQuery = "educação OR pedagogical OR teaching OR higher education OR learning"
+	} else if lowercaseQ == "jurídico" || lowercaseC == "jurídico" {
+		refinedQuery = "direito OR jurídico OR law OR legal OR constitution OR regulation"
+	} else if lowercaseQ == "contabilidade" || lowercaseC == "contabilidade" {
+		refinedQuery = "contabilidade OR accounting OR finance OR audit OR taxation"
 	}
 
 	var allMaterials []material.Material
@@ -130,6 +134,6 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		}
 	}
 
-	logger.Info("MultiSource academic search completed", zap.Int("total_results", len(uniqueMaterials)))
+	logger.Info("MultiSource academic search completed", zap.Int("total_filtered_results", len(uniqueMaterials)), zap.String("query", query), zap.String("category", category))
 	return uniqueMaterials, nil
 }

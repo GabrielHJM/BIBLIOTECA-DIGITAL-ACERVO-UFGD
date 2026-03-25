@@ -13,13 +13,18 @@
 					<!-- Left Column: Visual & Actions -->
 					<v-col cols="12" md="4" lg="3">
 						<div class="book-visual-card mb-6">
-							<v-img :src="material.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=400'" cover class="book-cover rounded-lg shadow-elevation-2">
-								<template v-slot:placeholder>
-									<div class="d-flex align-center justify-center fill-height bg-grey-darken-4">
-										<v-icon color="rgba(255,255,255,0.2)" size="64">mdi-book-multiple</v-icon>
+							<!-- Premium Mandatory Glass Cover (Large) -->
+							<div class="premium-book-cover-ios-large">
+								<div class="mesh-gradient-large"></div>
+								<div class="glass-overlay-ios-large">
+									<div class="cover-content-ios-large">
+										<v-icon class="cover-icon-ios mb-4" size="80" color="rgba(255,255,255,0.7)">{{ getBookIcon(material.categoria, material.titulo) }}</v-icon>
+										<div class="cover-title-ios-large">{{ material.titulo }}</div>
+										<div class="cover-summary-ios-large mt-3">{{ material.resumo }}</div>
 									</div>
-								</template>
-							</v-img>
+								</div>
+								<div class="glass-shine"></div>
+							</div>
 						</div>
 
 						<div class="action-buttons">
@@ -45,30 +50,31 @@
 							</div>
 							<div class="d-flex align-center justify-space-between mb-2">
 								<h1 class="text-h4 font-weight-bold mb-0" :class="$vuetify.theme.current.dark ? 'text-white' : 'text-primary-darken-4'">{{ material.titulo }}</h1>
-								<v-btn
-									icon
-									variant="text"
-									:color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
-									@click="toggleFavorite"
-									class="favorite-btn"
-								>
-									<v-icon ref="heartIcon" size="32">{{ isFavorited ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
-								</v-btn>
+								<div class="d-flex align-center">
+									<v-btn
+										icon="mdi-share-variant"
+										variant="text"
+										:color="$vuetify.theme.current.dark ? 'white' : 'grey-darken-1'"
+										@click="shareBook"
+										class="mr-2"
+										title="Copiar Link do Livro"
+									></v-btn>
+									<v-btn
+										icon
+										variant="text"
+										:color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
+										@click="toggleFavorite"
+										class="favorite-btn"
+									>
+										<v-icon ref="heartIcon" size="32">{{ isFavorited ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
+									</v-btn>
+								</div>
 							</div>
 							<div class="d-flex align-center">
 								<v-icon color="primary" size="20" class="mr-2">mdi-account</v-icon>
 								<span class="text-h6 text-primary font-weight-medium mr-6">{{ material.autor }}</span>
 
-								<v-rating
-									:model-value="material.media_nota || 0"
-									density="compact"
-									color="amber"
-									active-color="amber"
-									size="small"
-									@update:model-value="onRateBook($event)"
-									hover
-								></v-rating>
-								<span class="ml-2 text-caption opacity-60" style="color: #ffffff !important;">({{ material.total_avaliacoes || 0 }})</span>
+
 							</div>
 						</div>
 
@@ -186,15 +192,19 @@ export default {
 				this.snackbar = true;
 				return;
 			}
+
+			// Feedback instantâneo (Animação GSAP primeiro)
+			if (this.$refs.heartIcon) {
+				const el = this.$refs.heartIcon.$el || this.$refs.heartIcon;
+				gsap.fromTo(el, { scale: 1 }, { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "back.out(3)" });
+			}
+
 			try {
 				const novoStatus = !this.isFavorited;
 				await MaterialService.favoritar(auth.getUser().id, this.material.id, novoStatus);
 
-				// Animation
-				if (this.$refs.heartIcon) {
-					const el = this.$refs.heartIcon.$el || this.$refs.heartIcon;
-					gsap.fromTo(el, { scale: 1 }, { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "back.out(3)" });
-				}
+				// Buscar favoritos globalmente para atualizar o status isFavorited na DOM
+				await this.fetchGlobalFavorites();
 
 				this.snackbarText = novoStatus ? 'Adicionado aos favoritos!' : 'Removido dos favoritos.';
 				this.snackbarColor = 'success';
@@ -206,26 +216,21 @@ export default {
 				this.snackbar = true;
 			}
 		},
-		async onRateBook(nota) {
-			if (!this.isAuthenticated) {
-				this.snackbarText = 'Faça login para avaliar!';
-				this.snackbarColor = 'warning';
-				this.snackbar = true;
-				return;
-			}
+		async shareBook() {
 			try {
-				await MaterialService.avaliar(auth.getUser().id, this.material.id, nota);
-				this.material.media_nota = nota; // Feedback imediato visual
-				this.snackbarText = 'Avaliação enviada com sucesso!';
+				const link = `${window.location.origin}/estudo/${this.material.id}`;
+				await navigator.clipboard.writeText(link);
+				this.snackbarText = 'Link copiado com sucesso para a área de transferência!';
 				this.snackbarColor = 'success';
 				this.snackbar = true;
 			} catch (e) {
-				console.error('Erro ao avaliar:', e);
-				this.snackbarText = 'Erro ao enviar avaliação.';
+				console.error('Erro ao copiar link:', e);
+				this.snackbarText = 'Não foi possível copiar o link.';
 				this.snackbarColor = 'error';
 				this.snackbar = true;
 			}
 		},
+
 		getCitation(style) {
 			if (!this.material) return '';
 			const autor = this.material.autor || 'AUTOR DESCONHECIDO';
@@ -271,6 +276,17 @@ export default {
 		},
 		goBack() {
 			window.history.length > 1 ? this.$router.go(-1) : this.$router.push('/explorar');
+		},
+		getBookIcon(category, title) {
+			const text = ((category || '') + ' ' + (title || '')).toLowerCase();
+			if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';
+			if (text.includes('saúde') || text.includes('medicina') || text.includes('biolog') || text.includes('enferm') || text.includes('médic')) return 'mdi-heart-pulse';
+			if (text.includes('direito') || text.includes('lei') || text.includes('juríd') || text.includes('advog')) return 'mdi-gavel';
+			if (text.includes('matemát') || text.includes('física') || text.includes('cálculo') || text.includes('engenh')) return 'mdi-calculator';
+			if (text.includes('história') || text.includes('socio') || text.includes('psico') || text.includes('filo')) return 'mdi-bank';
+			if (text.includes('literat') || text.includes('poesia') || text.includes('romance')) return 'mdi-feather';
+			if (text.includes('educação') || text.includes('ensino') || text.includes('pedagog')) return 'mdi-school';
+			return 'mdi-book-open-page-variant';
 		}
 	},
 	async mounted() {
@@ -301,6 +317,102 @@ export default {
 
 	.max-width-content {
 		max-width: 1000px !important;
+	}
+
+	.premium-book-cover-ios-large {
+		width: 100%;
+		height: 100%;
+		min-height: 480px;
+		position: relative;
+		overflow: hidden;
+		border-radius: 32px;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+		transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.mesh-gradient-large {
+		position: absolute;
+		top: -50%;
+		left: -50%;
+		width: 200%;
+		height: 200%;
+		background: 
+			radial-gradient(circle at 20% 20%, #007AFF 0%, transparent 40%),
+			radial-gradient(circle at 80% 25%, #5AC8FA 0%, transparent 40%),
+			radial-gradient(circle at 30% 80%, #0051FF 0%, transparent 40%),
+			radial-gradient(circle at 75% 75%, #00D4E8 0%, transparent 40%),
+			radial-gradient(circle at 50% 50%, #0033FF 0%, transparent 50%);
+		filter: blur(80px);
+		animation: mesh-rotate 25s linear infinite;
+		opacity: 0.8;
+	}
+
+	@keyframes mesh-rotate {
+		from { transform: rotate(0deg); }
+		to { transform: rotate(360deg); }
+	}
+
+	.glass-overlay-ios-large {
+		position: absolute;
+		inset: 24px;
+		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(40px) saturate(200%);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		border-radius: 20px;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 48px;
+		text-align: center;
+	}
+
+	.cover-content-ios-large {
+		position: relative;
+		z-index: 3;
+	}
+
+	.cover-title-ios-large {
+		color: #ffffff;
+		font-family: 'Outfit', 'Inter', sans-serif;
+		font-size: 2rem;
+		font-weight: 800;
+		line-height: 1.1;
+		max-width: 100%;
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+	}
+
+	.cover-summary-ios-large {
+		color: rgba(255, 255, 255, 0.7);
+		font-size: 1rem;
+		font-weight: 500;
+		line-height: 1.5;
+		max-width: 80%;
+		display: -webkit-box;
+		-webkit-line-clamp: 8;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		text-align: center;
+	}
+
+	.glass-shine {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%, rgba(255,255,255,0.1) 100%);
+		pointer-events: none;
+		z-index: 4;
 	}
 
 	.book-cover {

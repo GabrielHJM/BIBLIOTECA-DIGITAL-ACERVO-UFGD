@@ -103,7 +103,12 @@
 										{{ idx + 1 }}
 									</div>
 									<v-avatar size="48" rounded="lg" class="mr-4">
-										<v-img :src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=100'"></v-img>
+									<div class="mini-premium-cover-ios-stats">
+										<div class="mesh-gradient-mini"></div>
+										<div class="glass-overlay-mini">
+											<v-icon size="14" color="rgba(255,255,255,0.7)">mdi-trophy-variant-outline</v-icon>
+										</div>
+									</div>
 									</v-avatar>
 								</template>
 								<v-list-item-title class="text-body-2 font-weight-bold" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">{{ livro.titulo }}</v-list-item-title>
@@ -134,11 +139,11 @@
 						variant="solo"
 						class="ios-search-bar"
 						hide-details
-						@keyup.enter="buscar"
+						@keyup.enter="buscar(true)"
 					></v-text-field>
 				</v-col>
 				<v-col cols="12" sm="3" md="3" class="text-right py-2">
-					<v-btn class="ios-filter-btn w-100 w-sm-auto" elevation="2" @click="buscar">
+					<v-btn class="ios-filter-btn w-100 w-sm-auto" elevation="2" @click="buscar(true)">
 						<span>Buscar</span>
 						<v-icon class="ml-2">mdi-magnify</v-icon>
 					</v-btn>
@@ -161,20 +166,19 @@
 							elevation="0"
 							@click="$router.push('/estudo/' + livro.id)"
 						>
-							<div class="history-cover-wrap">
-								<v-img
-									:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'"
-									cover
-									height="160"
-									class="history-img"
-								></v-img>
-								<div class="history-overlay">
-									<v-icon color="white" size="32">mdi-play-circle-outline</v-icon>
+							<div class="mini-premium-cover-ios-dashboard">
+								<div class="mesh-gradient-mini"></div>
+								<div class="glass-overlay-mini">
+									<div class="cover-content-ios-mini">
+										<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
+										<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
+										<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+									</div>
 								</div>
+								<div class="glass-shine"></div>
 							</div>
 							<div class="pa-3">
 								<div class="text-caption font-weight-bold history-title-premium" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
-								<div class="opacity-40 ultra-caption mt-1" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-2'">{{ livro.autor }}</div>
 							</div>
 						</v-card>
 					</v-slide-group-item>
@@ -201,14 +205,19 @@
 							elevation="4"
 							@click="$router.push('/estudo/' + livro.id)"
 						>
-							<v-img
-								:src="livro.capa_url || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?q=80&w=200'"
-								cover
-								height="150"
-							></v-img>
+							<div class="mini-premium-cover-ios-dashboard">
+								<div class="mesh-gradient-mini"></div>
+								<div class="glass-overlay-mini">
+									<div class="cover-content-ios-mini">
+										<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
+										<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
+										<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+									</div>
+								</div>
+								<div class="glass-shine"></div>
+							</div>
 							<div class="pa-2">
 								<div class="text-caption font-weight-bold history-title" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
-								<div class="opacity-60 ultra-caption" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-2'">{{ livro.autor }}</div>
 							</div>
 						</v-card>
 					</v-slide-group-item>
@@ -216,28 +225,31 @@
 			</div>
 
 			<!-- Content Grid -->
-			<v-row class="px-2" v-if="!loading">
-				<v-col
-					v-for="(livro, index) in livros"
-					:key="livro.id"
-					cols="12"
-					md="6"
-					lg="4"
-					class="pa-4"
-				>
-					<BookCard
-						:book="livro"
-						:is-favorited="isFavorited(livro.id)"
-						:animation-delay="index * 100"
-						@toggle-favorite="toggleFavorite"
-						@share="shareBook(livro.id)"
-					/>
-				</v-col>
-			</v-row>
+			<div>
+				<v-row class="px-2">
+					<v-col
+						v-for="(livro, index) in livros"
+						:key="livro.id"
+						cols="12"
+						sm="12"
+						md="6"
+						lg="6"
+						class="pa-4"
+					>
+						<BookCard
+							:book="livro"
+							:is-favorited="isFavorited(livro.id)"
+							:animation-delay="index * 50"
+							@toggle-favorite="toggleFavorite"
+							@share="shareBook(livro.id)"
+						/>
+					</v-col>
+				</v-row>
 
-			<v-row v-else justify="center" class="mt-12">
-				<v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
-			</v-row>
+				<v-row v-if="loading" justify="center" class="mt-6 mb-8">
+					<v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
+				</v-row>
+			</div>
 		</v-container>
 
 	</div>
@@ -269,7 +281,10 @@ export default {
 		searchQuery: '',
 		loading: false,
 		user: {},
-		stats: null
+		stats: null,
+		limit: 16,
+		offset: 0,
+		hasMore: true
 	}),
 	computed: {
 		favoritos() {
@@ -290,12 +305,18 @@ export default {
 	},
 	created() {
 		this.user = auth.getUser()
-		this.buscar()
+		this.buscar(true)
 		if (this.user && this.user.id) {
 			this.buscarHistorico()
 			this.buscarFavoritos()
 			this.buscarEstatisticas()
 		}
+	},
+	mounted() {
+		window.addEventListener('scroll', this.handleScroll);
+	},
+	beforeUnmount() {
+		window.removeEventListener('scroll', this.handleScroll);
 	},
 	methods: {
 		async buscarEstatisticas() {
@@ -311,20 +332,57 @@ export default {
 				console.error('Erro ao buscar estatísticas:', error);
 			}
 		},
-		async buscar() {
-			this.loading = true
+		async buscar(reset = true) {
+			if (reset) {
+				this.offset = 0;
+				this.livros = [];
+				this.hasMore = true;
+			}
+			if (!this.hasMore && !reset) return;
+
+			this.loading = true;
 			try {
-				let response;
-				if (this.searchQuery) {
-					response = await MaterialService.pesquisar(this.searchQuery)
+				const response = await MaterialService.pesquisar(
+					this.searchQuery, '', '', 0, 0, this.limit, this.offset, 'relevancia'
+				);
+				const novosLivros = response.data || [];
+				
+				if (reset) {
+					this.livros = novosLivros;
 				} else {
-					response = await MaterialService.listar(9, 0)
+					this.livros = [...this.livros, ...novosLivros];
 				}
-				this.livros = response.data || []
+				
+				this.hasMore = novosLivros.length === this.limit;
+				this.offset += this.limit;
 			} catch (error) {
-				console.error('Erro ao buscar materiais:', error)
+				console.error('Erro ao buscar materiais:', error);
 			} finally {
-				this.loading = false
+				this.loading = false;
+			}
+		},
+		getBookIcon(category, title) {
+			const text = ((category || '') + ' ' + (title || '')).toLowerCase();
+			if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';
+			if (text.includes('saúde') || text.includes('medicina') || text.includes('biolog') || text.includes('enferm') || text.includes('médic')) return 'mdi-heart-pulse';
+			if (text.includes('direito') || text.includes('lei') || text.includes('juríd') || text.includes('advog')) return 'mdi-gavel';
+			if (text.includes('matemát') || text.includes('física') || text.includes('cálculo') || text.includes('engenh')) return 'mdi-calculator';
+			if (text.includes('história') || text.includes('socio') || text.includes('psico') || text.includes('filo')) return 'mdi-bank';
+			if (text.includes('literat') || text.includes('poesia') || text.includes('romance')) return 'mdi-feather';
+			if (text.includes('educação') || text.includes('ensino') || text.includes('pedagog')) return 'mdi-school';
+			return 'mdi-book-open-page-variant';
+		},
+		async loadMore() {
+			if (this.loading || !this.hasMore) return;
+			await this.buscar(false);
+		},
+		handleScroll() {
+			const scrollY = window.scrollY;
+			const visible = document.documentElement.clientHeight;
+			const pageHeight = document.documentElement.scrollHeight;
+			
+			if (visible + scrollY >= pageHeight - 300) {
+				this.loadMore();
 			}
 		},
 		async buscarHistorico() {
@@ -572,8 +630,141 @@ export default {
 		box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 	}
 
+	.mini-premium-cover {
+		width: 100%;
+		height: 100%;
+		border-radius: 8px;
+		position: relative;
+		overflow: hidden;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+	}
+
+	.mini-premium-cover.has-image {
+		background: transparent;
+	}
+
+	.cover-image-inner {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 1;
+	}
+
+	.cover-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(to top, rgba(15, 23, 42, 0.6) 0%, transparent 100%);
+		z-index: 2;
+	}
+
+	.cover-content {
+		position: relative;
+		z-index: 3;
+	}
+
+	.mini-premium-cover-ios-stats {
+		width: 48px;
+		height: 48px;
+		border-radius: 12px;
+		position: relative;
+		overflow: hidden;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.mini-premium-cover-ios-dashboard {
+		width: 100%;
+		height: 160px;
+		position: relative;
+		overflow: hidden;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.mesh-gradient-mini {
+		position: absolute;
+		inset: -50%;
+		background: 
+			radial-gradient(circle at 30% 30%, #007AFF 0%, transparent 60%),
+			radial-gradient(circle at 70% 70%, #5AC8FA 0%, transparent 60%);
+		filter: blur(20px);
+		opacity: 0.8;
+	}
+
+	.glass-overlay-mini {
+		position: absolute;
+		inset: 8px;
+		background: rgba(255, 255, 255, 0.05);
+		backdrop-filter: blur(20px) saturate(180%);
+		border: 1px solid rgba(255, 255, 255, 0.15);
+		border-radius: 12px;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		padding: 12px;
+		text-align: center;
+	}
+
+	.cover-content-ios-mini {
+		position: relative;
+		z-index: 3;
+	}
+
+	.cover-title-ios-mini {
+		color: #ffffff;
+		font-family: 'Outfit', 'Inter', sans-serif;
+		font-size: 0.55rem;
+		font-weight: 800;
+		line-height: 1.1;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+		margin-bottom: 2px;
+		text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+	}
+
+	.cover-summary-ios-mini {
+		color: rgba(255, 255, 255, 0.5);
+		font-size: 0.45rem;
+		font-weight: 400;
+		line-height: 1.2;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.glass-shine {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
+		pointer-events: none;
+		z-index: 4;
+	}
+
 	.book-cover {
-		max-width: 100%;
+		width: 100%;
 		max-height: 100%;
 		object-fit: contain;
 		transition: transform 0.5s ease;

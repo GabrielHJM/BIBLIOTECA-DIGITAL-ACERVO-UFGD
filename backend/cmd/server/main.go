@@ -187,13 +187,35 @@ func main() {
 	go startBackgroundSync(db)
 
 	mux := http.NewServeMux()
+	// Serve static files from the "dist" directory
+	fs := http.FileServer(http.Dir("dist"))
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
+		// If the request is for an API or Swagger, let the other handlers deal with it
+		// (ServeMux matches the most specific pattern, so this is the fallback)
+		
+		// Check if file exists in dist
+		path := r.URL.Path
+		if path == "/" {
+			fs.ServeHTTP(w, r)
+			return
+		}
+
+		// Avoid serving "dist" files for /api routes if they somehow fall through
+		if strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/swagger") || strings.HasPrefix(path, "/health") {
 			http.NotFound(w, r)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(map[string]string{"status": "ok", "message": "Biblioteca Digital API"})
+
+		// For any other route, try to serve the file from dist
+		// If it doesn't exist, serve index.html (Vue Router History Mode)
+		f, err := http.Dir("dist").Open(strings.TrimPrefix(path, "/"))
+		if err != nil {
+			// File not found, serve index.html
+			http.ServeFile(w, r, "dist/index.html")
+			return
+		}
+		f.Close()
+		fs.ServeHTTP(w, r)
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

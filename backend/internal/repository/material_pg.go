@@ -103,14 +103,26 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 		argCount++
 	}
 
-	// Ordenação Inovadora: Relevância FTS -> Nota -> ID
+	// Ordenação
 	orderBy := "id DESC"
-	if termo != "" {
-		orderBy = "rank DESC, media_nota DESC"
-	} else if sort == "random" {
+
+	switch sort {
+	case "az":
+		orderBy = "unaccent(LOWER(titulo)) ASC"
+	case "za":
+		orderBy = "unaccent(LOWER(titulo)) DESC"
+	case "recent":
+		orderBy = "ano_publicacao DESC, id DESC"
+	case "oldest":
+		orderBy = "ano_publicacao ASC, id DESC"
+	case "random":
 		orderBy = "RANDOM()"
-	} else if sort == "rating" {
-		orderBy = "media_nota DESC, total_avaliacoes DESC"
+	case "relevancia", "":
+		if termo != "" {
+			orderBy = "rank DESC, relevancia DESC, id DESC"
+		} else {
+			orderBy = "relevancia DESC, total_avaliacoes DESC, id DESC"
+		}
 	}
 
 	query += " ORDER BY " + orderBy

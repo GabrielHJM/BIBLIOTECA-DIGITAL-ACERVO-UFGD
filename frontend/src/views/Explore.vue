@@ -144,15 +144,14 @@
 			</div>
 
 			<!-- Content Grid -->
-			<div class="results-container" v-infinite-scroll="[loadMore, { distance: 300 }]">
+			<div class="results-container">
 				<v-row dense>
-					<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" sm="6" md="4" lg="3" class="pa-2">
+					<v-col v-for="(livro, index) in livros" :key="livro.id" cols="12" sm="12" md="6" lg="6" class="pa-2">
 						<BookCard
 							:book="livro"
 							:animation-delay="index * 30"
 							:is-favorited="isBookFavorited(livro.id)"
 							@toggle-favorite="onToggleFavorite"
-							@rate="onRateBook"
 							@share="shareBook(livro.id)"
 						/>
 					</v-col>
@@ -166,7 +165,7 @@
 
 				<!-- Loading More Shimmer -->
 				<v-row dense v-if="loading">
-					<v-col v-for="n in 4" :key="'skeleton-more-'+n" cols="12" sm="6" md="4" lg="3" class="pa-2">
+					<v-col v-for="n in 4" :key="'skeleton-more-'+n" cols="12" sm="12" md="6" lg="6" class="pa-2">
 						<v-skeleton-loader type="card" :theme="isDarkTheme ? 'dark' : 'light'" class="rounded-xl"></v-skeleton-loader>
 					</v-col>
 				</v-row>
@@ -196,7 +195,7 @@ export default {
 			categoria: '',
 			ano_inicio: null,
 			ano_fim: null,
-			sort: ''
+			sort: 'az'
 		},
 		hasInitialFetchDone: false,
 		offset: 0,
@@ -205,9 +204,10 @@ export default {
 
 		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'JURÍDICO', 'LITERATURA', 'CONTABILIDADE'],
 		sortOptions: [
-			{ label: 'Relevância', value: '' },
-			{ label: 'Melhor Avaliados', value: 'rating' },
-			{ label: 'Recentes', value: 'id' },
+			{ label: 'Ordem Alfabética (A-Z)', value: 'az' },
+			{ label: 'Ordem Alfabética (Z-A)', value: 'za' },
+			{ label: 'Data de Publicação (Mais novos)', value: 'recent' },
+			{ label: 'Data de Publicação (Antigos)', value: 'oldest' },
 			{ label: 'Aleatório', value: 'random' }
 		],
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
@@ -228,6 +228,9 @@ export default {
 			if (this.filters.categoria) count++;
 			return count;
 		}
+	},
+	mounted() {
+		window.addEventListener('scroll', this.handleScroll);
 	},
 	watch: {
 		'$route.query': {
@@ -308,6 +311,15 @@ export default {
 			if (this.loading || !this.hasMore) return;
 			await this.buscar(false);
 		},
+		handleScroll() {
+			const scrollY = window.scrollY;
+			const visible = document.documentElement.clientHeight;
+			const pageHeight = document.documentElement.scrollHeight;
+			
+			if (visible + scrollY >= pageHeight - 300) {
+				this.loadMore();
+			}
+		},
 		onSearchInput() {
 			if (this.searchTimeout) clearTimeout(this.searchTimeout);
 			this.searchTimeout = setTimeout(() => {
@@ -343,24 +355,7 @@ export default {
 				this.notify('Erro ao atualizar favorito', 'error')
 			}
 		},
-		async onRateBook({ book, nota }) {
-			try {
-				const userStr = localStorage.getItem('user')
-				if (!userStr) {
-					this.notify('Faça login para avaliar!', 'warning')
-					return
-				}
-				const user = JSON.parse(userStr)
-				await MaterialService.avaliar(user.id, book.id, nota)
-				this.notify('Avaliação enviada!', 'success')
 
-				// Opcional: atualizar a média localmente ou re-buscar
-				book.media_nota = nota;
-			} catch (err) {
-				console.error(err)
-				this.notify('Erro ao enviar avaliação', 'error')
-			}
-		},
 		isBookFavorited(bookId) {
 			return this.favoritos.some(f => f.id === bookId)
 		},
@@ -373,6 +368,7 @@ export default {
 	},
 	beforeUnmount() {
 		if (this.searchTimeout) clearTimeout(this.searchTimeout);
+		window.removeEventListener('scroll', this.handleScroll);
 	}
 }
 </script>

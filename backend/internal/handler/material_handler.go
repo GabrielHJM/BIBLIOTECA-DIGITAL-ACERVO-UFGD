@@ -3,6 +3,7 @@ package handler
 import (
 	"biblioteca-digital-api/internal/harvester"
 	"biblioteca-digital-api/internal/pkg/cache"
+	"biblioteca-digital-api/internal/pkg/utils"
 	"biblioteca-digital-api/internal/repository"
 	"biblioteca-digital-api/internal/usecase/material"
 	"database/sql"
@@ -19,11 +20,12 @@ import (
 func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	repo := &repository.MaterialPostgres{DB: db}
 	mh := harvester.NewMultiSourceHarvester()
+	verifier := utils.NewURLVerifier()
 
-	listarUC := &material.ListarConteudosUseCase{Repo: repo, Harvester: mh, Cache: c}
+	listarUC := &material.ListarConteudosUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
 	buscarUC := &material.BuscarMaterialUseCase{Repo: repo}
 	similaresUC := &material.BuscarSimilaresUseCase{Repo: repo}
-	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c}
+	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
 	favoritarUC := &material.FavoritarMaterialUseCase{Repo: repo}
 	historicoUC := &material.HistoricoLeituraUseCase{Repo: repo}
 	avaliarUC := &material.AvaliarMaterialUseCase{Repo: repo}
@@ -80,9 +82,13 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 		var materiais interface{}
 		var err error
 
+		// Se houver QUALQUER termo de busca ou filtro, usamos o PesquisarUC (que agora tem Harvester integrado)
+		// Caso contrário, usamos o ListarUC para a vitrine padrão
 		if termo != "" || categoria != "" || fonte != "" || anoInicio > 0 || anoFim > 0 {
 			materiais, err = pesquisarUC.Execute(r.Context(), termo, categoria, fonte, anoInicio, anoFim, nil, limit, offset, sortParam)
 		} else {
+			// Se o usuário explicitamente clicou em "TODOS" no search, talvez queiramos pesquisar sem filtros
+			// para permitir que o Harvester traga novidades gerais se a vitrine estiver vazia.
 			materiais, err = listarUC.Execute(r.Context(), limit, offset)
 		}
 
