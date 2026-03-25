@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM golang:1.21-alpine AS backend-builder
+FROM golang:1.23-alpine AS backend-builder
 WORKDIR /app/backend
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
@@ -15,7 +15,7 @@ COPY backend/ ./
 # Copy the built frontend to a "dist" folder inside the backend build context
 # so the Go server can serve it.
 COPY --from=frontend-builder /app/frontend/dist ./dist
-RUN go build -o main ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server/main.go
 
 # Stage 3: Final Image
 FROM alpine:latest
