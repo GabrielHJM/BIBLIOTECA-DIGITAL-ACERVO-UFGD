@@ -7,7 +7,8 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Build Backend
-FROM golang:1.22-alpine AS backend-builder
+FROM golang:alpine AS backend-builder
+ENV GOTOOLCHAIN=auto
 WORKDIR /app/backend
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
