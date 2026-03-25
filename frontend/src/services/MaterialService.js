@@ -47,6 +47,11 @@ export default {
 		return this._cachedGet(url, 60000); // 1 minute TTL for search queries
 	},
 
+	// Obter dados consolidados para o dashboard (múltiplas categorias em um request)
+	dashboard() {
+		return this._cachedGet('/materiais/dashboard', 300000); // 5 mins TTL
+	},
+
 	// Obter detalhes de um material específico
 	obterDetalhes(id) {
 		return api.get(`/materiais/detalhes?id=${id}`);

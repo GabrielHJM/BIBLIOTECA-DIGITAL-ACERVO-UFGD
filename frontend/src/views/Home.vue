@@ -250,41 +250,16 @@ export default {
 		async fetchMateriais() {
 			this.loading = true;
 			try {
-				// Simula um pequeno delay para mostrar os esqueletos (UX mais "smooth")
-				await new Promise(resolve => setTimeout(resolve, 200));
-
-				const promises = this.categoriasMock.map(async (cat) => {
-					try {
-						// Usa o nome da categoria usando filtro correto 'categoria' em vez de busca livre, exigindo 3 aleatórios locais
-						const response = await MaterialService.pesquisar('', cat.nome, '', 0, 0, 3, 0, 'random');
-
-						// Com o novo interceptor, response já contém o array de materiais ou response.data
-						let livros = [];
-						if (response && Array.isArray(response)) {
-							livros = response;
-						} else if (response && response.data && Array.isArray(response.data)) {
-							livros = response.data;
-						}
-
-						if (livros.length === 0) {
-							const fallback = await MaterialService.pesquisar('', '', '', 0, 0, 3, 0, 'random');
-							if (fallback && Array.isArray(fallback)) {
-								livros = fallback;
-							} else if (fallback && fallback.data && Array.isArray(fallback.data)) {
-								livros = fallback.data;
-							}
-						}
-
-						cat.livros = livros;
-					} catch (err) {
-						console.error(`Erro ao carregar livros para a categoria ${cat.nome}:`, err);
-						cat.livros = [];
+				const response = await MaterialService.dashboard();
+				const dashboardData = response.data || response;
+				
+				this.categoriasMock.forEach(cat => {
+					if (dashboardData[cat.nome]) {
+						cat.livros = dashboardData[cat.nome];
 					}
 				});
-				await Promise.all(promises);
 			} catch (err) {
 				console.error("Erro ao carregar dados da Home:", err);
-				// Aqui poderíamos emitir um alerta global ou local
 			} finally {
 				this.loading = false;
 			}

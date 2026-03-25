@@ -99,6 +99,29 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 
 		JSONSuccess(w, materiais, http.StatusOK)
 	})
+	
+	mux.HandleFunc("GET /materiais/dashboard", func(w http.ResponseWriter, r *http.Request) {
+		result := make(map[string]interface{})
+		categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
+		
+		for _, cat := range categories {
+			// Busca materiais para cada categoria (limite de 3 para o dashboard)
+			mats, err := pesquisarUC.Execute(r.Context(), "", cat, "", 0, 0, nil, 3, 0, "random")
+			if err != nil {
+				result[cat] = []interface{}{}
+				continue
+			}
+			
+			// Fallback: se não encontrar nada na categoria específica, tenta busca geral aleatória
+			if len(mats) == 0 {
+				mats, _ = pesquisarUC.Execute(r.Context(), "", "", "", 0, 0, nil, 3, 0, "random")
+			}
+			
+			result[cat] = mats
+		}
+		
+		JSONSuccess(w, result, http.StatusOK)
+	})
 
 	mux.HandleFunc("GET /materiais/detalhes", func(w http.ResponseWriter, r *http.Request) {
 		id, err := strconv.Atoi(r.URL.Query().Get("id"))
