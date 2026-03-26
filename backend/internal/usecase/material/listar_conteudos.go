@@ -41,13 +41,16 @@ func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int
 			}
 		}
 
-		verifyCtx, cancel := context.WithTimeout(ctx, 1200*time.Millisecond)
+		// Increased timeout to 5 seconds to handle slower external APIs (Google Books, etc.)
+		verifyCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 		
 		statusMap := uc.Verifier.VerifyBatch(verifyCtx, urlsToCheck)
 
 		for _, m := range materiaisIniciais {
 			if m.PDFURL != "" {
+				// Optimistic logic: only skip if we are CERTAIN it's dead (exists and !alive)
+				// If it's missing from the map (timeout), we KEEP it.
 				if alive, exists := statusMap[m.PDFURL]; exists && !alive {
 					continue
 				}

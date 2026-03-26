@@ -102,6 +102,7 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	
 	mux.HandleFunc("GET /materiais/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		result := make(map[string]interface{})
+		// Use explicit UTF-8 literals and ensure they match Home.vue
 		categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
 		
 		for _, cat := range categories {

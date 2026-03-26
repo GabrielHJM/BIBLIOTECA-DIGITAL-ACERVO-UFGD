@@ -80,8 +80,8 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 			}
 		}
 
-		// Perform parallel check with strict timeout context
-		verifyCtx, cancel := context.WithTimeout(ctx, 1500*time.Millisecond) // Slightly more time for batch check
+		// Increased timeout to 5 seconds to handle slower external APIs (Google Books, etc.)
+		verifyCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
 		
 		statusMap := uc.Verifier.VerifyBatch(verifyCtx, urlsToCheck)
@@ -89,6 +89,7 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		var filtered []material.Material
 		for _, m := range uniqueMap {
 			if m.PDFURL != "" {
+				// Optimistic logic: only skip if we are CERTAIN it's dead (exists and !alive)
 				if alive, exists := statusMap[m.PDFURL]; exists && !alive {
 					continue // Skip dead links
 				}
