@@ -176,7 +176,6 @@
 
 <script>
 import MaterialService from '@/services/MaterialService'
-import BookCard from '@/components/BookCard.vue'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 
@@ -184,7 +183,6 @@ export default {
 	name: 'ExplorePageExtended',
 	inject: ['notify', 'fetchGlobalFavorites', 'getGlobalFavorites', 'globalFavorites'],
 	components: {
-		BookCard
 	},
 	data: () => ({
 		livros: [],

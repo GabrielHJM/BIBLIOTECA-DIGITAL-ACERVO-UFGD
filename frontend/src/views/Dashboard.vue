@@ -258,7 +258,6 @@
 <script>
 import MaterialService from '@/services/MaterialService'
 import auth from '@/auth'
-import BookCard from '@/components/BookCard.vue'
 import PremiumCard from '@/components/PremiumCard.vue'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
@@ -267,7 +266,6 @@ export default {
 	name: 'DashboardPage',
 	inject: ['notify', 'fetchGlobalFavorites', 'getGlobalFavorites', 'globalFavorites'],
 	components: {
-		BookCard,
 		PremiumCard
 	},
 	setup() {

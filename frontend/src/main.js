@@ -9,8 +9,11 @@ import './assets/styles/design-system.css'
 
 // Components
 import App from './App.vue'
+import BookCard from './components/BookCard.vue'
 
-createApp(App).use(router).use(vuetify).mount('#app')
+const app = createApp(App)
+app.component('BookCard', BookCard)
+app.use(router).use(vuetify).mount('#app')
 
 // PWA Service Worker Registration
 if ('serviceWorker' in navigator) {

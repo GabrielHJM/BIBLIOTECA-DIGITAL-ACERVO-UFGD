@@ -52,7 +52,7 @@ func RateLimit(next http.Handler) http.Handler {
 		}
 
 		value, _ := clients.LoadOrStore(ip, &client{
-			limiter:  rate.NewLimiter(5, 10),
+			limiter:  rate.NewLimiter(50, 100),
 			lastSeen: time.Now(),
 		})
 		c := value.(*client)
