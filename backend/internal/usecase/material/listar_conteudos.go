@@ -64,9 +64,25 @@ func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int
 		materiais = materiaisIniciais
 	}
 
-	// As bucas externas na API síncrona foram removidas de propósito
-	// para evitar extrema latência e 429 Too Many Requests.
-	// O background worker populará esse acervo automaticamente.
+	// Real-time Infinite Harvester Algorithm:
+	// If local results are low, we trigger a light-weight synchronous harvest
+	// to ensure the user never sees an empty "load more" result.
+	if len(materiaisIniciais) < limit && uc.Harvester != nil {
+		harvestLimit := limit * 2
+		// Discover general tech/health/science materials if no filter is active
+		// This provides a broad "discovery" feed
+		discoveryCats := []string{"TECNOLOGIA", "CIÊNCIAS", "EDUCAÇÃO"}
+		cat := discoveryCats[time.Now().UnixNano()%int64(len(discoveryCats))]
+		
+		harvested, err := uc.Harvester.Search(ctx, "", cat, "", 0, 0, harvestLimit)
+		if err == nil && len(harvested) > 0 {
+			for i := range harvested {
+				_ = uc.Repo.Criar(ctx, &harvested[i])
+			}
+			// Append newly found materials
+			materiaisIniciais = append(materiaisIniciais, harvested...)
+		}
+	}
 
 	if uc.Cache != nil {
 		uc.Cache.Set(cacheKey, materiais, 15*time.Minute)

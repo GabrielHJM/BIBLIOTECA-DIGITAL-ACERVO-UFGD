@@ -169,6 +169,9 @@
 						<v-skeleton-loader type="card" :theme="isDarkTheme ? 'dark' : 'light'" class="rounded-xl"></v-skeleton-loader>
 					</v-col>
 				</v-row>
+
+				<!-- Intersection Observer Sentinel -->
+				<div ref="loadMoreSentinel" class="load-more-sentinel-modern"></div>
 			</div>
 		</v-container>
 	</div>
@@ -209,7 +212,8 @@ export default {
 			{ label: 'Aleatório', value: 'random' }
 		],
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
-		searchTimeout: null
+		searchTimeout: null,
+		observer: null
 	}),
 	setup() {
 		const theme = useTheme();
@@ -228,7 +232,7 @@ export default {
 		}
 	},
 	mounted() {
-		window.addEventListener('scroll', this.handleScroll);
+		this.initObserver();
 	},
 	watch: {
 		'$route.query': {
@@ -252,6 +256,11 @@ export default {
 					this.hasInitialFetchDone = true;
 				}
 			}
+		}
+	},
+	unmounted() {
+		if (this.observer) {
+			this.observer.disconnect();
 		}
 	},
 	methods: {
@@ -309,13 +318,21 @@ export default {
 			if (this.loading || !this.hasMore) return;
 			await this.buscar(false);
 		},
-		handleScroll() {
-			const scrollY = window.scrollY;
-			const visible = document.documentElement.clientHeight;
-			const pageHeight = document.documentElement.scrollHeight;
-			
-			if (visible + scrollY >= pageHeight - 300) {
-				this.loadMore();
+		initObserver() {
+			const options = {
+				root: null,
+				rootMargin: '400px', // Trigger earlier for smoother "YouTube" feel
+				threshold: 0.1
+			};
+
+			this.observer = new IntersectionObserver((entries) => {
+				if (entries[0].isIntersecting && !this.loading && this.hasMore) {
+					this.loadMore();
+				}
+			}, options);
+
+			if (this.$refs.loadMoreSentinel) {
+				this.observer.observe(this.$refs.loadMoreSentinel);
 			}
 		},
 		onSearchInput() {
@@ -366,7 +383,7 @@ export default {
 	},
 	beforeUnmount() {
 		if (this.searchTimeout) clearTimeout(this.searchTimeout);
-		window.removeEventListener('scroll', this.handleScroll);
+		if (this.observer) this.observer.disconnect();
 	}
 }
 </script>
@@ -386,6 +403,12 @@ export default {
 		padding: 32px;
 		border: 1px solid var(--glass-border);
 		margin-top: 24px;
+	}
+	.load-more-sentinel-modern {
+		height: 20px;
+		width: 100%;
+		margin-top: 10px;
+		visibility: hidden;
 	}
 
 	.category-scroll-container {

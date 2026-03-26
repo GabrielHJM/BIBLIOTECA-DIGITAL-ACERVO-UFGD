@@ -249,6 +249,9 @@
 				<v-row v-if="loading" justify="center" class="mt-6 mb-8">
 					<v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
 				</v-row>
+
+				<!-- Intersection Observer Sentinel -->
+				<div ref="loadMoreSentinel" class="load-more-sentinel-modern"></div>
 			</div>
 		</v-container>
 
@@ -282,7 +285,8 @@ export default {
 		stats: null,
 		limit: 16,
 		offset: 0,
-		hasMore: true
+		hasMore: true,
+		observer: null
 	}),
 	computed: {
 		favoritos() {
@@ -308,13 +312,12 @@ export default {
 			this.buscarHistorico()
 			this.buscarFavoritos()
 			this.buscarEstatisticas()
-		}
-	},
+		}	},
 	mounted() {
-		window.addEventListener('scroll', this.handleScroll);
+		this.initObserver();
 	},
 	beforeUnmount() {
-		window.removeEventListener('scroll', this.handleScroll);
+		if (this.observer) this.observer.disconnect();
 	},
 	methods: {
 		async buscarEstatisticas() {
@@ -359,6 +362,27 @@ export default {
 				this.loading = false;
 			}
 		},
+		async loadMore() {
+			if (this.loading || !this.hasMore) return;
+			await this.buscar(false);
+		},
+		initObserver() {
+			const options = {
+				root: null,
+				rootMargin: '400px', // Trigger earlier for smoother "YouTube" feel
+				threshold: 0.1
+			};
+
+			this.observer = new IntersectionObserver((entries) => {
+				if (entries[0].isIntersecting && !this.loading && this.hasMore) {
+					this.loadMore();
+				}
+			}, options);
+
+			if (this.$refs.loadMoreSentinel) {
+				this.observer.observe(this.$refs.loadMoreSentinel);
+			}
+		},
 		getBookIcon(category, title) {
 			const text = ((category || '') + ' ' + (title || '')).toLowerCase();
 			if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';
@@ -369,19 +393,6 @@ export default {
 			if (text.includes('literat') || text.includes('poesia') || text.includes('romance')) return 'mdi-feather';
 			if (text.includes('educação') || text.includes('ensino') || text.includes('pedagog')) return 'mdi-school';
 			return 'mdi-book-open-page-variant';
-		},
-		async loadMore() {
-			if (this.loading || !this.hasMore) return;
-			await this.buscar(false);
-		},
-		handleScroll() {
-			const scrollY = window.scrollY;
-			const visible = document.documentElement.clientHeight;
-			const pageHeight = document.documentElement.scrollHeight;
-			
-			if (visible + scrollY >= pageHeight - 300) {
-				this.loadMore();
-			}
 		},
 		async buscarHistorico() {
 			try {
@@ -446,6 +457,11 @@ export default {
 	.dashboard-container {
 		min-height: 100vh;
 		padding-bottom: 40px;
+	}
+	.load-more-sentinel-modern {
+		height: 20px;
+		width: 100%;
+		visibility: hidden;
 	}
 
 	.tracking-tight {
