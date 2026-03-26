@@ -304,21 +304,32 @@ func syncBooks(repo *repository.MaterialPostgres, mh *harvester.MultiSourceHarve
 	}
 	defer syncMu.Unlock()
 
-	categories := []string{"TECNOLOGIA BRASIL", "SAÚDE PÚBLICA BRASIL", "DIREITO BRASILEIRO", "LITERATURA BRASILEIRA", "HISTÓRIA DO BRASIL", "CIÊNCIAS", "MATEMÁTICA", "CONTABILIDADE"}
+	// High-yield categories for initial population
+	categories := []string{
+		"TECNOLOGIA", "SAÚDE", "DIREITO", "CIÊNCIAS", "MATEMÁTICA", "EDUCAÇÃO", 
+		"LITERATURA BRASILEIRA", "HISTÓRIA DO BRASIL", "CONTABILIDADE",
+	}
+	
+	logger.Info("Sync: Starting high-volume harvest", zap.Int("categories_count", len(categories)))
+
 	for _, cat := range categories {
-		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 5)
+		// Fetch more books per category for a richer initial experience
+		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 15)
 		if err == nil {
+			count := 0
 			for i := range mats {
 				if err := repo.Criar(context.Background(), &mats[i]); err != nil {
-					// Duplicatas são esperadas e não devem poluir o log como erro crítico
 					if !strings.Contains(err.Error(), "já existe") {
 						logger.Debug("Sync: Failed to save material", zap.String("title", mats[i].Titulo), zap.Error(err))
 					}
+				} else {
+					count++
 				}
 			}
+			logger.Info("Sync: Category populated", zap.String("category", cat), zap.Int("new_books", count))
 		} else {
 			logger.Error("Harvester search failed during sync", zap.String("category", cat), zap.Error(err))
 		}
 	}
-	logger.Info("Background synchronization completed")
+	logger.Info("Background synchronization completed successfully")
 }

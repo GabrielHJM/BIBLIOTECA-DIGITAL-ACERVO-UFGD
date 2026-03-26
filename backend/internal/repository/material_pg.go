@@ -181,13 +181,14 @@ func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, 
 }
 
 func (r *MaterialPostgres) Criar(ctx context.Context, m *material.Material) error {
-	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas, dificuldade, xp, relevancia)
-	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+	query := `INSERT INTO materiais (titulo, autor, isbn, categoria, ano_publicacao, descricao, capa_url, pdf_url, disponivel, externo_id, fonte, paginas, dificuldade, xp, relevancia, status)
+	          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, 'aprovado')
 			  ON CONFLICT (externo_id) WHERE externo_id IS NOT NULL DO UPDATE SET
 			    titulo = EXCLUDED.titulo,
 				autor = EXCLUDED.autor,
 				capa_url = COALESCE(EXCLUDED.capa_url, materiais.capa_url),
-				pdf_url = COALESCE(EXCLUDED.pdf_url, materiais.pdf_url)
+				pdf_url = COALESCE(EXCLUDED.pdf_url, materiais.pdf_url),
+				status = 'aprovado'
 			  RETURNING id`
 
 	err := r.DB.QueryRowContext(ctx, query,
