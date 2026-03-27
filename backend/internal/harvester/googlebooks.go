@@ -68,10 +68,6 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		keyParam = "&key=" + apiKey
 	}
 	langParam := "&langRestrict=pt"
-	// For academic/technical searches, English results are often better and more abundant
-	if strings.Contains(searchTerm, "tecnologia") || strings.Contains(searchTerm, "science") || strings.Contains(searchTerm, "matematica") {
-		langParam = "" 
-	}
 	
 	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks%s&maxResults=%d%s", h.BaseURL, url.QueryEscape(searchTerm), langParam, limit, keyParam)
 

@@ -62,7 +62,7 @@
 									<v-btn
 										icon
 										variant="text"
-										:color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
+										:color="isFavorited ? 'red' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
 										@click="toggleFavorite"
 										class="favorite-btn"
 									>
@@ -260,8 +260,15 @@ export default {
 		},
 		abrirPDF() {
 			if (!this.material || !this.material.pdf_url) return;
-			// Abre diretamente assumindo que é um link de PDF válido
-			window.open(this.material.pdf_url, '_blank');
+			// Força abertura direta do PDF no visualizador do navegador
+			const url = this.material.pdf_url;
+			const win = window.open(url, '_blank');
+			if (win) {
+				win.focus();
+			} else {
+				// Fallback if popup blocked
+				window.location.assign(url);
+			}
 		},
 		baixarPDF() {
 			if (!this.material || !this.material.pdf_url) return;

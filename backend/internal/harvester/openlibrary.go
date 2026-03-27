@@ -49,7 +49,7 @@ func (h *OpenLibraryHarvester) Search(ctx context.Context, query string, categor
 		searchTerm = "science"
 	}
 
-	searchURL := fmt.Sprintf("%s?q=%s&has_fulltext=true&page=%d&limit=%d", h.BaseURL, url.QueryEscape(searchTerm), page, limit)
+	searchURL := fmt.Sprintf("%s?q=%s+language:por&has_fulltext=true&page=%d&limit=%d", h.BaseURL, url.QueryEscape(searchTerm), page, limit)
 
 	// Max 3 retries
 	var resp *http.Response

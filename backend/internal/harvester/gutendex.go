@@ -51,7 +51,7 @@ func (h *GutendexHarvester) Search(ctx context.Context, query string, category s
 		searchTerm = "classic"
 	}
 
-	searchURL := fmt.Sprintf("%s?search=%s&page=%d", h.BaseURL, url.QueryEscape(searchTerm), page)
+	searchURL := fmt.Sprintf("%s?search=%s&languages=pt&page=%d", h.BaseURL, url.QueryEscape(searchTerm), page)
 
 	// Max 3 retries
 	var resp *http.Response

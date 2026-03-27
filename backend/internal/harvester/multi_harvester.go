@@ -37,30 +37,30 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseQ := strings.ToLower(query)
 	lowercaseC := strings.ToLower(category)
 
-	// Contextual expansion for better academic coverage
+	// Contextual expansion for better academic coverage (Português/Brasil prioritized)
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "tecnologia OR computer science OR software OR technology OR artificial intelligence"
+		refinedQuery = "tecnologia OR computer science OR software OR tecnologia brasil OR computaçao"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "saúde OR medicina OR health OR medicine OR oncology OR surgery OR nursing"
+		refinedQuery = "saúde OR medicina OR health OR medicina brasil OR saúde pública"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
-		refinedQuery = "ciências OR science OR physics OR chemistry OR biology"
+		refinedQuery = "ciências OR science OR física OR química OR biologia"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
-		refinedQuery = "matemática OR mathematics OR algebra OR calculus"
+		refinedQuery = "matemática OR mathematics OR álgebra OR cálculo"
 	} else if strings.Contains(lowercaseQ, "brasil") || strings.Contains(lowercaseC, "brasil") {
-		refinedQuery = query + " AND (repository OR archive OR university)"
+		refinedQuery = query + " AND (repositório OR arquivo OR universidade OR brasil)"
 	} else if lowercaseQ == "" {
-		refinedQuery = "academic OR textbook OR research"
+		refinedQuery = "livro OR acadêmico OR pesquisa OR ciência"
 	}
 
 	var allMaterials []material.Material
-	resultsChan := make(chan []material.Material, 50)
+	resultsChan := make(chan []material.Material, 100)
 	var wg sync.WaitGroup
-
+ 
 	// 2. High Capacity Worker Pool Logic
-	// We will sweep up to 3 pages for each high-yield source
-	pagesToSweep := 2
-	if limit > 40 {
-		pagesToSweep = 3
+	// We will sweep up to 5 pages for each high-yield source to force more volume
+	pagesToSweep := 3
+	if limit > 20 {
+		pagesToSweep = 5
 	}
 
 	// Define tasks for the worker pool
