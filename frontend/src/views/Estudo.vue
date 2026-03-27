@@ -196,7 +196,10 @@ export default {
 			// Feedback instantâneo (Animação GSAP primeiro)
 			if (this.$refs.heartIcon) {
 				const el = this.$refs.heartIcon.$el || this.$refs.heartIcon;
-				gsap.fromTo(el, { scale: 1 }, { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "back.out(3)" });
+				const tl = gsap.timeline();
+				tl.to(el, { scale: 1.5, rotation: 15, duration: 0.15, ease: "back.out(2)" })
+				  .to(el, { rotation: -15, duration: 0.1, ease: "none" })
+				  .to(el, { scale: 1, rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
 			}
 
 			try {
@@ -321,8 +324,9 @@ export default {
 
 	.premium-book-cover-ios-large {
 		width: 100%;
-		height: 100%;
-		min-height: 480px;
+		aspect-ratio: 1 / 1.4; /* Aspecto mais fiel a livro real */
+		max-height: 600px;
+		margin: 0 auto;
 		position: relative;
 		overflow: hidden;
 		border-radius: 32px;

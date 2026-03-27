@@ -1,8 +1,9 @@
 <template>
   <v-card
-    class="premium-card-blur premium-shadow-hover"
+    class="premium-card-blur premium-shadow-hover clickable-card"
     elevation="0"
     :style="{ animationDelay: `${animationDelay}ms` }"
+    @click="$router.push('/estudo/' + book.id)"
   >
     <v-row no-gutters>
       <!-- Image Section -->
@@ -50,7 +51,7 @@
         variant="text"
         :color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'grey-darken-1')"
         size="small"
-        @click="handleToggleFavorite"
+        @click.stop="handleToggleFavorite"
       >
         <v-icon ref="heartIcon">{{ isFavorited ? 'mdi-heart' : 'mdi-heart-outline' }}</v-icon>
       </v-btn>
@@ -61,14 +62,15 @@
           variant="text"
           :color="$vuetify.theme.current.dark ? 'white' : 'grey-darken-1'"
           size="small"
-          @click="$emit('share', book)"
+          @click.stop="$emit('share', book)"
         ></v-btn>
 
         <v-btn
           class="ios-btn-open"
           variant="flat"
           size="small"
-          @click="$router.push('/estudo/' + book.id)"
+          size="small"
+          @click.stop="$router.push('/estudo/' + book.id)"
         >
           {{ actionLabel }}
         </v-btn>
@@ -108,10 +110,10 @@ const heartIcon = ref(null);
 const handleToggleFavorite = () => {
   if (heartIcon.value) {
     const el = heartIcon.value.$el || heartIcon.value;
-    gsap.fromTo(el,
-      { scale: 1 },
-      { scale: 1.5, duration: 0.2, yoyo: true, repeat: 1, ease: "back.out(3)" }
-    );
+    const tl = gsap.timeline();
+    tl.to(el, { scale: 1.5, rotation: 15, duration: 0.15, ease: "back.out(2)" })
+      .to(el, { rotation: -15, duration: 0.1, ease: "none" })
+      .to(el, { scale: 1, rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
   }
   emit('toggle-favorite', props.book);
 };
@@ -132,12 +134,14 @@ const getBookIcon = (category, title) => {
 <style scoped>
 .book-cover-wrapper {
   perspective: 1200px;
-  height: 150px;
+  width: 100%;
 }
 
 .premium-book-cover-ios {
   width: 100%;
-  height: 100%;
+  aspect-ratio: 1 / 1.4;
+  max-height: 150px;
+  margin: 0 auto;
   position: relative;
   overflow: hidden;
   border-radius: 12px;
@@ -228,6 +232,15 @@ const getBookIcon = (category, title) => {
   background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
   pointer-events: none;
   z-index: 4;
+}
+
+.clickable-card {
+  cursor: pointer;
+  transition: all 0.4s var(--spring-easing) !important;
+}
+
+.clickable-card:active {
+  transform: scale(0.98);
 }
 
 .premium-card-blur:hover .premium-book-cover-ios {

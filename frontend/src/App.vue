@@ -118,26 +118,19 @@
 					</v-card>
 				</v-menu>
 
-				<!-- Foto do Usuário (Visual) -->
-				<div class="user-display d-flex align-center ml-2" style="gap: 10px;">
-					<div class="text-right hidden-sm-and-down">
-						<div class="welcome-text">{{ isLoggedIn ? 'Bem-vindo,' : 'Olá,' }}</div>
-						<div class="username-text">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
-					</div>
-					<v-avatar size="44" class="header-avatar-glass">
-						<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
-						<v-icon v-else color="white" size="26">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
-					</v-avatar>
-				</div>
-
-				<!-- Toggle Menu Lateral -->
+				<!-- Unified User Toggle -->
 				<v-btn
-					icon="mdi-menu"
+					icon
 					variant="text"
 					@click="drawer = !drawer"
-					class="ml-2"
-					title="Menu Principal"
-				></v-btn>
+					class="ml-2 avatar-toggle-btn"
+					title="Menu do Usuário"
+				>
+					<v-avatar size="40" class="header-avatar-glass">
+						<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
+						<v-icon v-else color="white" size="24">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
+					</v-avatar>
+				</v-btn>
 			</div>
 		</v-app-bar>
 

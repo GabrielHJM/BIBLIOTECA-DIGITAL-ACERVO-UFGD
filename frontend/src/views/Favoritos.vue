@@ -194,7 +194,9 @@ export default {
 
 .premium-book-cover-ios-fav {
 	width: 100%;
-	height: 240px;
+	aspect-ratio: 1 / 1.4;
+	max-height: 240px;
+	margin: 0 auto;
 	position: relative;
 	overflow: hidden;
 	border-radius: 20px 20px 0 0;
