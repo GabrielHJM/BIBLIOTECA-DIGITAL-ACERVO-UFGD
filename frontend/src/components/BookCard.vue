@@ -248,6 +248,17 @@ const getBookIcon = (category, title) => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  z-index: 20 !important; /* Sempre acima das camadas de vidro */
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .source-badge {
+    top: 4px;
+    left: 4px;
+    font-size: 0.6rem !important;
+    padding: 0 4px !important;
+  }
 }
 
 .item-title {
