@@ -244,7 +244,7 @@ const { state, toggle, resetAll, speakPage } = useAccessibility()
 // Draggable Logic
 const position = ref({ 
   x: window.innerWidth > 0 ? window.innerWidth - 80 : 1000, 
-  y: window.innerHeight > 0 ? window.innerHeight / 2 - 28 : 400 
+  y: window.innerHeight > 0 ? window.innerHeight - 150 : 800 
 })
 const isDragging = ref(false)
 const dragStartTime = ref(0)
@@ -265,7 +265,7 @@ const initPosition = () => {
   }
 
   // Default values if nothing saved
-  updatePosition(window.innerWidth - 80, window.innerHeight / 2 - 28)
+  updatePosition(window.innerWidth - 80, window.innerHeight - 150)
 }
 
 const updatePosition = (x, y) => {
