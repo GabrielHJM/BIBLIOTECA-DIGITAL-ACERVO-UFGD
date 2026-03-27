@@ -30,27 +30,52 @@ func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int
 		return nil, err
 	}
 
+	// Real-time Infinite Harvester Algorithm:
+	// If local results are low, we trigger a light-weight synchronous harvest
+	// BEFORE the final result build to ensure immediate visibility.
+	if len(materiaisIniciais) < limit && uc.Harvester != nil {
+		harvestLimit := limit * 2
+		discoveryCats := []string{"TECNOLOGIA", "CIÊNCIAS", "EDUCAÇÃO", "SAÚDE", "DIREITO"}
+		cat := discoveryCats[time.Now().UnixNano()%int64(len(discoveryCats))]
+		
+		harvested, err := uc.Harvester.Search(ctx, "", cat, "", 0, 0, harvestLimit)
+		if err == nil && len(harvested) > 0 {
+			for i := range harvested {
+				_ = uc.Repo.Criar(ctx, &harvested[i])
+			}
+			// Important: Merge newly found materials so they show up in THIS request
+			materiaisIniciais = append(materiaisIniciais, harvested...)
+		}
+	}
+
 	var materiais []material.Material
 
-	// Intelligent Verification Algorithm
+	// Intelligent Verification Algorithm & Deduplication
 	if len(materiaisIniciais) > 0 && uc.Verifier != nil {
 		var urlsToCheck []string
+		
+		// Deduplicate (harvested might overlap with DB)
+		uniqueMap := make(map[string]material.Material)
 		for _, m := range materiaisIniciais {
-			if m.PDFURL != "" {
-				urlsToCheck = append(urlsToCheck, m.PDFURL)
+			uID := m.ExternoID
+			if uID == "" {
+				uID = m.Titulo + ":" + m.Autor
+			}
+			if _, exists := uniqueMap[uID]; !exists {
+				uniqueMap[uID] = m
+				if m.PDFURL != "" {
+					urlsToCheck = append(urlsToCheck, m.PDFURL)
+				}
 			}
 		}
 
-		// Increased timeout to 5 seconds to handle slower external APIs (Google Books, etc.)
+		// Verify URLs with timeout
 		verifyCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 		defer cancel()
-		
 		statusMap := uc.Verifier.VerifyBatch(verifyCtx, urlsToCheck)
 
-		for _, m := range materiaisIniciais {
+		for _, m := range uniqueMap {
 			if m.PDFURL != "" {
-				// Optimistic logic: only skip if we are CERTAIN it's dead (exists and !alive)
-				// If it's missing from the map (timeout), we KEEP it.
 				if alive, exists := statusMap[m.PDFURL]; exists && !alive {
 					continue
 				}
@@ -62,29 +87,12 @@ func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int
 		}
 	} else {
 		materiais = materiaisIniciais
-	}
-
-	// Real-time Infinite Harvester Algorithm:
-	// If local results are low, we trigger a light-weight synchronous harvest
-	// to ensure the user never sees an empty "load more" result.
-	if len(materiaisIniciais) < limit && uc.Harvester != nil {
-		harvestLimit := limit * 2
-		// Discover general tech/health/science materials if no filter is active
-		// This provides a broad "discovery" feed
-		discoveryCats := []string{"TECNOLOGIA", "CIÊNCIAS", "EDUCAÇÃO"}
-		cat := discoveryCats[time.Now().UnixNano()%int64(len(discoveryCats))]
-		
-		harvested, err := uc.Harvester.Search(ctx, "", cat, "", 0, 0, harvestLimit)
-		if err == nil && len(harvested) > 0 {
-			for i := range harvested {
-				_ = uc.Repo.Criar(ctx, &harvested[i])
-			}
-			// Append newly found materials
-			materiaisIniciais = append(materiaisIniciais, harvested...)
+		if limit > 0 && len(materiais) > limit {
+			materiais = materiais[:limit]
 		}
 	}
 
-	if uc.Cache != nil {
+	if uc.Cache != nil && len(materiais) > 0 {
 		uc.Cache.Set(cacheKey, materiais, 15*time.Minute)
 	}
 

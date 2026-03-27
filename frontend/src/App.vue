@@ -118,169 +118,133 @@
 					</v-card>
 				</v-menu>
 
-				<!-- Dropdown de Usuário -->
-				<v-menu
-					v-model="userMenuOpen"
-					:close-on-content-click="true"
-					location="bottom end"
-					offset="12"
-					transition="slide-y-transition"
-				>
-					<template v-slot:activator="{ props }">
-						<div class="user-trigger d-flex align-center ml-2" v-bind="props" style="cursor:pointer; gap: 10px;">
-							<div class="text-right hidden-sm-and-down">
-								<div class="welcome-text">{{ isLoggedIn ? 'Bem-vindo,' : 'Olá,' }}</div>
-								<div class="username-text">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
-							</div>
-							<v-avatar size="44" class="header-avatar-glass">
-								<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
-								<v-icon v-else color="white" size="26">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
-							</v-avatar>
-						</div>
-					</template>
+				<!-- Foto do Usuário (Visual) -->
+				<div class="user-display d-flex align-center ml-2" style="gap: 10px;">
+					<div class="text-right hidden-sm-and-down">
+						<div class="welcome-text">{{ isLoggedIn ? 'Bem-vindo,' : 'Olá,' }}</div>
+						<div class="username-text">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
+					</div>
+					<v-avatar size="44" class="header-avatar-glass">
+						<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
+						<v-icon v-else color="white" size="26">{{ isLoggedIn ? 'mdi-account-circle' : 'mdi-account-circle-outline' }}</v-icon>
+					</v-avatar>
+				</div>
 
-					<!-- Dropdown Menu -->
-					<v-card class="user-dropdown-card" min-width="220" elevation="16">
-						<!-- Header do dropdown -->
-						<div class="dropdown-header pa-4 pb-3">
-							<div class="dropdown-avatar-row d-flex align-center mb-2" style="gap: 10px;">
-								<v-avatar size="38" color="rgba(0,122,255,0.15)">
-									<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
-									<v-icon v-else color="#007AFF" size="22">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
-								</v-avatar>
-								<div>
-									<div class="dropdown-user-name">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
-									<div class="dropdown-user-role">
-										<v-chip v-if="isLoggedIn" size="x-small" :color="userRoleName === 'Professor' ? 'primary' : 'rgba(255,255,255,0.1)'" variant="flat" class="mt-1 font-weight-bold" style="color: white !important; border: 1px solid rgba(255,255,255,0.2);">
-											{{ userRoleName }}
-										</v-chip>
-										<span v-else>Não autenticado</span>
-									</div>
-								</div>
-							</div>
-						</div>
-
-						<v-divider class="opacity-10"></v-divider>
-
-						<!-- Opções para visitante (não logado) -->
-						<template v-if="!isLoggedIn">
-							<v-list class="dropdown-list py-2">
-								<v-list-item
-									prepend-icon="mdi-login"
-									title="Entrar"
-									subtitle="Acesse sua conta"
-									class="dropdown-item"
-									@click="$router.push('/login')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-								<v-list-item
-									prepend-icon="mdi-account-plus"
-									title="Criar Conta"
-									subtitle="Cadastre-se gratuitamente"
-									class="dropdown-item dropdown-item--highlight"
-									@click="$router.push('/cadastro')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-								<v-divider class="opacity-10 my-1"></v-divider>
-								<v-list-item
-									prepend-icon="mdi-help-circle-outline"
-									title="Sobre Nós"
-									class="dropdown-item"
-									@click="$router.push('/sobre-nos')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-							</v-list>
-						</template>
-
-						<!-- Opções para usuário logado -->
-						<template v-else>
-							<v-list class="dropdown-list py-2">
-								<v-list-item
-									prepend-icon="mdi-account-edit-outline"
-									title="Editar Perfil"
-									subtitle="Mude seu nome e foto"
-									class="dropdown-item"
-									@click="$router.push('/perfil')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-								<v-list-item
-									prepend-icon="mdi-view-dashboard"
-									title="Meu Painel"
-									subtitle="Acesse seu dashboard"
-									class="dropdown-item"
-									@click="$router.push('/dashboard')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-								<v-list-item
-									prepend-icon="mdi-heart-outline"
-									title="Favoritos"
-									class="dropdown-item"
-									@click="$router.push('/favoritos')"
-								>
-									<template v-slot:append>
-										<v-icon size="16" color="rgba(255,255,255,0.3)">mdi-chevron-right</v-icon>
-									</template>
-								</v-list-item>
-								<v-divider class="opacity-10 my-1"></v-divider>
-								<div class="px-4 py-2">
-									<div class="text-caption font-weight-bold opacity-60 mb-2">FAVORITOS RECENTES</div>
-									<v-list v-if="favoritos.length > 0" class="pa-0 bg-transparent">
-										<v-list-item
-											v-for="fav in favoritos.slice(0, 3)"
-											:key="fav.id"
-											:title="fav.titulo"
-											:subtitle="fav.autor"
-											density="compact"
-											class="fav-mini-item px-0"
-											@click="$router.push('/estudo/' + fav.id)"
-										>
-											<template v-slot:prepend>
-												<v-avatar size="32" rounded="sm" class="mr-2">
-													<v-img :src="fav.capa_url || 'https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=100'"></v-img>
-												</v-avatar>
-											</template>
-										</v-list-item>
-									</v-list>
-									<div v-else class="text-caption opacity-40 py-2">Nenhum favorito</div>
-									<v-btn
-										v-if="favoritos.length > 0"
-										variant="text"
-										size="x-small"
-										color="primary"
-										class="text-none mt-2 px-0"
-										@click="$router.push('/favoritos')"
-									>
-										Ver todos os favoritos
-									</v-btn>
-								</div>
-								<v-divider class="opacity-10 my-1"></v-divider>
-								<v-list-item
-									prepend-icon="mdi-logout"
-									title="Sair"
-									class="dropdown-item dropdown-item--danger"
-									@click="logout"
-								></v-list-item>
-							</v-list>
-						</template>
-					</v-card>
-				</v-menu>
+				<!-- Toggle Menu Lateral -->
+				<v-btn
+					icon="mdi-menu"
+					variant="text"
+					@click="drawer = !drawer"
+					class="ml-2"
+					title="Menu Principal"
+				></v-btn>
 			</div>
 		</v-app-bar>
+
+		<!-- Menu Lateral (Sidebar) -->
+		<v-navigation-drawer
+			v-model="drawer"
+			location="right"
+			temporary
+			width="320"
+			class="premium-drawer"
+		>
+			<div class="drawer-header pa-6 pt-10">
+				<div class="d-flex align-center mb-6">
+					<v-avatar size="64" class="header-avatar-glass mr-4">
+						<v-img v-if="isLoggedIn && userAvatar" :src="userAvatar" cover></v-img>
+						<v-icon v-else color="white" size="32">{{ isLoggedIn ? 'mdi-account' : 'mdi-account-outline' }}</v-icon>
+					</v-avatar>
+					<div>
+						<div class="font-weight-bold text-truncate" style="max-width: 180px;">{{ isLoggedIn ? userDisplayName : 'Visitante' }}</div>
+						<div class="text-caption opacity-60">{{ isLoggedIn ? userRoleName : 'Acesse sua conta' }}</div>
+					</div>
+				</div>
+				<v-divider class="opacity-10"></v-divider>
+			</div>
+
+			<v-list class="px-4 nav-list-premium">
+				<v-list-subheader class="text-xxs font-weight-bold opacity-40 mb-2 uppercase">NAVEGAÇÃO</v-list-subheader>
+				
+				<v-list-item
+					prepend-icon="mdi-home-outline"
+					title="Início"
+					@click="$router.push('/'); drawer = false"
+					class="drawer-item"
+				></v-list-item>
+
+				<v-list-item
+					prepend-icon="mdi-compass-outline"
+					title="Explorar"
+					@click="$router.push('/explorar'); drawer = false"
+					class="drawer-item"
+				></v-list-item>
+
+				<v-list-item
+					v-if="isLoggedIn"
+					prepend-icon="mdi-view-dashboard-outline"
+					title="Meu Painel"
+					@click="$router.push('/dashboard'); drawer = false"
+					class="drawer-item"
+				></v-list-item>
+
+				<v-list-item
+					v-if="isLoggedIn"
+					prepend-icon="mdi-heart-outline"
+					title="Favoritos"
+					@click="$router.push('/favoritos'); drawer = false"
+					class="drawer-item"
+				></v-list-item>
+
+				<v-divider class="my-4 opacity-10"></v-divider>
+				<v-list-subheader class="text-xxs font-weight-bold opacity-40 mb-2 uppercase">CONTA</v-list-subheader>
+
+				<template v-if="!isLoggedIn">
+					<v-list-item
+						prepend-icon="mdi-login"
+						title="Entrar"
+						@click="$router.push('/login'); drawer = false"
+						class="drawer-item"
+					></v-list-item>
+					<v-list-item
+						prepend-icon="mdi-account-plus-outline"
+						title="Criar Conta"
+						@click="$router.push('/cadastro'); drawer = false"
+						class="drawer-item"
+					></v-list-item>
+				</template>
+
+				<template v-else>
+					<v-list-item
+						prepend-icon="mdi-account-circle-outline"
+						title="Meu Perfil"
+						@click="$router.push('/perfil'); drawer = false"
+						class="drawer-item"
+					></v-list-item>
+					<v-list-item
+						prepend-icon="mdi-logout"
+						title="Sair"
+						color="error"
+						@click="logout(); drawer = false"
+						class="drawer-item danger-item"
+					></v-list-item>
+				</template>
+
+				<v-divider class="my-4 opacity-10"></v-divider>
+				<v-list-item
+					prepend-icon="mdi-information-outline"
+					title="Sobre Nós"
+					@click="$router.push('/sobre-nos'); drawer = false"
+					class="drawer-item"
+				></v-list-item>
+			</v-list>
+
+			<template v-slot:append>
+				<div class="pa-6 text-center">
+					<div class="text-xxs opacity-30 font-weight-bold">BIBLIOTECA DIGITAL v1.0</div>
+				</div>
+			</template>
+		</v-navigation-drawer>
 
 		<v-main>
 			<!-- Private/Main App Layout Wrapper -->
@@ -305,7 +269,8 @@
 			</div>
 		</v-main>
 
-		<Footer />
+
+		<!-- Global Accessibility Panel -->
 
 		<!-- Global Accessibility Panel -->
 		<AccessibilityPanel />
@@ -330,7 +295,6 @@
 </template>
 
 <script>
-import Footer from './components/Footer.vue'
 import AccessibilityPanel from './components/AccessibilityPanel.vue'
 import '@/assets/styles/premium.css'
 import { ref, computed, reactive } from 'vue'
@@ -341,13 +305,12 @@ import { useAccessibility } from '@/composables/useAccessibility'
 
 export default {
 	name: 'App',
-	components: { Footer, AccessibilityPanel },
+	components: { AccessibilityPanel },
 	data() {
 		return {
 			publicRoutes: ['/login', '/cadastro', '/esqueci-senha'],
 			searchInput: '',
 			isSearchFocused: false,
-			userMenuOpen: false,
 			snackbar: {
 				show: false,
 				text: '',
@@ -357,7 +320,8 @@ export default {
 			},
 			notificationMenuOpen: false,
 			notifications: [],
-			lastWelcomeId: null
+			lastWelcomeId: null,
+			drawer: false
 		}
 	},
 	provide() {
@@ -932,5 +896,48 @@ export default {
 	.fav-mini-item :deep(.v-list-item-subtitle) {
 		font-size: 0.75rem !important;
 		opacity: 0.7;
+	}
+
+	/* Premium Drawer Styling */
+	.premium-drawer {
+		background: rgba(15, 25, 40, 0.85) !important;
+		backdrop-filter: blur(40px) saturate(200%) !important;
+		-webkit-backdrop-filter: blur(40px) saturate(200%) !important;
+		border-left: 1px solid rgba(255, 255, 255, 0.1) !important;
+		box-shadow: -20px 0 50px rgba(0, 0, 0, 0.5) !important;
+	}
+
+	.drawer-item {
+		border-radius: 16px !important;
+		margin-bottom: 4px !important;
+		transition: all 0.3s var(--spring-easing) !important;
+		color: rgba(255, 255, 255, 0.7) !important;
+	}
+
+	.drawer-item:hover {
+		background: rgba(255, 255, 255, 0.08) !important;
+		transform: translateX(-4px);
+		color: white !important;
+	}
+
+	.drawer-item :deep(.v-icon) {
+		opacity: 0.6;
+		transition: transform 0.3s ease;
+	}
+
+	.drawer-item:hover :deep(.v-icon) {
+		opacity: 1;
+		transform: scale(1.1);
+		color: var(--ios-blue);
+	}
+
+	.danger-item:hover {
+		background: rgba(255, 59, 48, 0.1) !important;
+		color: #FF6B6B !important;
+	}
+
+	.text-xxs {
+		font-size: 10px;
+		letter-spacing: 1px;
 	}
 </style>

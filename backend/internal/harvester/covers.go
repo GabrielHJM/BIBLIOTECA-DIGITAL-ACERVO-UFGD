@@ -1,31 +1,59 @@
 package harvester
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 )
 
 // GetCoverFromGoogleBooks fetches the highest quality cover available for a given title and author.
 func GetCoverFromGoogleBooks(title string, author string) string {
+	ctx := context.Background()
+	limiter := GetRateLimiter()
+
 	query := title
 	if author != "" {
 		query += " " + author
 	}
 	searchURL := fmt.Sprintf("https://www.googleapis.com/books/v1/volumes?q=%s&maxResults=1", url.QueryEscape(query))
 
-	// Make a single rapid request
-	resp, err := http.Get(searchURL)
-	if err != nil {
+	// Max 3 retries with exponential backoff
+	var resp *http.Response
+	var err error
+	backoff := 500 * time.Millisecond
+
+	for i := 0; i < 3; i++ {
+		// Wait for rate limiter (Google Books: ~10 requests per second to be safe)
+		limiter.Wait(ctx, ProviderGoogleBooks, 10, 5)
+
+		resp, err = http.Get(searchURL)
+		if err == nil {
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				resp.Body.Close()
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			resp.Body.Close()
+		}
+		
+		if i < 2 {
+			time.Sleep(backoff)
+			backoff *= 2
+		}
+	}
+
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
 		return abstractAcademicCover(title)
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return abstractAcademicCover(title)
-	}
 
 	var data struct {
 		Items []struct {

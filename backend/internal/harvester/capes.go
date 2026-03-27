@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -52,6 +53,8 @@ func NewCAPESHarvester() *CAPESHarvester {
 }
 
 func (h *CAPESHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+	limiter := GetRateLimiter()
+
 	searchTerm := query
 	if searchTerm == "" {
 		searchTerm = category
@@ -60,24 +63,52 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		searchTerm = "science"
 	}
 
-	// Enforce has-full-text for much better PDF links
 	searchURL := fmt.Sprintf("%s?query=%s&filter=has-full-text:true&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
-	if err != nil {
-		return nil, err
+	// Max 3 retries with exponential backoff
+	var resp *http.Response
+	var err error
+	backoff := 1 * time.Second
+
+	for i := 0; i < 3; i++ {
+		// Wait for rate limiter (Crossref: ~5 requests per second is usually safe)
+		limiter.Wait(ctx, ProviderCrossref, 5, 2)
+
+		req, errReq := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
+		if errReq != nil {
+			return nil, errReq
+		}
+
+		resp, err = http.DefaultClient.Do(req)
+		if err == nil {
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				resp.Body.Close()
+				logger.Warn("CAPES (Crossref) rate limit hit, retrying...", zap.Int("attempt", i+1))
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			resp.Body.Close()
+			return nil, fmt.Errorf("crossref api error: %s", resp.Status)
+		}
+
+		if i < 2 {
+			time.Sleep(backoff)
+			backoff *= 2
+		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.Error("CAPES harvester: request failed", zap.Error(err))
-		return nil, err
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		if err != nil {
+			logger.Error("CAPES harvester: request failed", zap.Error(err))
+			return nil, err
+		}
+		return nil, fmt.Errorf("crossref api error after retries")
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("crossref api error: %s", resp.Status)
-	}
 
 	var data CrossrefResponse
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {

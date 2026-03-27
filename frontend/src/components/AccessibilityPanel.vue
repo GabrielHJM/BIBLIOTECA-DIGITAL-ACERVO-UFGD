@@ -340,7 +340,7 @@ const handleFabClick = () => {
 const fabStyle = computed(() => ({
   left: `${position.value.x}px`,
   top: `${position.value.y}px`,
-  transform: 'none', // Remove the static translate
+  transform: 'none',
   transition: isDragging.value ? 'none' : 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
 }))
 
@@ -552,7 +552,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
 .a11y-panel-enter-active,
 .a11y-panel-leave-active { transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.23,1,0.32,1); }
 .a11y-panel-enter-from,
-.a11y-panel-leave-to { opacity: 0; transform: translateY(-50%) scale(0.95); }
+.a11y-panel-leave-to { opacity: 0; transform: translate(-50%, -45%) scale(0.95); }
 
 /* Header */
 .a11y-header {
@@ -727,15 +727,7 @@ html.a11y-reading-guide #a11y-reading-guide-bar {
     right: 8px;
     left: 8px;
     width: auto;
-    top: auto;
-    bottom: 100px;
-    transform: none;
     max-height: 70vh;
   }
-  .a11y-panel-enter-from,
-  .a11y-panel-leave-to { transform: translateY(20px); }
-  .a11y-fab { right: 16px; top: auto; bottom: 28px; transform: none; }
-  .a11y-fab:hover { transform: scale(1.1); }
-  .a11y-fab--active { transform: rotate(15deg); }
 }
 </style>

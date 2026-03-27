@@ -3,9 +3,12 @@ package handler
 import (
 	"biblioteca-digital-api/internal/harvester"
 	"biblioteca-digital-api/internal/pkg/cache"
+	"biblioteca-digital-api/internal/pkg/logger"
 	"biblioteca-digital-api/internal/pkg/utils"
 	"biblioteca-digital-api/internal/repository"
-	"biblioteca-digital-api/internal/usecase/material"
+	domain "biblioteca-digital-api/internal/domain/material"
+	materialUC "biblioteca-digital-api/internal/usecase/material"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -14,7 +17,10 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
@@ -22,13 +28,13 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	mh := harvester.NewMultiSourceHarvester()
 	verifier := utils.NewURLVerifier()
 
-	listarUC := &material.ListarConteudosUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
-	buscarUC := &material.BuscarMaterialUseCase{Repo: repo}
-	similaresUC := &material.BuscarSimilaresUseCase{Repo: repo}
-	pesquisarUC := &material.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
-	favoritarUC := &material.FavoritarMaterialUseCase{Repo: repo}
-	historicoUC := &material.HistoricoLeituraUseCase{Repo: repo}
-	avaliarUC := &material.AvaliarMaterialUseCase{Repo: repo}
+	listarUC := &materialUC.ListarConteudosUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
+	buscarUC := &materialUC.BuscarMaterialUseCase{Repo: repo}
+	similaresUC := &materialUC.BuscarSimilaresUseCase{Repo: repo}
+	pesquisarUC := &materialUC.PesquisarMaterialUseCase{Repo: repo, Harvester: mh, Cache: c, Verifier: verifier}
+	favoritarUC := &materialUC.FavoritarMaterialUseCase{Repo: repo}
+	historicoUC := &materialUC.HistoricoLeituraUseCase{Repo: repo}
+	avaliarUC := &materialUC.AvaliarMaterialUseCase{Repo: repo}
 
 	mux.HandleFunc("GET /materiais", func(w http.ResponseWriter, r *http.Request) {
 		termo := r.URL.Query().Get("q")
@@ -102,23 +108,62 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	
 	mux.HandleFunc("GET /materiais/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		result := make(map[string]interface{})
-		// Use explicit UTF-8 literals and ensure they match Home.vue
 		categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
 		
+		type catResult struct {
+			cat  string
+			mats []domain.Material
+		}
+		
+		resChan := make(chan catResult, len(categories))
+		var wg sync.WaitGroup
+
 		for _, cat := range categories {
-			// Busca materiais para cada categoria (limite de 3 para o dashboard)
-			mats, err := pesquisarUC.Execute(r.Context(), "", cat, "", 0, 0, nil, 3, 0, "random")
-			if err != nil {
-				result[cat] = []interface{}{}
-				continue
+			wg.Add(1)
+			go func(c string) {
+				defer wg.Done()
+				
+				// Per-category timeout to ensure total response time is bounded
+				catCtx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
+				defer cancel()
+
+				mats, err := pesquisarUC.Execute(catCtx, "", c, "", 0, 0, nil, 3, 0, "random")
+				if err != nil {
+					logger.Error("Erro ao buscar materiais para categoria no dashboard", zap.String("categoria", c), zap.Error(err))
+					resChan <- catResult{c, []domain.Material{}}
+					return
+				}
+				
+				// Fallback: se não encontrar nada na categoria específica, tenta busca geral aleatória
+				if len(mats) == 0 {
+					mats, _ = pesquisarUC.Execute(catCtx, "", "", "", 0, 0, nil, 3, 0, "random")
+				}
+				
+				resChan <- catResult{c, mats}
+			}(cat)
+		}
+
+		// Close channel after all goroutines finish
+		done := make(chan struct{})
+		go func() {
+			wg.Wait()
+			close(done)
+			close(resChan)
+		}()
+
+		// Collect results
+		// We expect exactly len(categories) results
+	CollectLoop:
+		for i := 0; i < len(categories); i++ {
+			select {
+			case res := <-resChan:
+				result[res.cat] = res.mats
+			case <-time.After(20 * time.Second): // Fail-safe
+				logger.Warn("Dashboard generation partially timed out waiting for results")
+				break CollectLoop
+			case <-r.Context().Done():
+				return
 			}
-			
-			// Fallback: se não encontrar nada na categoria específica, tenta busca geral aleatória
-			if len(mats) == 0 {
-				mats, _ = pesquisarUC.Execute(r.Context(), "", "", "", 0, 0, nil, 3, 0, "random")
-			}
-			
-			result[cat] = mats
 		}
 		
 		JSONSuccess(w, result, http.StatusOK)

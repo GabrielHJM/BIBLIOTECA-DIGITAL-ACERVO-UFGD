@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -51,6 +52,8 @@ func NewGoogleBooksHarvester() *GoogleBooksHarvester {
 }
 
 func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+	limiter := GetRateLimiter()
+
 	searchTerm := query
 	if searchTerm == "" {
 		searchTerm = category
@@ -64,23 +67,58 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 	if apiKey != "" {
 		keyParam = "&key=" + apiKey
 	}
-	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks&langRestrict=pt&maxResults=%d%s", h.BaseURL, url.QueryEscape(searchTerm), limit, keyParam)
+	langParam := "&langRestrict=pt"
+	// For academic/technical searches, English results are often better and more abundant
+	if strings.Contains(searchTerm, "tecnologia") || strings.Contains(searchTerm, "science") || strings.Contains(searchTerm, "matematica") {
+		langParam = "" 
+	}
+	
+	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks%s&maxResults=%d%s", h.BaseURL, url.QueryEscape(searchTerm), langParam, limit, keyParam)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
-	if err != nil {
-		return nil, err
+	// Max 3 retries with exponential backoff
+	var resp *http.Response
+	var err error
+	backoff := 500 * time.Millisecond
+
+	for i := 0; i < 3; i++ {
+		// Wait for rate limiter (Google Books: ~10 requests per second is safe)
+		limiter.Wait(ctx, ProviderGoogleBooks, 10, 5)
+
+		req, errReq := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
+		if errReq != nil {
+			return nil, errReq
+		}
+
+		resp, err = http.DefaultClient.Do(req)
+		if err == nil {
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				resp.Body.Close()
+				logger.Warn("GoogleBooks rate limit hit, retrying...", zap.Int("attempt", i+1))
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			resp.Body.Close()
+			return nil, fmt.Errorf("googlebooks api error: %s", resp.Status)
+		}
+
+		if i < 2 {
+			time.Sleep(backoff)
+			backoff *= 2
+		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.Error("GoogleBooks harvester: request failed", zap.Error(err))
-		return nil, err
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		if err != nil {
+			logger.Error("GoogleBooks harvester: request failed", zap.Error(err))
+			return nil, err
+		}
+		return nil, fmt.Errorf("googlebooks api error after retries")
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("googlebooks api error: %s", resp.Status)
-	}
 
 	var data GoogleBooksResponse
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
@@ -107,11 +145,13 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 			continue
 		}
 
-		// Ensure the link leads to a PDF
-		// We still allow googleapis.com links as they are the direct download source,
-		// but we strip any non-pdf fallbacks like webReader
+		// Ensure the link is likely an ebook
 		lowerPDF := strings.ToLower(pdfURL)
-		if !strings.HasSuffix(lowerPDF, ".pdf") && !strings.Contains(lowerPDF, "download") && !strings.Contains(lowerPDF, "acs") {
+		if !strings.HasSuffix(lowerPDF, ".pdf") && 
+		   !strings.Contains(lowerPDF, "download") && 
+		   !strings.Contains(lowerPDF, "acs") &&
+		   !strings.Contains(lowerPDF, "googleapis") &&
+		   !strings.Contains(lowerPDF, "books.google") {
 			continue
 		}
 

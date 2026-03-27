@@ -80,7 +80,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 	}
 
 	if categoria != "" {
-		query += fmt.Sprintf(" AND unaccent(categoria) ILIKE unaccent($%d)", argCount)
+		query += fmt.Sprintf(" AND categoria ILIKE $%d", argCount)
 		args = append(args, "%"+categoria+"%")
 		argCount++
 	}
@@ -104,7 +104,7 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 	}
 
 	// Ordenação
-	orderBy := "id DESC"
+	orderBy := "unaccent(LOWER(titulo)) ASC"
 
 	switch sort {
 	case "az":

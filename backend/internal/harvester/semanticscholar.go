@@ -44,7 +44,7 @@ func NewSemanticScholarHarvester() *SemanticScholarHarvester {
 }
 
 func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
-	time.Sleep(1500 * time.Millisecond) // Prevents HTTP 429 Too Many Requests
+	limiter := GetRateLimiter()
 
 	searchTerm := query
 	if searchTerm == "" {
@@ -56,21 +56,50 @@ func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, cat
 
 	searchURL := fmt.Sprintf("%s?query=%s&limit=%d&fields=title,authors,year,abstract,openAccessPdf,citationCount,journal", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
-	if err != nil {
-		return nil, err
+	// Max 3 retries with exponential backoff
+	var resp *http.Response
+	var err error
+	backoff := 1 * time.Second
+
+	for i := 0; i < 3; i++ {
+		// Wait for rate limiter (Semantic Scholar: ~1 request per second for free tier)
+		limiter.Wait(ctx, ProviderSemanticScholar, 1, 1)
+
+		req, errReq := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
+		if errReq != nil {
+			return nil, errReq
+		}
+
+		resp, err = http.DefaultClient.Do(req)
+		if err == nil {
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				resp.Body.Close()
+				logger.Warn("SemanticScholar rate limit hit, retrying...", zap.Int("attempt", i+1))
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			resp.Body.Close()
+			return nil, fmt.Errorf("semanticscholar api error: %s", resp.Status)
+		}
+
+		if i < 2 {
+			time.Sleep(backoff)
+			backoff *= 2
+		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.Error("SemanticScholar harvester: request failed", zap.Error(err))
-		return nil, err
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		if err != nil {
+			logger.Error("SemanticScholar harvester: request failed", zap.Error(err))
+			return nil, err
+		}
+		return nil, fmt.Errorf("semanticscholar api error after retries")
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("semanticscholar api error: %s", resp.Status)
-	}
 
 	var data SemanticScholarResponse
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
@@ -83,9 +112,12 @@ func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, cat
 			continue
 		}
 
-		// STRICT PDF RULE
+		// Relaxed PDF RULE
 		pdfURL := item.OpenAccessPdf.URL
-		if !strings.HasSuffix(strings.ToLower(strings.Split(pdfURL, "?")[0]), ".pdf") {
+		lowerURL := strings.ToLower(pdfURL)
+		if !strings.HasSuffix(strings.Split(lowerURL, "?")[0], ".pdf") && 
+		   !strings.Contains(lowerURL, "pdf") && 
+		   !strings.Contains(lowerURL, "openaccess") {
 			continue
 		}
 

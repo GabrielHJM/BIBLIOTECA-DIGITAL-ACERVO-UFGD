@@ -65,7 +65,7 @@ func (v *URLVerifier) IsAlive(ctx context.Context, url string) bool {
 	// 1. Try HEAD first (faster, no body)
 	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
 	if err != nil {
-		return false
+		return true // Optimistic
 	}
 	
 	// Add common headers to avoid being blocked as a bot
@@ -77,21 +77,30 @@ func (v *URLVerifier) IsAlive(ctx context.Context, url string) bool {
 		if resp.StatusCode < 400 {
 			return true
 		}
+		if resp.StatusCode >= 500 {
+			return true // Server error might be temporary
+		}
 	}
 
-	// 2. Fallback to GET with a very small range if HEAD fails (some servers block HEAD)
+	// 2. Fallback to GET with a very small range if HEAD fails
 	req, err = http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return false
+		return true
 	}
 	req.Header.Set("Range", "bytes=0-0")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
 	resp, err = v.client.Do(req)
 	if err != nil {
-		return false
+		// On network/timeout/context errors, be optimistic
+		return true
 	}
 	defer resp.Body.Close()
 
-	return resp.StatusCode < 400
+	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
+		// Only definitively dead if 404/403 etc.
+		return false
+	}
+
+	return true
 }

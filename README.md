@@ -107,7 +107,7 @@ Para subir o ecossistema completo (Frontend + Backend + Banco de Dados) com um �
 docker-compose up --build
 ```
 
-- **Frontend & Backend:** [http://localhost:8080](http://localhost:8080)
+- **Frontend & Backend:** [http://localhost:8082](http://localhost:8082)
 - **Banco de Dados:** Rodando no container (porta interna 5432, externa 5433).
 
 ## ☁️ Deploy Público (Render)

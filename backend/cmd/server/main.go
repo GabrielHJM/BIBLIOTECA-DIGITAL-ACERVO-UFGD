@@ -87,7 +87,8 @@ func main() {
 			ano_publicacao INTEGER, descricao TEXT, capa_url TEXT, pdf_url TEXT, disponivel BOOLEAN DEFAULT TRUE,
 			media_nota NUMERIC(3,2) DEFAULT 0.0, total_avaliacoes INTEGER DEFAULT 0, paginas INTEGER DEFAULT 0,
 			externo_id TEXT UNIQUE, fonte TEXT, status TEXT DEFAULT 'aprovado', curador_id INTEGER REFERENCES usuarios(id),
-			dificuldade INTEGER DEFAULT 1, xp INTEGER DEFAULT 10, relevancia INTEGER DEFAULT 0, search_vector tsvector
+			dificuldade INTEGER DEFAULT 1, xp INTEGER DEFAULT 10, relevancia INTEGER DEFAULT 0, search_vector tsvector,
+			data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, deleted_at TIMESTAMP
 		);`},
 		{"flashcards", `CREATE TABLE IF NOT EXISTS flashcards (
 			id SERIAL PRIMARY KEY, usuario_id INTEGER NOT NULL REFERENCES usuarios(id) ON DELETE CASCADE,
@@ -135,6 +136,8 @@ func main() {
 			id SERIAL PRIMARY KEY, remetente_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE, destinatario_id INTEGER REFERENCES usuarios(id) ON DELETE CASCADE,
 			material_id INTEGER REFERENCES materiais(id) ON DELETE SET NULL, conteudo TEXT, lida BOOLEAN DEFAULT FALSE, data TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);`},
+		{"materiais_data_criacao", `ALTER TABLE materiais ADD COLUMN IF NOT EXISTS data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`},
+		{"materiais_deleted_at", `ALTER TABLE materiais ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;`},
 	}
 
 	for _, m := range migrations {
@@ -206,16 +209,26 @@ func main() {
 			return
 		}
 
-		// For any other route, try to serve the file from dist
-		// If it doesn't exist, serve index.html (Vue Router History Mode)
-		f, err := http.Dir("dist").Open(strings.TrimPrefix(path, "/"))
-		if err != nil {
-			// File not found, serve index.html
-			http.ServeFile(w, r, "dist/index.html")
+		// Check if file exists in dist
+		relativePath := strings.TrimPrefix(path, "/")
+		f, err := http.Dir("dist").Open(relativePath)
+		if err == nil {
+			f.Close()
+			fs.ServeHTTP(w, r)
 			return
 		}
-		f.Close()
-		fs.ServeHTTP(w, r)
+
+		// File NOT found in dist.
+		// If the request is for a static asset (has an extension), return 404 to avoid serving HTML as JS.
+		// Otherwise (SPA route), serve index.html for client-side routing.
+		if strings.Contains(path, ".") && !strings.HasSuffix(path, ".html") {
+			logger.Warn("Static file not found", zap.String("path", path))
+			http.NotFound(w, r)
+			return
+		}
+
+		// Fallback to index.html for SPA routing
+		http.ServeFile(w, r, "dist/index.html")
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

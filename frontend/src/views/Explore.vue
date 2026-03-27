@@ -203,7 +203,7 @@ export default {
 		limit: 16,
 		hasMore: true,
 
-		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA DO BRASIL', 'EDUCAÇÃO', 'JURÍDICO', 'LITERATURA BRASILEIRA', 'CONTABILIDADE', 'DIREITO BRASILEIRO', 'SAÚDE PÚBLICA BRASIL', 'TECNOLOGIA BRASIL'],
+		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'JURÍDICO', 'LITERATURA BRASILEIRA', 'CONTABILIDADE', 'DIREITO BRASILEIRO', 'SAÚDE PÚBLICA BRASIL', 'TECNOLOGIA BRASIL'],
 		sortOptions: [
 			{ label: 'Ordem Alfabética (A-Z)', value: 'az' },
 			{ label: 'Ordem Alfabética (Z-A)', value: 'za' },

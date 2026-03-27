@@ -4,6 +4,8 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ ./
+ARG VUE_APP_GNEWS_API_KEY
+ENV VUE_APP_GNEWS_API_KEY=$VUE_APP_GNEWS_API_KEY
 RUN npm run build
 
 # Stage 2: Build Backend

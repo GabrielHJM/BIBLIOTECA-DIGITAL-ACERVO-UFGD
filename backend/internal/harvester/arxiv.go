@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -48,6 +49,8 @@ func NewArXivHarvester() *ArXivHarvester {
 }
 
 func (h *ArXivHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+	limiter := GetRateLimiter()
+
 	searchTerm := query
 	if searchTerm == "" {
 		searchTerm = "all"
@@ -55,21 +58,50 @@ func (h *ArXivHarvester) Search(ctx context.Context, query string, category stri
 
 	searchURL := fmt.Sprintf("%s?search_query=all:%s&start=0&max_results=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
 
-	req, err := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
-	if err != nil {
-		return nil, err
+	// Max 3 retries with exponential backoff
+	var resp *http.Response
+	var err error
+	backoff := 1 * time.Second
+
+	for i := 0; i < 3; i++ {
+		// Wait for rate limiter (ArXiv: ~1 request every 3 seconds recommended, but we can try 1/s with retries)
+		limiter.Wait(ctx, ProviderArXiv, 0.33, 1)
+
+		req, errReq := http.NewRequestWithContext(ctx, "GET", searchURL, nil)
+		if errReq != nil {
+			return nil, errReq
+		}
+
+		resp, err = http.DefaultClient.Do(req)
+		if err == nil {
+			if resp.StatusCode == http.StatusOK {
+				break
+			}
+			if resp.StatusCode == http.StatusTooManyRequests {
+				resp.Body.Close()
+				logger.Warn("ArXiv rate limit hit, retrying...", zap.Int("attempt", i+1))
+				time.Sleep(backoff)
+				backoff *= 2
+				continue
+			}
+			resp.Body.Close()
+			return nil, fmt.Errorf("arxiv api error: %s", resp.Status)
+		}
+
+		if i < 2 {
+			time.Sleep(backoff)
+			backoff *= 2
+		}
 	}
 
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		logger.Error("ArXiv harvester: request failed", zap.Error(err))
-		return nil, err
+	if err != nil || resp == nil || resp.StatusCode != http.StatusOK {
+		if err != nil {
+			logger.Error("ArXiv harvester: request failed", zap.Error(err))
+			return nil, err
+		}
+		return nil, fmt.Errorf("arxiv api error after retries")
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("arxiv api error: %s", resp.Status)
-	}
 
 	var data ArxivFeed
 	if err := xml.NewDecoder(resp.Body).Decode(&data); err != nil {
