@@ -48,6 +48,8 @@ npm-debug.log*
 
 # Binaries and executables
 *.exe
+backend/server_bin
+backend/*.log
 
 # OS generated files
 Thumbs.db

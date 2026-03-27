@@ -23,7 +23,7 @@ type PesquisarMaterialUseCase struct {
 
 func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sort string) ([]material.Material, error) {
 	cacheKey := fmt.Sprintf("search:%s:%s:%s:%d:%d:%d:%d:%s", termo, categoria, fonte, anoInicio, anoFim, limit, offset, sort)
-	if uc.Cache != nil && sort != "random" {
+	if uc.Cache != nil {
 		var cached []material.Material
 		if found := uc.Cache.Get(cacheKey, &cached); found {
 			return cached, nil

@@ -154,9 +154,9 @@ func main() {
 		CREATE OR REPLACE FUNCTION materiais_search_trigger() RETURNS trigger AS $$
 		begin
 		  new.search_vector :=
-			setweight(to_tsvector('portuguese', coalesce(new.titulo,'')), 'A') ||
-			setweight(to_tsvector('portuguese', coalesce(new.autor,'')), 'B') ||
-			setweight(to_tsvector('portuguese', coalesce(new.descricao,'')), 'C');
+			setweight(to_tsvector('portuguese', unaccent(coalesce(new.titulo,''))), 'A') ||
+			setweight(to_tsvector('portuguese', unaccent(coalesce(new.autor,''))), 'B') ||
+			setweight(to_tsvector('portuguese', unaccent(coalesce(new.descricao,''))), 'C');
 		  return new;
 		end
 		$$ LANGUAGE plpgsql;
