@@ -62,7 +62,7 @@
 									<v-btn
 										icon
 										variant="text"
-										:color="isFavorited ? 'red' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
+										:color="isFavorited ? 'pink' : ($vuetify.theme.current.dark ? 'white' : 'primary')"
 										@click="toggleFavorite"
 										class="favorite-btn"
 									>
@@ -179,10 +179,9 @@ export default {
 	}),
 	computed: {
 		isFavorited() {
-			if (!this.material) return false;
-			const favs = this.globalFavorites?.value || [];
-			return favs.some(f => f.id === this.material.id);
-		}
+			if (!this.material || !this.globalFavorites || !this.globalFavorites.list) return false;
+			return this.globalFavorites.list.some(f => f.id == this.material.id);
+		},
 	},
 	methods: {
 		async toggleFavorite() {
