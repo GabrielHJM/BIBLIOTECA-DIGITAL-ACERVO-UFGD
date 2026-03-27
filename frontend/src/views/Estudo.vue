@@ -198,8 +198,8 @@ export default {
 				const el = this.$refs.heartIcon.$el || this.$refs.heartIcon;
 				const tl = gsap.timeline();
 				tl.to(el, { scale: 1.5, rotation: 15, duration: 0.15, ease: "back.out(2)" })
-				  .to(el, { rotation: -15, duration: 0.1, ease: "none" })
-				  .to(el, { scale: 1, rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
+					.to(el, { rotation: -15, duration: 0.1, ease: "none" })
+					.to(el, { scale: 1, rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
 			}
 
 			try {

@@ -69,7 +69,6 @@
           class="ios-btn-open"
           variant="flat"
           size="small"
-          size="small"
           @click.stop="$router.push('/estudo/' + book.id)"
         >
           {{ actionLabel }}
