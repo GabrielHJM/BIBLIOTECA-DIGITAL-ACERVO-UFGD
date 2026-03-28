@@ -109,15 +109,15 @@ func (h *GutendexHarvester) Search(ctx context.Context, query string, category s
 			continue
 		}
 
-		// Find the best reading link
+		// Find the best reading link (Prioritizing HTML for online reading over downloads)
 		pdfURL := ""
-		if url, ok := res.Formats["application/pdf"]; ok {
+		if url, ok := res.Formats["text/html; charset=utf-8"]; ok {
 			pdfURL = url
-		} else if url, ok := res.Formats["application/epub+zip"]; ok {
-			pdfURL = url
-		} else if url, ok := res.Formats["text/html; charset=utf-8"]; ok {
+		} else if url, ok := res.Formats["application/pdf"]; ok {
 			pdfURL = url
 		} else if url, ok := res.Formats["text/plain; charset=utf-8"]; ok {
+			pdfURL = url
+		} else if url, ok := res.Formats["application/epub+zip"]; ok {
 			pdfURL = url
 		}
 

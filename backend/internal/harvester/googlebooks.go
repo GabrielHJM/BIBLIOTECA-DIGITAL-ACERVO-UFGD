@@ -128,8 +128,10 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		}
 
 		pdfURL := ""
-		// If Google explicitly says PDF is available and gives a download link
-		if item.AccessInfo.Pdf.IsAvailable {
+		// Prioritize WebReaderLink for "online reading" in the browser
+		if item.AccessInfo.WebReaderLink != "" {
+			pdfURL = item.AccessInfo.WebReaderLink
+		} else if item.AccessInfo.Pdf.IsAvailable {
 			if item.AccessInfo.Pdf.DownloadLink != "" {
 				pdfURL = item.AccessInfo.Pdf.DownloadLink
 			} else if item.AccessInfo.Pdf.AcsTokenLink != "" {
@@ -141,9 +143,10 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 			continue
 		}
 
-		// Ensure the link is likely an ebook
+		// Ensure the link is likely an ebook or reader
 		lowerPDF := strings.ToLower(pdfURL)
-		if !strings.HasSuffix(lowerPDF, ".pdf") && 
+		if !strings.Contains(lowerPDF, "reader") && 
+		   !strings.HasSuffix(lowerPDF, ".pdf") && 
 		   !strings.Contains(lowerPDF, "download") && 
 		   !strings.Contains(lowerPDF, "acs") &&
 		   !strings.Contains(lowerPDF, "googleapis") &&

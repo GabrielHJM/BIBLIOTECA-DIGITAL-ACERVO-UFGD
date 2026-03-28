@@ -137,8 +137,22 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	seen := make(map[string]bool)
 
 	for _, m := range allMaterials {
-		// Clean junk
+		// Clean junk and enforce "Online Reading Only" rule
 		if m.Titulo == "" || m.PDFURL == "" {
+			continue
+		}
+
+		// Final check: URL must look like a PDF or a known online reader
+		lowerURL := strings.ToLower(m.PDFURL)
+		isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
+			strings.Contains(lowerURL, "reader") || 
+			strings.Contains(lowerURL, "view") || 
+			strings.Contains(lowerURL, "archive.org/download") ||
+			strings.Contains(lowerURL, "books.google") ||
+			strings.Contains(lowerURL, "gutendex.com") ||
+			strings.Contains(lowerURL, "arxiv.org/pdf")
+
+		if !isValidReader {
 			continue
 		}
 

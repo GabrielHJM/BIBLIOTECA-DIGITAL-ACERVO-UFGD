@@ -107,14 +107,18 @@ func (h *OpenLibraryHarvester) Search(ctx context.Context, query string, categor
 			continue
 		}
 
-		// Construct a likely PDF/Read URL from Internet Archive if available
-		pdfURL := ""
-		if len(doc.IA) > 0 {
-			// Internet Archive PDF pattern
-			pdfURL = fmt.Sprintf("https://archive.org/download/%s/%s.pdf", doc.IA[0], doc.IA[0])
-		} else {
-			// Fallback to Read link
-			pdfURL = fmt.Sprintf("https://openlibrary.org%s", doc.Key)
+		// We ONLY want materials that have an Internet Archive ID for direct reading
+		if len(doc.IA) == 0 {
+			continue
+		}
+
+		// Internet Archive PDF direct link (most browsers render this online)
+		pdfURL := fmt.Sprintf("https://archive.org/download/%s/%s.pdf", doc.IA[0], doc.IA[0])
+		
+		// If we wanted the reader: pdfURL = fmt.Sprintf("https://archive.org/details/%s/mode/2up", doc.IA[0])
+		// But the user specifically mentioned "pdf do navegador" (browser PDF)
+		if pdfURL == "" {
+			continue
 		}
 
 		cover := ""
