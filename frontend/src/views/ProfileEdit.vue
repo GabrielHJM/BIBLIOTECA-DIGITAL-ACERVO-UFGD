@@ -30,13 +30,46 @@
 			<!-- Form Section -->
 			<div class="form-section">
 				<div class="mb-4">
-					<label class="ios-label">Nome de Usuário</label>
+					<label class="ios-label">Nome Completo</label>
 					<input v-model="user.nome" type="text" placeholder="Seu nome" class="ios-input-field w-100 mt-1" />
 				</div>
 
-				<div class="mb-6">
+				<div class="mb-4">
+					<label class="ios-label">Nome de Usuário (Username)</label>
+					<input v-model="user.username" type="text" placeholder="@usuario" class="ios-input-field w-100 mt-1" />
+				</div>
+
+				<div class="mb-4">
 					<label class="ios-label">E-mail</label>
 					<input v-model="user.email" type="email" placeholder="Seu e-mail" class="ios-input-field w-100 mt-1" />
+				</div>
+
+				<div class="d-flex mb-4" style="gap: 16px;">
+					<div class="flex-grow-1">
+						<label class="ios-label">CPF</label>
+						<input v-model="user.cpf" type="text" placeholder="000.000.000-00" class="ios-input-field w-100 mt-1" />
+					</div>
+					<div style="width: 160px;">
+						<label class="ios-label">Data de Nasc.</label>
+						<input v-model="user.data_nascimento" type="date" class="ios-input-field w-100 mt-1" />
+					</div>
+				</div>
+
+				<div v-if="userAge !== null" class="mb-6 px-3 py-2 rounded-lg bg-primary-light text-white text-center font-weight-bold" style="background: rgba(0, 122, 255, 0.2); border: 1px solid rgba(0, 122, 255, 0.3);">
+					Idade Calculada: {{ userAge }} anos
+				</div>
+
+				<!-- Password Change Section -->
+				<div class="password-change-section mb-8 p-4 rounded-xl" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+					<h3 class="text-white text-subtitle-1 font-weight-bold mb-4">Alterar Senha</h3>
+					<div class="mb-3">
+						<label class="ios-label">Senha Atual</label>
+						<input v-model="passwordForm.current" type="password" placeholder="••••••••" class="ios-input-field w-100 mt-1" />
+					</div>
+					<div>
+						<label class="ios-label">Nova Senha</label>
+						<input v-model="passwordForm.new" type="password" placeholder="No mínimo 6 caracteres" class="ios-input-field w-100 mt-1" />
+					</div>
 				</div>
 
 				<v-btn
@@ -154,7 +187,14 @@ export default {
 				id: null,
 				nome: '',
 				email: '',
-				foto_url: ''
+				foto_url: '',
+				username: '',
+				cpf: '',
+				data_nascimento: ''
+			},
+			passwordForm: {
+				current: '',
+				new: ''
 			},
 			loading: false,
 			deleting: false,
@@ -168,13 +208,33 @@ export default {
 	},
 	created() {
 		const cachedUser = auth.getUser()
-		this.user = { ...cachedUser }
+		// Convert Date to YYYY-MM-DD for input[type=date]
+		let birthDate = cachedUser.data_nascimento || '';
+		if (birthDate && birthDate.includes('T')) {
+			birthDate = birthDate.split('T')[0];
+		}
+		
+		this.user = { 
+			...cachedUser,
+			data_nascimento: birthDate 
+		}
 	},
 	computed: {
 		userRoleName() {
-			if (this.user.tipo_usuario_id === 1) return 'Aluno';
-			if (this.user.tipo_usuario_id === 2) return 'Professor';
+			if (this.user.tipo === 2) return 'Professor';
+			if (this.user.tipo === 1) return 'Aluno';
 			return 'Membro';
+		},
+		userAge() {
+			if (!this.user.data_nascimento) return null;
+			const birth = new Date(this.user.data_nascimento);
+			const today = new Date();
+			let age = today.getFullYear() - birth.getFullYear();
+			const m = today.getMonth() - birth.getMonth();
+			if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+				age--;
+			}
+			return age >= 0 ? age : 0;
 		}
 	},
 	methods: {
@@ -189,12 +249,10 @@ export default {
 			const file = event.target.files[0]
 			if (!file) return
 
-			// Em um app real, faríamos upload para um S3/Firebase aqui
-			// Para demonstração, usaremos um FileReader para preview local
 			const reader = new FileReader()
 			reader.onload = (e) => {
 				this.previewUrl = e.target.result
-				this.user.foto_url = this.previewUrl // Mocking upload
+				this.user.foto_url = this.previewUrl
 			}
 			reader.readAsDataURL(file)
 		},
@@ -204,7 +262,6 @@ export default {
 			this.snackbarColor = "info"
 			this.snackbar = true
 
-			// Simulação de delay de rede e seleção
 			setTimeout(() => {
 				this.previewUrl = "https://i.pravatar.cc/300?u=" + this.user.email
 				this.user.foto_url = this.previewUrl
@@ -216,21 +273,32 @@ export default {
 		async saveProfile() {
 			this.loading = true
 			try {
-				await UsuarioService.atualizar(this.user.id, this.user)
+				// Prepare payload
+				const payload = {
+					...this.user,
+					senha_atual: this.passwordForm.current,
+					nova_senha: this.passwordForm.new
+				}
+
+				await UsuarioService.atualizar(this.user.id, payload)
 
 				// Atualiza o estado global
-				auth.login({ ...this.user }) // auth.login atualiza o state reativo
+				auth.login({ ...this.user }) 
 
 				this.snackbarText = "Perfil atualizado com sucesso!"
 				this.snackbarColor = "success"
 				this.snackbar = true
+
+				// Reset password form
+				this.passwordForm.current = ''
+				this.passwordForm.new = ''
 
 				setTimeout(() => {
 					this.$router.push('/dashboard')
 				}, 1500)
 			} catch (error) {
 				console.error(error)
-				this.snackbarText = "Erro ao salvar perfil."
+				this.snackbarText = error.response?.data?.message || "Erro ao salvar perfil."
 				this.snackbarColor = "error"
 				this.snackbar = true
 			} finally {
