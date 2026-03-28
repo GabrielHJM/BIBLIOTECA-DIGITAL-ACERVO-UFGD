@@ -13,6 +13,8 @@ import (
 
 	"biblioteca-digital-api/internal/pkg/validation"
 	"biblioteca-digital-api/pkg/auth"
+	"biblioteca-digital-api/pkg/hash"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -40,12 +42,23 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			JSONError(w, "JSON inválido", http.StatusBadRequest)
 			return
 		}
-		if err := validation.ValidateStruct(req); err != nil {
-			JSONError(w, err.Error(), http.StatusBadRequest)
-			return
+
+		u := domain.Usuario{
+			Nome:     req.Nome,
+			Email:    req.Email,
+			Senha:    req.Senha,
+			Tipo:     req.Tipo,
+			Username: req.Username,
+			Cpf:      req.Cpf,
 		}
 
-		u := domain.Usuario{Nome: req.Nome, Email: req.Email, Senha: req.Senha, Tipo: req.Tipo}
+		if req.DataNascimento != "" {
+			t, err := time.Parse("2006-01-02", req.DataNascimento)
+			if err == nil {
+				u.DataNascimento = &t
+			}
+		}
+
 		err := cadastrarUC.Execute(r.Context(), &u)
 		if err != nil {
 			logger.Error("Erro ao cadastrar usuário", zap.Error(err))
@@ -59,8 +72,6 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 		token, err := auth.GerarToken(u.ID)
 		if err != nil {
 			logger.Error("Erro ao gerar token pós-cadastro", zap.Error(err))
-			// Cadastro funcionou, mas token falhou. Retornamos sucesso do cadastro sem o token.
-			// O usuário terá que fazer login manualmente.
 			JSONSuccess(w, nil, http.StatusCreated)
 			return
 		}
@@ -70,6 +81,7 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			"id":       u.ID,
 			"nome":     u.Nome,
 			"email":    u.Email,
+			"username": u.Username,
 			"foto_url": u.FotoURL,
 		}, http.StatusCreated)
 	})
@@ -118,7 +130,10 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			"id":       u.ID,
 			"nome":     u.Nome,
 			"email":    u.Email,
+			"username": u.Username,
 			"foto_url": u.FotoURL,
+			"cpf":      u.Cpf,
+			"data_nascimento": u.DataNascimento,
 		}, http.StatusOK)
 	})
 
@@ -154,30 +169,62 @@ func RegisterUsuarioRoutes(mux *http.ServeMux, db *sql.DB) {
 			return
 		}
 
+		// Search current user data
+		u, err := repo.BuscarPorID(r.Context(), id)
+		if err != nil {
+			JSONError(w, "Usuário não encontrado", http.StatusNotFound)
+			return
+		}
+
+		// Update fields if provided
 		if req.Nome != "" {
-			if err := validation.ValidateName(req.Nome); err != nil {
-				JSONError(w, err.Error(), http.StatusBadRequest)
-				return
-			}
+			u.Nome = req.Nome
 		}
 		if req.Email != "" {
-			if err := validation.ValidateEmail(req.Email); err != nil {
-				JSONError(w, err.Error(), http.StatusBadRequest)
-				return
+			u.Email = req.Email
+		}
+		if req.FotoURL != "" {
+			u.FotoURL = req.FotoURL
+		}
+		if req.Cpf != "" {
+			u.Cpf = req.Cpf
+		}
+		if req.Username != "" {
+			u.Username = req.Username
+		}
+		if req.DataNascimento != "" {
+			t, err := time.Parse("2006-01-02", req.DataNascimento)
+			if err == nil {
+				u.DataNascimento = &t
 			}
 		}
 
-		u := domain.Usuario{
-			ID:      id,
-			Nome:    req.Nome,
-			Email:   req.Email,
-			FotoURL: req.FotoURL,
+		// Password Change Logic
+		if req.NovaSenha != "" {
+			if req.SenhaAtual == "" {
+				JSONError(w, "Senha atual é obrigatória para alteração", http.StatusBadRequest)
+				return
+			}
+			
+			// Verify current password
+			if !hash.VerificarHash(req.SenhaAtual, u.Senha) {
+				JSONError(w, "Senha atual incorreta", http.StatusUnauthorized)
+				return
+			}
+
+			// Generate new hash
+			hashed, err := hash.GerarHash(req.NovaSenha)
+			if err != nil {
+				JSONError(w, "Erro ao processar nova senha", http.StatusInternalServerError)
+				return
+			}
+			u.Senha = hashed
 		}
 
-		err = atualizarUC.Execute(r.Context(), u)
+		err = atualizarUC.Execute(r.Context(), *u)
 		if err != nil {
 			logger.Error("Erro ao atualizar usuário", zap.Int("id", id), zap.Error(err))
-			JSONError(w, "Erro ao atualizar usuário: "+err.Error(), http.StatusInternalServerError)
+			JSONError(w, err.Error(), http.StatusUnprocessableEntity)
 			return
 		}
 		JSONSuccess(w, nil, http.StatusOK)

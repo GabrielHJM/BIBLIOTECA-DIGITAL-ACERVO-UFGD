@@ -25,6 +25,9 @@ CREATE TABLE IF NOT EXISTS usuarios (
     senha TEXT NOT NULL,
     tipo INTEGER DEFAULT 1, -- 1: Estudante, 2: Professor, 3: Admin
     foto_url TEXT,
+    cpf TEXT,
+    data_nascimento DATE,
+    username TEXT UNIQUE,
     meta_paginas_semana INTEGER DEFAULT 100,
     data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP

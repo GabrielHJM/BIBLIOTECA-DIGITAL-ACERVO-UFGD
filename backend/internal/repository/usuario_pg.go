@@ -17,11 +17,14 @@ func NewUsuarioPG(db *sql.DB) *UsuarioPostgres {
 }
 
 func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error {
-	query := "INSERT INTO usuarios (nome, email, senha, tipo, foto_url) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-	err := r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo, u.FotoURL).Scan(&u.ID)
+	query := "INSERT INTO usuarios (nome, email, senha, tipo, foto_url, cpf, data_nascimento, username) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id"
+	err := r.DB.QueryRowContext(ctx, query, u.Nome, u.Email, u.Senha, u.Tipo, u.FotoURL, u.Cpf, u.DataNascimento, u.Username).Scan(&u.ID)
 	if err != nil {
-		// Verificar se é erro de violação de unicidade (email duplicado)
+		// Verificar se é erro de violação de unicidade (email ou username duplicado)
 		if strings.Contains(err.Error(), "unique constraint") || strings.Contains(err.Error(), "23505") {
+			if strings.Contains(err.Error(), "username") {
+				return errors.New("este nome de usuário já está sendo usado")
+			}
 			return errors.New("este email já está cadastrado")
 		}
 		return err
@@ -30,9 +33,19 @@ func (r *UsuarioPostgres) Salvar(ctx context.Context, u *usuario.Usuario) error 
 }
 
 func (r *UsuarioPostgres) BuscarPorEmail(ctx context.Context, email string) (*usuario.Usuario, error) {
-	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, ''), deleted_at FROM usuarios WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL"
+	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, ''), cpf, data_nascimento, COALESCE(username, ''), deleted_at FROM usuarios WHERE LOWER(email) = LOWER($1) AND deleted_at IS NULL"
 	u := &usuario.Usuario{}
-	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL, &u.DeletedAt)
+	err := r.DB.QueryRowContext(ctx, query, email).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL, &u.Cpf, &u.DataNascimento, &u.Username, &u.DeletedAt)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func (r *UsuarioPostgres) BuscarPorID(ctx context.Context, id int) (*usuario.Usuario, error) {
+	query := "SELECT id, nome, email, senha, COALESCE(tipo, 1), COALESCE(foto_url, ''), cpf, data_nascimento, COALESCE(username, ''), deleted_at FROM usuarios WHERE id = $1 AND deleted_at IS NULL"
+	u := &usuario.Usuario{}
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(&u.ID, &u.Nome, &u.Email, &u.Senha, &u.Tipo, &u.FotoURL, &u.Cpf, &u.DataNascimento, &u.Username, &u.DeletedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +78,17 @@ func (r *UsuarioPostgres) AtualizarSenha(ctx context.Context, email string, nova
 }
 
 func (r *UsuarioPostgres) Atualizar(ctx context.Context, u *usuario.Usuario) error {
-	query := "UPDATE usuarios SET nome = $1, email = $2, foto_url = $3 WHERE id = $4 AND deleted_at IS NULL"
-	_, err := r.DB.ExecContext(ctx, query, u.Nome, u.Email, u.FotoURL, u.ID)
+	query := "UPDATE usuarios SET nome = $1, email = $2, foto_url = $3, cpf = $4, data_nascimento = $5, username = $6, senha = $7 WHERE id = $8 AND deleted_at IS NULL"
+	_, err := r.DB.ExecContext(ctx, query, u.Nome, u.Email, u.FotoURL, u.Cpf, u.DataNascimento, u.Username, u.Senha, u.ID)
+	if err != nil {
+		if strings.Contains(err.Error(), "unique constraint") || strings.Contains(err.Error(), "23505") {
+			if strings.Contains(err.Error(), "username") {
+				return errors.New("este nome de usuário já está sendo usado")
+			}
+			return errors.New("este email já está sendo usado")
+		}
+		return err
+	}
 	return err
 }
 
