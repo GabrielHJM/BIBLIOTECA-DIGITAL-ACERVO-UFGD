@@ -55,11 +55,32 @@
 									</v-icon>
 								</v-btn>
 							</div>
+							<!-- Password Strength Indicator -->
+							<div v-if="senha" class="mt-2 px-2">
+								<div class="strength-bar-container">
+									<div :class="['strength-bar', passwordStrength.colorClass]" :style="{ width: (passwordStrength.score / 5) * 100 + '%' }"></div>
+								</div>
+								<div class="d-flex justify-space-between mt-1">
+									<span class="text-caption text-white opacity-60">Segurança da senha</span>
+									<span :class="['text-caption font-weight-bold', passwordStrength.textClass]">{{ passwordStrength.label }}</span>
+								</div>
+							</div>
 						</v-col>
 					</v-row>
 
 					<v-row dense class="mb-2">
-						<v-col cols="12" class="px-2 mb-2">
+						<v-col cols="12" sm="6" class="px-2 mb-1">
+							<label class="ios-label">CONFIRMAR SENHA</label>
+							<div class="password-wrapper">
+								<input
+									v-model="confirmarSenha"
+									:type="mostrarSenha ? 'text' : 'password'"
+									placeholder="Repita sua senha"
+									class="ios-input-modern pr-12"
+								/>
+							</div>
+						</v-col>
+						<v-col cols="12" sm="6" class="px-2 mb-2">
 							<label class="ios-label">PERFIL</label>
 							<v-select
 								class="ios-select-modern"
@@ -105,17 +126,42 @@ export default {
 		instituicao: '',
 		email: '',
 		senha: '',
+		confirmarSenha: '',
 		mostrarSenha: false,
 		loading: false,
 		snackbar: false,
 		snackbarText: '',
 		snackbarColor: 'success'
 	}),
+	computed: {
+		passwordStrength() {
+			const s = this.senha;
+			if (!s) return { score: 0, label: '', colorClass: '', textClass: '' };
+			
+			let score = 0;
+			if (s.length >= 8) score++;
+			if (/[A-Z]/.test(s)) score++;
+			if (/[a-z]/.test(s)) score++;
+			if (/[0-9]/.test(s)) score++;
+			if (/[^A-Za-z0-9]/.test(s)) score++;
+
+			if (score <= 2) return { score, label: 'Fraca', colorClass: 'bg-error', textClass: 'text-error' };
+			if (score <= 4) return { score, label: 'Forte', colorClass: 'bg-warning', textClass: 'text-warning' };
+			return { score, label: 'Complexa', colorClass: 'bg-success', textClass: 'text-success' };
+		}
+	},
 	methods: {
 		async cadastrar() {
-			if (!this.nome || !this.email || !this.senha || !this.tipoUsuario) {
+			if (!this.nome || !this.email || !this.senha || !this.tipoUsuario || !this.confirmarSenha) {
 				this.snackbarText = "Por favor, preencha todos os campos obrigatórios."
 				this.snackbarColor = "warning"
+				this.snackbar = true
+				return
+			}
+
+			if (this.senha !== this.confirmarSenha) {
+				this.snackbarText = "As senhas não coincidem."
+				this.snackbarColor = "error"
 				this.snackbar = true
 				return
 			}
@@ -389,5 +435,18 @@ export default {
 
 	.back-btn:hover {
 		opacity: 1;
+	}
+
+	.strength-bar-container {
+		width: 100%;
+		height: 4px;
+		background: rgba(255, 255, 255, 0.1);
+		border-radius: 2px;
+		overflow: hidden;
+	}
+
+	.strength-bar {
+		height: 100%;
+		transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 </style>

@@ -69,6 +69,16 @@
 					<div>
 						<label class="ios-label">Nova Senha</label>
 						<input v-model="passwordForm.new" type="password" placeholder="No mínimo 6 caracteres" class="ios-input-field w-100 mt-1" />
+						<!-- Password Strength Indicator -->
+						<div v-if="passwordForm.new" class="mt-2 px-2">
+							<div class="strength-bar-container">
+								<div :class="['strength-bar', passwordStrength.colorClass]" :style="{ width: (passwordStrength.score / 5) * 100 + '%' }"></div>
+							</div>
+							<div class="d-flex justify-space-between mt-1">
+								<span class="text-caption text-white opacity-60">Segurança da senha</span>
+								<span :class="['text-caption font-weight-bold', passwordStrength.textClass]">{{ passwordStrength.label }}</span>
+							</div>
+						</div>
 					</div>
 				</div>
 
@@ -235,6 +245,21 @@ export default {
 				age--;
 			}
 			return age >= 0 ? age : 0;
+		},
+		passwordStrength() {
+			const s = this.passwordForm.new;
+			if (!s) return { score: 0, label: '', colorClass: '', textClass: '' };
+			
+			let score = 0;
+			if (s.length >= 8) score++;
+			if (/[A-Z]/.test(s)) score++;
+			if (/[a-z]/.test(s)) score++;
+			if (/[0-9]/.test(s)) score++;
+			if (/[^A-Za-z0-9]/.test(s)) score++;
+
+			if (score <= 2) return { score, label: 'Fraca', colorClass: 'bg-error', textClass: 'text-error' };
+			if (score <= 4) return { score, label: 'Forte', colorClass: 'bg-warning', textClass: 'text-warning' };
+			return { score, label: 'Complexa', colorClass: 'bg-success', textClass: 'text-success' };
 		}
 	},
 	methods: {
@@ -446,5 +471,18 @@ export default {
 
 .ios-modal-list :deep(.v-list-item-title) {
 	font-weight: 600;
+}
+
+.strength-bar-container {
+	width: 100%;
+	height: 4px;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.strength-bar {
+	height: 100%;
+	transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 </style>
