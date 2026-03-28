@@ -80,7 +80,8 @@ func main() {
 	}{
 		{"usuarios", `CREATE TABLE IF NOT EXISTS usuarios (
 			id SERIAL PRIMARY KEY, nome TEXT NOT NULL, email TEXT UNIQUE NOT NULL, senha TEXT NOT NULL,
-			tipo INTEGER DEFAULT 1, foto_url TEXT, meta_paginas_semana INTEGER DEFAULT 100, data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			tipo INTEGER DEFAULT 1, foto_url TEXT, cpf TEXT, data_nascimento DATE, username TEXT UNIQUE,
+			meta_paginas_semana INTEGER DEFAULT 100, data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 			deleted_at TIMESTAMP
 		);`},
 		{"materiais", `CREATE TABLE IF NOT EXISTS materiais (
@@ -140,6 +141,9 @@ func main() {
 		{"materiais_data_criacao", `ALTER TABLE materiais ADD COLUMN IF NOT EXISTS data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP;`},
 		{"materiais_deleted_at", `ALTER TABLE materiais ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;`},
 		{"usuarios_deleted_at", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP;`},
+		{"usuarios_cpf", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cpf TEXT;`},
+		{"usuarios_data_nascimento", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS data_nascimento DATE;`},
+		{"usuarios_username", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;`},
 	}
 
 	for _, m := range migrations {
