@@ -9,7 +9,7 @@
 						<v-col cols="12" sm="4" class="pa-2">
 							<v-select
 								v-model="filters.categoria"
-								:items="['Todos', ...categoriasMock]"
+								:items="['TODOS', ...categoriasMock]"
 								label="Categoria"
 								variant="solo-filled"
 								density="comfortable"
@@ -71,12 +71,12 @@
 							Busca: "{{ filters.q }}"
 						</v-chip>
 						<v-chip
-							v-if="filters.categoria"
+							v-if="filters.categoria && filters.categoria !== 'TODOS'"
 							closable
 							size="small"
 							color="cyan"
 							variant="tonal"
-							@click:close="filters.categoria = ''; buscar(true)"
+							@click:close="filters.categoria = 'TODOS'; buscar(true)"
 						>
 							<v-icon start size="14">mdi-shape</v-icon>
 							{{ filters.categoria }}
@@ -148,7 +148,7 @@ export default {
 		showFilters: false,
 		filters: {
 			q: '',
-			categoria: '',
+			categoria: 'TODOS',
 			ano_inicio: null,
 			ano_fim: null,
 			sort: 'az'
@@ -182,7 +182,7 @@ export default {
 		activeFiltersCount() {
 			let count = 0;
 			if (this.filters.ano_inicio) count++;
-			if (this.filters.categoria) count++;
+			if (this.filters.categoria && this.filters.categoria !== 'TODOS') count++;
 			return count;
 		}
 	},
@@ -238,8 +238,8 @@ export default {
 					await this.fetchGlobalFavorites();
 				}
 
-				// Trata o valor "Todos" como string vazia para a API
-				const categoriaParaBusca = this.filters.categoria === 'Todos' ? '' : this.filters.categoria;
+				// Trata o valor "TODOS" como string vazia para a API
+				const categoriaParaBusca = (this.filters.categoria === 'TODOS' || !this.filters.categoria) ? '' : this.filters.categoria;
 
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
@@ -300,7 +300,7 @@ export default {
 			}, 400);
 		},
 		limparFiltros() {
-			this.filters = { q: '', categoria: '', ano_inicio: null, ano_fim: null };
+			this.filters = { q: '', categoria: 'TODOS', ano_inicio: null, ano_fim: null };
 			this.$router.replace({ path: '/explorar', query: {} });
 			this.buscar();
 		},
