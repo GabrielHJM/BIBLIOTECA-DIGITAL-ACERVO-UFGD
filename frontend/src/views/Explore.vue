@@ -4,137 +4,100 @@
 			<!-- Advanced Header Section -->
 			<v-row dense align="center" class="mt-2 mb-2">
 				<v-col cols="12">
-					<div class="search-premium-box d-flex align-center">
-						<v-text-field
-							v-model="filters.q"
-							prepend-inner-icon="mdi-magnify"
-							placeholder="Busque por título, autor, DOI ou assunto..."
-							variant="solo"
-							class="ios-search-bar flex-grow-1"
-							hide-details
-							@update:modelValue="onSearchInput"
-							@keyup.enter="buscar(true)"
-							density="comfortable"
-						></v-text-field>
+					<div class="filter-bar-premium d-flex flex-wrap align-center pa-2">
+						<!-- Categoria Filter -->
+						<v-col cols="12" sm="4" class="pa-2">
+							<v-select
+								v-model="filters.categoria"
+								:items="categoriasMock"
+								label="Categoria"
+								variant="solo-filled"
+								density="comfortable"
+								rounded="lg"
+								hide-details
+								clearable
+								prepend-inner-icon="mdi-shape-outline"
+								class="filter-select-premium"
+								@update:modelValue="buscar"
+							></v-select>
+						</v-col>
 
-						<v-btn
-							class="ios-filter-toggle-premium ml-3"
-							variant="tonal"
-							icon="mdi-tune-variant"
-							@click="showFilters = true"
-							height="48"
-							width="48"
-							rounded="lg"
-						></v-btn>
+						<!-- Ano Filter -->
+						<v-col cols="12" sm="4" class="pa-2">
+							<v-select
+								v-model="filters.ano_inicio"
+								:items="yearsList"
+								label="Ano de Publicação"
+								variant="solo-filled"
+								density="comfortable"
+								rounded="lg"
+								hide-details
+								clearable
+								prepend-inner-icon="mdi-calendar-range"
+								class="filter-select-premium"
+								@update:modelValue="buscar"
+							></v-select>
+						</v-col>
 
-						<v-btn
-							class="search-btn ml-3 hidden-sm-and-down"
-							@click="buscar(true)"
-							:loading="loading && (livros?.length === 0)"
-							height="48"
-							rounded="lg"
-							min-width="120"
-						>
-							EXPLORAR
-						</v-btn>
+						<!-- Ordenação Filter -->
+						<v-col cols="12" sm="4" class="pa-2">
+							<v-select
+								v-model="filters.sort"
+								:items="sortOptions"
+								item-title="label"
+								item-value="value"
+								label="Ordenar por"
+								variant="solo-filled"
+								density="comfortable"
+								rounded="lg"
+								hide-details
+								prepend-inner-icon="mdi-sort-variant"
+								class="filter-select-premium"
+								@update:modelValue="buscar"
+							></v-select>
+						</v-col>
 					</div>
 
-					<div v-if="activeFiltersCount > 0" class="d-flex flex-wrap gap-2 mt-3 mb-1">
+					<!-- Active Selection Chips -->
+					<div v-if="activeFiltersCount > 0 || filters.q" class="d-flex flex-wrap gap-2 mt-4 px-2">
 						<v-chip
-							v-if="filters.categoria"
+							v-if="filters.q"
 							closable
 							size="small"
 							color="primary"
 							variant="tonal"
+							@click:close="clearSearch"
+						>
+							Busca: "{{ filters.q }}"
+						</v-chip>
+						<v-chip
+							v-if="filters.categoria"
+							closable
+							size="small"
+							color="cyan"
+							variant="tonal"
 							@click:close="filters.categoria = ''; buscar(true)"
 						>
-							Categoria: {{ filters.categoria }}
+							<v-icon start size="14">mdi-shape</v-icon>
+							{{ filters.categoria }}
 						</v-chip>
 						<v-chip
 							v-if="filters.ano_inicio"
 							closable
 							size="small"
-							color="primary"
+							color="amber"
 							variant="tonal"
 							@click:close="filters.ano_inicio = null; buscar(true)"
 						>
-							Desde: {{ filters.ano_inicio }}
+							<v-icon start size="14">mdi-calendar</v-icon>
+							A partir de {{ filters.ano_inicio }}
 						</v-chip>
 					</div>
 				</v-col>
 			</v-row>
 
-			<!-- Modern Filter Drawer -->
-			<v-navigation-drawer
-				v-model="showFilters"
-				location="right"
-				temporary
-				width="320"
-				class="filter-drawer-premium"
-			>
-				<div class="pa-6">
-					<div class="d-flex align-center justify-space-between mb-8">
-						<h2 class="text-h6 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">Refinar Busca</h2>
-						<v-btn icon="mdi-close" variant="text" size="small" @click="showFilters = false"></v-btn>
-					</div>
-
-					<div class="filter-section mb-6">
-						<label class="filter-label mb-3 d-block">Categoria</label>
-						<v-select
-							v-model="filters.categoria"
-							:items="categoriasMock"
-							placeholder="Todas as categorias"
-							variant="solo-filled"
-							density="comfortable"
-							rounded="lg"
-							hide-details
-							clearable
-							class="filter-select-premium"
-						></v-select>
-					</div>
-
-					<div class="filter-section mb-6">
-						<label class="filter-label mb-3 d-block">Ano de Publicação</label>
-						<v-select
-							v-model="filters.ano_inicio"
-							:items="yearsList"
-							placeholder="Qualquer ano"
-							variant="solo-filled"
-							density="comfortable"
-							rounded="lg"
-							hide-details
-							clearable
-							class="filter-select-premium"
-						></v-select>
-					</div>
-
-					<div class="filter-section mb-10">
-						<label class="filter-label mb-3 d-block">Ordenar Resultados</label>
-						<v-select
-							v-model="filters.sort"
-							:items="sortOptions"
-							item-title="label"
-							item-value="value"
-							variant="solo-filled"
-							density="comfortable"
-							rounded="lg"
-							hide-details
-							class="filter-select-premium"
-						></v-select>
-					</div>
-
-					<v-btn color="primary" block @click="buscar(true); showFilters = false" height="48" class="font-weight-bold">
-						APLICAR FILTROS
-					</v-btn>
-
-					<v-btn variant="text" block @click="limparFiltros" class="mt-2 text-none opacity-60">
-						Limpar tudo
-					</v-btn>
-				</div>
-			</v-navigation-drawer>
-
 			<!-- Quick Categories -->
-			<div class="category-row mb-4" v-if="!showFilters">
+			<div class="category-row mb-4">
 				<v-chip-group v-model="filters.categoria" @update:modelValue="buscar" mandatory color="primary">
 					<v-chip value="" class="premium-chip" variant="tonal" filter>Todos</v-chip>
 					<v-chip v-for="cat in categoriasMock" :key="cat" :value="cat" class="premium-chip" variant="tonal" filter>
@@ -342,7 +305,15 @@ export default {
 			}, 400);
 		},
 		limparFiltros() {
-			this.filters = { q: this.filters.q, categoria: '', ano_inicio: null, ano_fim: null };
+			this.filters = { q: '', categoria: '', ano_inicio: null, ano_fim: null };
+			this.$router.replace({ path: '/explorar', query: {} });
+			this.buscar();
+		},
+		clearSearch() {
+			this.filters.q = '';
+			const query = { ...this.$route.query };
+			delete query.q;
+			this.$router.replace({ path: '/explorar', query });
 			this.buscar();
 		},
 		async onToggleFavorite(livro) {
@@ -400,9 +371,34 @@ export default {
 		backdrop-filter: var(--glass-blur);
 		-webkit-backdrop-filter: var(--glass-blur);
 		border-radius: 32px;
-		padding: 32px;
+		padding: 24px;
 		border: 1px solid var(--glass-border);
-		margin-top: 24px;
+		margin-top: 16px;
+	}
+
+	.filter-bar-premium {
+		background: rgba(255, 255, 255, 0.03);
+		backdrop-filter: blur(10px);
+		border-radius: 24px;
+		border: 1px solid rgba(255, 255, 255, 0.08);
+	}
+
+	.filter-select-premium :deep(.v-field) {
+		background: rgba(255, 255, 255, 0.05) !important;
+		border-radius: 16px !important;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.filter-select-premium :deep(.v-field--focused) {
+		border-color: var(--ios-blue) !important;
+		background: rgba(0, 122, 255, 0.05) !important;
+	}
+
+	:deep(.v-label) {
+		font-size: 13px;
+		font-weight: 600;
+		opacity: 0.7;
 	}
 	.load-more-sentinel-modern {
 		height: 20px;
