@@ -9,7 +9,7 @@
 						<v-col cols="12" sm="4" class="pa-2">
 							<v-select
 								v-model="filters.categoria"
-								:items="categoriasMock"
+								:items="['Todos', ...categoriasMock]"
 								label="Categoria"
 								variant="solo-filled"
 								density="comfortable"
@@ -96,15 +96,7 @@
 				</v-col>
 			</v-row>
 
-			<!-- Quick Categories -->
-			<div class="category-row mb-4">
-				<v-chip-group v-model="filters.categoria" @update:modelValue="buscar" mandatory color="primary">
-					<v-chip value="" class="premium-chip" variant="tonal" filter>Todos</v-chip>
-					<v-chip v-for="cat in categoriasMock" :key="cat" :value="cat" class="premium-chip" variant="tonal" filter>
-						{{ cat }}
-					</v-chip>
-				</v-chip-group>
-			</div>
+
 
 			<!-- Content Grid -->
 			<div class="results-container">
@@ -246,9 +238,12 @@ export default {
 					await this.fetchGlobalFavorites();
 				}
 
+				// Trata o valor "Todos" como string vazia para a API
+				const categoriaParaBusca = this.filters.categoria === 'Todos' ? '' : this.filters.categoria;
+
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
-					this.filters.categoria,
+					categoriaParaBusca,
 					'', // fonte
 					this.filters.ano_inicio,
 					this.filters.ano_fim,
