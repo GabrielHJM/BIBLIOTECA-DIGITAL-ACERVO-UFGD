@@ -131,7 +131,7 @@
 				<v-col cols="12" sm="4" md="4" class="py-2">
 					<h1 class="text-h4 text-sm-h3 font-weight-bold tracking-tight" :class="isDarkTheme ? 'text-white' : 'text-primary'">Recentes</h1>
 				</v-col>
-				<v-col cols="12" sm="5" md="5" class="py-2">
+				<v-col cols="12" sm="5" md="5" class="py-2 position-relative">
 					<v-text-field
 						v-model="searchQuery"
 						prepend-inner-icon="mdi-magnify"
@@ -139,8 +139,32 @@
 						variant="solo"
 						class="ios-search-bar"
 						hide-details
-						@keyup.enter="buscar(true)"
+						@keyup.enter="handleEnter"
+						@keydown.down="navigateSuggestions(1)"
+						@keydown.up="navigateSuggestions(-1)"
+						@keydown.esc="showSuggestions = false"
+						@input="debouncedGetSuggestions"
 					></v-text-field>
+
+					<!-- Apple-style Suggestions Dropdown -->
+					<div v-if="showSuggestions && suggestions.length > 0" class="suggestions-dropdown-premium fade-in-fast">
+						<div
+							v-for="(suggestion, idx) in suggestions"
+							:key="suggestion.id"
+							class="suggestion-item"
+							:class="{ 'active': suggestionIndex === idx }"
+							@click="selectSuggestion(suggestion)"
+							@mouseover="suggestionIndex = idx"
+						>
+							<v-icon size="18" class="mr-3 opacity-40">{{ getBookIcon(suggestion.categoria, suggestion.titulo) }}</v-icon>
+							<div class="suggestion-content">
+								<div class="suggestion-title">{{ suggestion.titulo }}</div>
+								<div class="suggestion-meta">{{ suggestion.autor }} • {{ suggestion.categoria }}</div>
+							</div>
+							<v-spacer></v-spacer>
+							<v-icon size="14" class="opacity-20">mdi-arrow-top-left</v-icon>
+						</div>
+					</div>
 				</v-col>
 				<v-col cols="12" sm="3" md="3" class="text-right py-2">
 					<v-btn class="ios-filter-btn w-100 w-sm-auto" elevation="2" @click="buscar(true)">
@@ -262,6 +286,7 @@
 import MaterialService from '@/services/MaterialService'
 import auth from '@/auth'
 import PremiumCard from '@/components/PremiumCard.vue'
+import debounce from 'lodash.debounce'
 import { computed } from 'vue'
 import { useTheme } from 'vuetify'
 
@@ -285,8 +310,10 @@ export default {
 		stats: null,
 		limit: 16,
 		offset: 0,
-		hasMore: true,
-		observer: null
+		observer: null,
+		suggestions: [],
+		showSuggestions: false,
+		suggestionIndex: -1
 	}),
 	computed: {
 		favoritos() {
@@ -319,7 +346,52 @@ export default {
 	beforeUnmount() {
 		if (this.observer) this.observer.disconnect();
 	},
+	watch: {
+		searchQuery(newVal) {
+			if (!newVal) {
+				this.suggestions = [];
+				this.showSuggestions = false;
+			}
+		}
+	},
 	methods: {
+		debouncedGetSuggestions: debounce(function() {
+			this.getSuggestions();
+		}, 300),
+		async getSuggestions() {
+			if (!this.searchQuery || this.searchQuery.length < 2) {
+				this.suggestions = [];
+				this.showSuggestions = false;
+				return;
+			}
+			try {
+				const response = await MaterialService.obterSugestoes(this.searchQuery);
+				this.suggestions = response.data || [];
+				this.showSuggestions = this.suggestions.length > 0;
+				this.suggestionIndex = -1;
+			} catch (err) {
+				console.error('Erro ao buscar sugestões:', err);
+			}
+		},
+		navigateSuggestions(dir) {
+			if (!this.showSuggestions) return;
+			this.suggestionIndex += dir;
+			if (this.suggestionIndex < -1) this.suggestionIndex = this.suggestions.length - 1;
+			if (this.suggestionIndex >= this.suggestions.length) this.suggestionIndex = -1;
+		},
+		handleEnter() {
+			if (this.suggestionIndex >= 0 && this.suggestions[this.suggestionIndex]) {
+				this.selectSuggestion(this.suggestions[this.suggestionIndex]);
+			} else {
+				this.showSuggestions = false;
+				this.buscar(true);
+			}
+		},
+		selectSuggestion(suggestion) {
+			this.searchQuery = suggestion.titulo;
+			this.showSuggestions = false;
+			this.$router.push('/estudo/' + suggestion.id);
+		},
 		async buscarEstatisticas() {
 			try {
 				const response = await MaterialService.obterEstatisticas(this.user.id);
@@ -462,6 +534,58 @@ export default {
 		height: 20px;
 		width: 100%;
 		visibility: hidden;
+	}
+
+	/* Suggestions Styles */
+	.suggestions-dropdown-premium {
+		position: absolute;
+		top: 100%;
+		left: 16px;
+		right: 16px;
+		background: rgba(var(--v-theme-surface), 0.95);
+		backdrop-filter: blur(25px) saturate(180%);
+		-webkit-backdrop-filter: blur(25px) saturate(180%);
+		border-radius: 20px;
+		margin-top: 8px;
+		z-index: 1000;
+		box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		overflow: hidden;
+		padding: 8px;
+	}
+
+	.suggestion-item {
+		display: flex;
+		align-items: center;
+		padding: 12px 16px;
+		border-radius: 12px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.suggestion-item:hover, .suggestion-item.active {
+		background: rgba(var(--v-theme-primary), 0.15);
+		transform: translateX(5px);
+	}
+
+	.suggestion-title {
+		font-weight: 700;
+		font-size: 0.95rem;
+		color: var(--v-theme-on-surface);
+	}
+
+	.suggestion-meta {
+		font-size: 0.75rem;
+		opacity: 0.5;
+	}
+
+	.fade-in-fast {
+		animation: fadeInFast 0.2s ease-out;
+	}
+
+	@keyframes fadeInFast {
+		from { opacity: 0; transform: translateY(-10px); }
+		to { opacity: 1; transform: translateY(0); }
 	}
 
 	.tracking-tight {

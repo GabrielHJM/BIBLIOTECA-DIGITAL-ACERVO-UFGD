@@ -157,6 +157,32 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 	return materiais, nil
 }
 
+func (r *MaterialPostgres) Sugerir(ctx context.Context, termo string, limit int) ([]material.Material, error) {
+	// Query otimizada para sugestão (apenas campos necessários para UI de dropdown)
+	query := `SELECT id, titulo, autor, categoria, COALESCE(capa_url, ''), media_nota
+	          FROM materiais
+	          WHERE status = 'aprovado' AND deleted_at IS NULL
+	          AND (unaccent(titulo) ILIKE unaccent($1) OR unaccent(autor) ILIKE unaccent($1))
+	          ORDER BY relevancia DESC, media_nota DESC
+	          LIMIT $2`
+
+	rows, err := r.DB.QueryContext(ctx, query, "%"+termo+"%", limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var materiais []material.Material
+	for rows.Next() {
+		var m material.Material
+		if err := rows.Scan(&m.ID, &m.Titulo, &m.Autor, &m.Categoria, &m.CapaURL, &m.MediaNota); err != nil {
+			return nil, err
+		}
+		materiais = append(materiais, m)
+	}
+	return materiais, nil
+}
+
 func (r *MaterialPostgres) BuscarSimilares(ctx context.Context, materialID int, limit int) ([]material.Material, error) {
 	query := fmt.Sprintf(`SELECT %s
 	          FROM materiais m1

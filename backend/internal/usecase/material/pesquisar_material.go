@@ -6,6 +6,7 @@ import (
 	"biblioteca-digital-api/internal/pkg/utils"
 	"context"
 	"fmt"
+	"sort"
 	"strings"
 	"time"
 )
@@ -21,8 +22,8 @@ type PesquisarMaterialUseCase struct {
 	Verifier  *utils.URLVerifier
 }
 
-func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sort string) ([]material.Material, error) {
-	cacheKey := fmt.Sprintf("search:%s:%s:%s:%d:%d:%d:%d:%s", termo, categoria, fonte, anoInicio, anoFim, limit, offset, sort)
+func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sortParam string) ([]material.Material, error) {
+	cacheKey := fmt.Sprintf("search:%s:%s:%s:%d:%d:%d:%d:%s", termo, categoria, fonte, anoInicio, anoFim, limit, offset, sortParam)
 	if uc.Cache != nil {
 		var cached []material.Material
 		if found := uc.Cache.Get(cacheKey, &cached); found {
@@ -33,7 +34,7 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 	// 1. Local Search (Database)
 	// We oversample to compensate for any later filtering
 	fetchLimit := limit + (limit / 2)
-	materiaisIniciais, localErr := uc.Repo.Pesquisar(ctx, termo, categoria, fonte, anoInicio, anoFim, tags, fetchLimit, offset, sort)
+	materiaisIniciais, localErr := uc.Repo.Pesquisar(ctx, termo, categoria, fonte, anoInicio, anoFim, tags, fetchLimit, offset, sortParam)
 	if localErr != nil {
 		return nil, localErr
 	}
@@ -98,15 +99,66 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		materiais = append(materiais, m)
 	}
 
-	// 4. Force limit and final sort (optional but good for UI consistency)
-	if limit > 0 && len(materiais) > limit {
-		materiais = materiais[:limit]
+	// 4. Score-based Sorting (Efficient Unification)
+	type ScoredMaterial struct {
+		m     material.Material
+		score float64
+	}
+
+	scored := make([]ScoredMaterial, 0, len(materiais))
+	normalizedTermo := strings.ToLower(utils.RemoveAccents(termo))
+
+	for _, m := range materiais {
+		score := 0.0
+		
+		// 1. Base Score from DB Relevance (if available)
+		score += float64(m.Relevancia) * 1.0
+		
+		// 2. Text Match Quality Boost
+		mTitleLow := strings.ToLower(utils.RemoveAccents(m.Titulo))
+		mAuthorLow := strings.ToLower(utils.RemoveAccents(m.Autor))
+		
+		if normalizedTermo != "" {
+			if strings.HasPrefix(mTitleLow, normalizedTermo) { score += 100 }
+			if strings.Contains(mTitleLow, normalizedTermo) { score += 50 }
+			if strings.Contains(mAuthorLow, normalizedTermo) { score += 30 }
+		}
+
+		// 3. Metadata Quality Boost
+		if m.CapaURL != "" { score += 20 }
+		if m.Descricao != "" && len(m.Descricao) > 50 { score += 10 }
+		if m.MediaNota > 4.0 { score += 15 }
+		
+		// 4. Freshness Boost (Linear decay for older items)
+		yearDiff := time.Now().Year() - m.AnoPublicacao
+		if yearDiff < 0 { yearDiff = 0 }
+		if yearDiff < 5 {
+			score += 25
+		} else if yearDiff < 10 {
+			score += 10
+		}
+
+		scored = append(scored, ScoredMaterial{m, score})
+	}
+
+	// Efficient sorting
+	sort.Slice(scored, func(i, j int) bool {
+		return scored[i].score > scored[j].score
+	})
+
+	finalMaterials := make([]material.Material, 0, len(scored))
+	for _, sm := range scored {
+		finalMaterials = append(finalMaterials, sm.m)
+	}
+
+	if limit > 0 && len(finalMaterials) > limit {
+		finalMaterials = finalMaterials[:limit]
 	}
 
 	// 5. Caching
-	if uc.Cache != nil && len(materiais) > 0 {
-		uc.Cache.Set(cacheKey, materiais, 10*time.Minute)
+	if uc.Cache != nil && len(finalMaterials) > 0 {
+		uc.Cache.Set(cacheKey, finalMaterials, 10*time.Minute)
 	}
 
-	return materiais, nil
+	return finalMaterials, nil
 }

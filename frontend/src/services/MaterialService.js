@@ -46,6 +46,12 @@ export default {
 		if (sort) url += `&sort=${encodeURIComponent(sort)}`;
 		return this._cachedGet(url, 60000); // 1 minute TTL for search queries
 	},
+	
+	// Obter sugestões rápidas (autocomplete)
+	obterSugestoes(termo) {
+		if (!termo || termo.length < 2) return Promise.resolve({ data: [] });
+		return this._cachedGet(`/materiais/sugestoes?q=${encodeURIComponent(termo)}`, 30000); // 30s TTL
+	},
 
 	// Obter dados consolidados para o dashboard (múltiplas categorias em um request)
 	dashboard() {

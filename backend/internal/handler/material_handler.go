@@ -106,6 +106,23 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 		JSONSuccess(w, materiais, http.StatusOK)
 	})
 	
+	mux.HandleFunc("GET /materiais/sugestoes", func(w http.ResponseWriter, r *http.Request) {
+		termo := r.URL.Query().Get("q")
+		if termo == "" {
+			JSONSuccess(w, []interface{}{}, http.StatusOK)
+			return
+		}
+
+		limit := 8
+		materiais, err := repo.Sugerir(r.Context(), termo, limit)
+		if err != nil {
+			JSONError(w, "Erro ao buscar sugestões: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		JSONSuccess(w, materiais, http.StatusOK)
+	})
+	
 	mux.HandleFunc("GET /materiais/dashboard", func(w http.ResponseWriter, r *http.Request) {
 		result := make(map[string]interface{})
 		categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
