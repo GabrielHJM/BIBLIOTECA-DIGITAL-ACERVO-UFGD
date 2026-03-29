@@ -9,7 +9,7 @@
 						<v-col cols="12" sm="4" class="pa-2">
 							<v-select
 								v-model="filters.categoria"
-								:items="['TODOS', ...categoriasMock]"
+								:items="['Todos', ...categoriasMock]"
 								label="Categoria"
 								variant="solo-filled"
 								density="comfortable"
@@ -58,41 +58,7 @@
 						</v-col>
 					</div>
 
-					<!-- Active Selection Chips -->
-					<div v-if="activeFiltersCount > 0 || filters.q" class="d-flex flex-wrap gap-2 mt-4 px-2">
-						<v-chip
-							v-if="filters.q"
-							closable
-							size="small"
-							color="primary"
-							variant="tonal"
-							@click:close="clearSearch"
-						>
-							Busca: "{{ filters.q }}"
-						</v-chip>
-						<v-chip
-							v-if="filters.categoria && filters.categoria !== 'TODOS'"
-							closable
-							size="small"
-							color="cyan"
-							variant="tonal"
-							@click:close="filters.categoria = 'TODOS'; buscar(true)"
-						>
-							<v-icon start size="14">mdi-shape</v-icon>
-							{{ filters.categoria }}
-						</v-chip>
-						<v-chip
-							v-if="filters.ano_inicio"
-							closable
-							size="small"
-							color="amber"
-							variant="tonal"
-							@click:close="filters.ano_inicio = null; buscar(true)"
-						>
-							<v-icon start size="14">mdi-calendar</v-icon>
-							A partir de {{ filters.ano_inicio }}
-						</v-chip>
-					</div>
+
 				</v-col>
 			</v-row>
 
@@ -148,11 +114,12 @@ export default {
 		showFilters: false,
 		filters: {
 			q: '',
-			categoria: 'TODOS',
+			categoria: 'Todos',
 			ano_inicio: null,
 			ano_fim: null,
 			sort: 'az'
 		},
+		isFetching: false,
 		hasInitialFetchDone: false,
 		offset: 0,
 		limit: 16,
@@ -182,7 +149,7 @@ export default {
 		activeFiltersCount() {
 			let count = 0;
 			if (this.filters.ano_inicio) count++;
-			if (this.filters.categoria && this.filters.categoria !== 'TODOS') count++;
+			if (this.filters.categoria && this.filters.categoria !== 'Todos') count++;
 			return count;
 		}
 	},
@@ -220,6 +187,8 @@ export default {
 	},
 	methods: {
 		async buscar(reset = true) {
+			if (this.isFetching) return;
+			
 			if (reset) {
 				this.offset = 0;
 				this.livros = [];
@@ -230,7 +199,9 @@ export default {
 
 			if (this.searchTimeout) clearTimeout(this.searchTimeout);
 
-			this.loading = true
+			this.isFetching = true;
+			this.loading = true;
+			
 			try {
 				// Sincronizar favoritos se necessário
 				const userStr = localStorage.getItem('user');
@@ -238,8 +209,8 @@ export default {
 					await this.fetchGlobalFavorites();
 				}
 
-				// Trata o valor "TODOS" como string vazia para a API
-				const categoriaParaBusca = (this.filters.categoria === 'TODOS' || !this.filters.categoria) ? '' : this.filters.categoria;
+				// Trata o valor "Todos" como string vazia para a API
+				const categoriaParaBusca = (this.filters.categoria === 'Todos' || !this.filters.categoria) ? '' : this.filters.categoria;
 
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
@@ -252,15 +223,24 @@ export default {
 					this.filters.sort
 				)
 
-				const novosLivros = response.data || [];
+				const novosLivrosRaw = response.data || [];
+				
 				if (reset) {
-					this.livros = novosLivros;
+					this.livros = novosLivrosRaw;
 				} else {
-					this.livros = [...this.livros, ...novosLivros];
+					// Deduplicação por ID para evitar repetições na rolagem infinita
+					const idsExistentes = new Set(this.livros.map(l => l.id));
+					const novosLivrosFiltrados = novosLivrosRaw.filter(l => !idsExistentes.has(l.id));
+					
+					if (novosLivrosFiltrados.length > 0) {
+						this.livros = [...this.livros, ...novosLivrosFiltrados];
+					}
 				}
 
-				this.hasMore = novosLivros.length === this.limit;
-				this.offset += this.limit;
+				this.hasMore = novosLivrosRaw.length === this.limit;
+				if (novosLivrosRaw.length > 0) {
+					this.offset += this.limit;
+				}
 
 				if (reset && this.livros.length === 0) {
 					this.notify('Nenhum material encontrado para sua busca.', 'info')
@@ -269,7 +249,8 @@ export default {
 				console.error('Erro na pesquisa avançada:', error)
 				this.notify('Erro ao realizar busca. Tente novamente.', 'error')
 			} finally {
-				this.loading = false
+				this.loading = false;
+				this.isFetching = false;
 			}
 		},
 		async loadMore() {
@@ -300,7 +281,7 @@ export default {
 			}, 400);
 		},
 		limparFiltros() {
-			this.filters = { q: '', categoria: 'TODOS', ano_inicio: null, ano_fim: null };
+			this.filters = { q: '', categoria: 'Todos', ano_inicio: null, ano_fim: null };
 			this.$router.replace({ path: '/explorar', query: {} });
 			this.buscar();
 		},
