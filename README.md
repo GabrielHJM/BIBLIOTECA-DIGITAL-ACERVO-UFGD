@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=00ADD8&height=200&section=header&text=Biblioteca%20Digital%20Colaborativa&fontSize=40&fontAlignY=38&desc=Revolucionando%20o%20acesso%20acadêmico&descAlignY=55&descAlign=50" alt="Banner Biblioteca Digital" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=00ADD8&height=200&section=header&text=Acervus%20Core&fontSize=40&fontAlignY=38&desc=Sua%20Nova%20Plataforma%20de%20Conhecimento&descAlignY=55&descAlign=50" alt="Banner Acervus Core" width="100%" />
 
   <br>
 
@@ -8,9 +8,7 @@
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
 
-  <p align="center">
-    <strong>A Biblioteca Digital Colaborativa unifica acervos acadêmicos da UFGD em uma única plataforma. Com arquitetura robusta em Go, Vue.js e PostgreSQL, ela moderniza a pesquisa. O sistema democratiza o acesso à informação, centralizando buscas e a leitura de materiais para transformar o estudo universitário de forma ágil, eficiente e inovadora.</strong>
-  </p>
+    <strong>O Acervus Core unifica acervos acadêmicos em uma única plataforma inteligente. Com arquitetura robusta em Go, Vue.js e PostgreSQL, ele moderniza a experiência de pesquisa e estudo digital.</strong>
 
   <a href="#-como-rodar-o-projeto">🚀 Começar Agora</a> •
   <a href="#-arquitetura-do-sistema">⚙️ Arquitetura</a> •

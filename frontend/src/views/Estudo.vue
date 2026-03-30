@@ -240,10 +240,10 @@ export default {
 			const ano = this.material.ano_publicacao || new Date().getFullYear();
 
 			if (style === 'ABNT') {
-				return `${autor.toUpperCase()}. ${titulo}. Biblioteca Digital, ${ano}.`;
+				return `${autor.toUpperCase()}. ${titulo}. Acervus Core, ${ano}.`;
 			}
 			if (style === 'APA') {
-				return `${autor} (${ano}). ${titulo}. Digital Library.`;
+				return `${autor} (${ano}). ${titulo}. Acervus Core.`;
 			}
 			if (style === 'BibTeX') {
 				return `@article{citekey, author={${autor}}, title={${titulo}}, year={${ano}}, journal={BD-PSCII}}`;

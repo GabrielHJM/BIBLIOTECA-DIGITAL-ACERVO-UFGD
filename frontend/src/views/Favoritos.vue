@@ -72,8 +72,8 @@
 			<div v-else-if="!loading" class="empty-favorites-state py-16 text-center">
 				<v-icon size="80" color="rgba(255,255,255,0.1)" class="mb-4">mdi-heart-off-outline</v-icon>
 				<h3 class="text-h5 text-white opacity-40">Nenhum favorito encontrado</h3>
-				<p class="text-body-2 text-white opacity-20 mt-2">Explore a biblioteca para adicionar novos livros aqui.</p>
-				<v-btn color="primary" variant="outlined" class="mt-8 rounded-pill" to="/explorar">Explorar Biblioteca</v-btn>
+				<p class="text-body-2 text-white opacity-20 mt-2">Explore o Acervus Core para adicionar novos livros aqui.</p>
+				<v-btn color="primary" variant="outlined" class="mt-8 rounded-pill" to="/explorar">Explorar Acervo</v-btn>
 			</div>
 
 			<v-row v-else justify="center" class="mt-12">

@@ -11,7 +11,7 @@
 					<v-icon size="14" color="primary" class="mr-2">mdi-sparkles</v-icon>
 					O Conhecimento ao seu alcance
 				</div>
-				<h1 class="hero-title-modern">A Sua Biblioteca<br><span class="accent-gradient">Digital Inteligente</span></h1>
+				<h1 class="hero-title-modern">O Seu Acervus Core<br><span class="accent-gradient">Inteligente</span></h1>
 				<p class="hero-description">Acesse milhares de recursos educacionais, livros e artigos científicos em uma plataforma feita para a sua evolução.</p>
 
 				<div class="hero-actions mt-10">

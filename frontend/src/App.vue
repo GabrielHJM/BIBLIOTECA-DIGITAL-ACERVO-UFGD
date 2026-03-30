@@ -11,8 +11,8 @@
 			<div class="header-logo-container d-flex align-center ml-2 ml-sm-8 logo-clickable" @click="$router.push('/')">
 				<img src="@/assets/images/site-images/login/img-logo-menu-bar.png" alt="Logo" class="logo-img-original" />
 				<div class="logo-text-stack ml-3 hidden-sm-and-down">
-					<h1 class="original-title">BIBLIOTECA</h1>
-					<div class="subtitle-accent">DIGITAL</div>
+					<h1 class="original-title">ACERVUS</h1>
+					<div class="subtitle-accent">CORE</div>
 				</div>
 			</div>
 
@@ -234,7 +234,7 @@
 
 			<template v-slot:append>
 				<div class="pa-6 text-center">
-					<div class="text-xxs opacity-30 font-weight-bold">BIBLIOTECA DIGITAL v1.0</div>
+					<div class="text-xxs opacity-30 font-weight-bold">ACERVUS CORE v1.0</div>
 				</div>
 			</template>
 		</v-navigation-drawer>

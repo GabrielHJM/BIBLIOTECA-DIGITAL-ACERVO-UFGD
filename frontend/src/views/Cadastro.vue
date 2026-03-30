@@ -14,7 +14,7 @@
 						<v-img :src="caminho" width="64" class="mx-auto drop-shadow"></v-img>
 					</div>
 					<h2 class="login-title">Cadastre-se</h2>
-					<p class="login-subtitle">Crie sua biblioteca pessoal</p>
+					<p class="login-subtitle">Crie seu acervo no Acervus Core</p>
 				</div>
 
 				<div class="login-form">

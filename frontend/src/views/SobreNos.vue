@@ -24,7 +24,7 @@
 								Preservando o Legado
 							</h2>
 							<p class="premium-body-text">
-								A preservação do conhecimento e o acesso irrestrito à leitura sempre foram pilares fundamentais para o desenvolvimento da sociedade. Esta biblioteca digital foi concebida para honrar essa tradição, unindo o rigor e a organização dos acervos clássicos à eficiência da tecnologia atual. Nosso objetivo é facilitar o acesso à informação de maneira estruturada, confiável e sem complicações.
+								A preservação do conhecimento e o acesso irrestrito à leitura sempre foram pilares fundamentais para o desenvolvimento da sociedade. O Acervus Core foi concebido para honrar essa tradição, unindo o rigor e a organização dos acervos clássicos à eficiência da tecnologia atual. Nosso objetivo é facilitar o acesso à informação de maneira estruturada, confiável e sem complicações.
 							</p>
 						</section>
 

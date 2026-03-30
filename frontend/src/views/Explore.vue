@@ -188,7 +188,7 @@ export default {
 	methods: {
 		async buscar(reset = true) {
 			if (this.isFetching) return;
-			
+
 			if (reset) {
 				this.offset = 0;
 				this.livros = [];
@@ -201,7 +201,7 @@ export default {
 
 			this.isFetching = true;
 			this.loading = true;
-			
+
 			try {
 				// Sincronizar favoritos se necessário
 				const userStr = localStorage.getItem('user');
@@ -224,14 +224,14 @@ export default {
 				)
 
 				const novosLivrosRaw = response.data || [];
-				
+
 				if (reset) {
 					this.livros = novosLivrosRaw;
 				} else {
 					// Deduplicação por ID para evitar repetições na rolagem infinita
 					const idsExistentes = new Set(this.livros.map(l => l.id));
 					const novosLivrosFiltrados = novosLivrosRaw.filter(l => !idsExistentes.has(l.id));
-					
+
 					if (novosLivrosFiltrados.length > 0) {
 						this.livros = [...this.livros, ...novosLivrosFiltrados];
 					}

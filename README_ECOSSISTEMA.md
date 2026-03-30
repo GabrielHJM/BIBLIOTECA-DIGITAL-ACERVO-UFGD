@@ -1,6 +1,6 @@
-# Biblioteca Digital - Ecossistema do Projeto
+# Acervus Core - Ecossistema do Projeto
 
-Bem-vindo à documentação completa do ecossistema da **Biblioteca Digital**. Este documento detalha de ponta a ponta o funcionamento, as tecnologias e as funcionalidades deste projeto. O sistema foi projetado para ser **Native-First**, rápido, fácil de rodar localmente e livre de configurações complexas (como Docker).
+Bem-vindo à documentação completa do ecossistema do **Acervus Core**. Este documento detalha de ponta a ponta o funcionamento, as tecnologias e as funcionalidades deste projeto. O sistema foi projetado para ser **Native-First**, rápido, fácil de rodar localmente e livre de configurações complexas (como Docker).
 
 ---
 
@@ -116,6 +116,4 @@ Na inicialização, o backend procura nativamente pelo arquivo `.env`. Se ele n�
 
 ---
 
-### Resumo do Ecossistema
-
-Esta biblioteca é um produto de ponta a ponta inteligente: o Frontend oferece uma experiência rápida como aplicativo (PWA com animações fluídas), e o Backend Go provê escalabilidade corporativa puxando dados do mundo acadêmico automaticamente de forma agendada (_Harvester_), centralizando perfeitamente na experiência de autoestudo livre e limpa.
+Esta plataforma é um ecossistema de ponta a ponta inteligente: o Frontend oferece uma experiência rápida como aplicativo (PWA com animações fluídas) sob a marca **Acervus Core**, e o Backend Go provê escalabilidade corporativa puxando dados do mundo acadêmico automaticamente de forma agendada (_Harvester_), centralizando perfeitamente na experiência de autoestudo livre e limpa.
