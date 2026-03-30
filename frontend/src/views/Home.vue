@@ -11,7 +11,10 @@
 					<v-icon size="14" color="primary" class="mr-2">mdi-sparkles</v-icon>
 					O Conhecimento ao seu alcance
 				</div>
-				<h1 class="hero-title-modern">O Seu Acervus Core<br><span class="accent-gradient">Inteligente</span></h1>
+				<h1 class="hero-title-modern">
+					<span class="acervus-brand">Acervus Core</span><br>
+					<span class="subtitle-hero">a sua biblioteca digital inteligente</span>
+				</h1>
 				<p class="hero-description">Acesse milhares de recursos educacionais, livros e artigos científicos em uma plataforma feita para a sua evolução.</p>
 
 				<div class="hero-actions mt-10">
@@ -387,12 +390,62 @@ export default {
 }
 
 .hero-title-modern {
-	font-size: clamp(2.5rem, 8vw, 4.5rem);
+	font-size: clamp(2rem, 7vw, 4rem); /* Slightly decreased font size */
 	font-weight: 900;
 	letter-spacing: -2px;
-	line-height: 0.95;
+	line-height: 1.1;
 	margin-bottom: 24px;
 	color: var(--v-theme-on-surface);
+	animation: title-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.acervus-brand {
+	background: linear-gradient(135deg, #007AFF 0%, #5AC8FA 30%, #BF5AF2 100%);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	display: inline-block;
+	position: relative;
+}
+
+.acervus-brand::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	bottom: 10px;
+	width: 100%;
+	height: 3px;
+	background: linear-gradient(90deg, transparent, rgba(var(--ios-blue-rgb), 0.5), transparent);
+	transform: scaleX(0);
+	animation: line-grow 1.5s ease 0.5s forwards;
+}
+
+.subtitle-hero {
+	font-size: 1.5rem;
+	font-weight: 400;
+	opacity: 0.9;
+	letter-spacing: 1px;
+	background: linear-gradient(90deg, #ffffff, #888888, #ffffff);
+	background-size: 200% auto;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	animation: shimmer 4s linear infinite;
+	margin-top: 8px;
+	display: block;
+}
+
+@keyframes title-reveal {
+	from { opacity: 0; transform: translateY(30px) scale(0.95); }
+	to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes line-grow {
+	to { transform: scaleX(1); }
+}
+
+@keyframes shimmer {
+	to { background-position: 200% center; }
 }
 
 .accent-gradient {
