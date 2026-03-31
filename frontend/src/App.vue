@@ -139,7 +139,7 @@
 			v-model="drawer"
 			location="right"
 			temporary
-			width="320"
+			:width="isMobile ? 280 : 350"
 			class="premium-drawer"
 		>
 			<div class="drawer-header pa-6 pt-10">

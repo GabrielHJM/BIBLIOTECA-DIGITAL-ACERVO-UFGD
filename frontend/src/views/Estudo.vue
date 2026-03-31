@@ -121,7 +121,7 @@
 			</v-container>
 
 			<!-- Citation Dialog -->
-			<v-dialog v-model="showCitationDialog" max-width="500">
+			<v-dialog v-model="showCitationDialog" max-width="500" scrim="rgba(0, 10, 20, 0.85)">
 				<v-card class="citation-card pa-6" rounded="xl">
 					<div class="d-flex align-center mb-4">
 						<h3 class="text-h6 font-weight-bold" style="color: #ffffff !important;">Citação</h3>
