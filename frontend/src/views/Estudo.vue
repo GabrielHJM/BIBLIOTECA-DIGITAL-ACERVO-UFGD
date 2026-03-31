@@ -380,11 +380,16 @@ export default {
 		align-items: center;
 		padding: 48px;
 		text-align: center;
+		overflow: hidden;
 	}
 
 	.cover-content-ios-large {
 		position: relative;
 		z-index: 3;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.cover-title-ios-large {
@@ -393,12 +398,14 @@ export default {
 		font-size: 2rem;
 		font-weight: 800;
 		line-height: 1.1;
+		width: 100%;
 		max-width: 100%;
 		display: -webkit-box;
 		-webkit-line-clamp: 3;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+		word-break: break-word;
 	}
 
 	.cover-summary-ios-large {
@@ -408,10 +415,11 @@ export default {
 		line-height: 1.5;
 		max-width: 80%;
 		display: -webkit-box;
-		-webkit-line-clamp: 8;
+		-webkit-line-clamp: 4;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 		text-align: center;
+		word-break: break-word;
 	}
 
 	.glass-shine {
