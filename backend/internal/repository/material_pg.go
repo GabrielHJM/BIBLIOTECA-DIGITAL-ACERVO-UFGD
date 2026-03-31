@@ -59,24 +59,29 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 	ftsQuery := ""
 
 	if termo != "" {
-		// Busca FTS em Português
-		// Nós vamos fornecer o mesmo 'termo' mais tarde no código principal para FTS, mas aqui registramos que estamos usando o rank()
-		// Usamos COALESCE pois se search_vector estiver NULL, ts_rank retorna NULL e quebra o Scan em float64
-		query += fmt.Sprintf(", COALESCE(ts_rank(search_vector, plainto_tsquery('portuguese', $%d)), 0.0) as rank", argCount)
-		// Não adicionamos args aqui ainda porque reestruturamos a injeção condicional no bloco AND abaixo para unificar.
-	}
+		// Intelligent FTS: Use websearch_to_tsquery for natural language and support prefix matching (:*)
+		// We split the term and add :* to each word to allow "dent" to match "dentista"
+		words := strings.Fields(termo)
+		ftsQueryParts := []string{}
+		for _, w := range words {
+			if len(w) > 2 {
+				ftsQueryParts = append(ftsQueryParts, w+":*")
+			} else {
+				ftsQueryParts = append(ftsQueryParts, w)
+			}
+		}
+		formattedQuery := strings.Join(ftsQueryParts, " & ")
 
-	query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
+		query += fmt.Sprintf(", ts_rank_cd(search_vector, to_tsquery('portuguese', $%d)) as rank", argCount)
+		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
+		
+		// Hybrid search: FTS with prefix support OR ILIKE fallback for unaccented matches
+		query += fmt.Sprintf(" AND (search_vector @@ to_tsquery('portuguese', $%d) OR unaccent(titulo) ILIKE unaccent($%d) OR unaccent(autor) ILIKE unaccent($%d))", argCount, argCount+1, argCount+1)
 
-	// Busca híbrida: FTS Rankado OR Fallback ILIKE em título/autor
-	if termo != "" {
-		ftsQuery = fmt.Sprintf("plainto_tsquery('portuguese', $%d)", argCount)
-		// Alterado de apenas search_vector @@ ftsQuery para também cobrir casos onde FTS falha
-		query += fmt.Sprintf(" AND (search_vector @@ %s OR unaccent(titulo) ILIKE unaccent($%d) OR unaccent(autor) ILIKE unaccent($%d))", ftsQuery, argCount+1, argCount+1)
-
-		// O Select já tem o rank, precisamos adicionar o termo com % para o ILIKE
-		args = append(args, termo, "%"+termo+"%")
-		argCount += 2 // Adicionamos 2 args (termo original para FTS e termo com % para ILIKE)
+		args = append(args, formattedQuery, "%"+termo+"%")
+		argCount += 2
+	} else {
+		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
 	}
 
 	if categoria != "" {

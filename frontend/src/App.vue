@@ -1,5 +1,5 @@
 <template>
-	<v-app class="ios-app">
+	<v-app class="ios-app" :class="['platform-' + platform]">
 		<!-- Mesh Gradient Background -->
 		<div class="premium-bg">
 			<div class="mesh-gradient"></div>
@@ -295,6 +295,7 @@ import auth, { state as authState } from '@/auth'
 import NotificationService from '@/services/NotificationService'
 import MaterialService from '@/services/MaterialService'
 import { useAccessibility } from '@/composables/useAccessibility'
+import { useDevice } from '@/composables/useDevice'
 
 export default {
 	name: 'App',
@@ -553,6 +554,7 @@ export default {
 	setup() {
 		const loading = ref(false)
 		const { init } = useAccessibility()
+		const { platform, isMobile } = useDevice()
 
 		const favoritesStore = reactive({
 			list: []
@@ -562,6 +564,8 @@ export default {
 			loading,
 			init,
 			favoritesStore,
+			platform,
+			isMobile,
 			favoritos: computed(() => favoritesStore.list),
 			cleanupAccessibility: useAccessibility().cleanup
 		}
@@ -744,11 +748,17 @@ export default {
 		font-weight: 700;
 	}
 
-	/* Transitions Style iOS 17 */
+	/* Transitions Style iOS 17 - Platform Optimized */
 	.ios-page-enter-active,
 	.ios-page-leave-active {
 		transition: opacity 0.4s var(--spring-easing),
 					transform 0.4s var(--spring-easing);
+	}
+
+	/* Mobile Optimization: Snappier transitions */
+	.platform-mobile .ios-page-enter-active,
+	.platform-mobile .ios-page-leave-active {
+		transition: opacity 0.25s ease-out, transform 0.25s ease-out;
 	}
 
 	.ios-page-enter-from {
@@ -784,20 +794,45 @@ export default {
 		background: transparent !important;
 	}
 
-	/* Touch target improvements */
-	button, .v-btn, a, .logo-clickable, .category-card-header {
-		min-height: 44px; /* iOS HIG minimum touch target */
-		min-width: 44px;
+	/* Mobile-Specific UX Improvements */
+	.platform-mobile .search-wrapper-global {
+		max-width: 100%;
+		margin: 0 8px;
 	}
 
-	.public-page {
-		padding-top: 0 !important;
-		padding-left: 0 !important;
-		min-height: 100vh;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+	.platform-mobile .logo-text-stack {
+		display: none; /* Already handled by hidden-sm-and-down, but enforcing for UX */
+	}
+
+	.platform-mobile .glass-app-bar {
+		height: 70px !important;
+	}
+
+	.platform-mobile .ios-search-field :deep(.v-field) {
+		height: 40px !important;
+		border-radius: 12px !important;
+	}
+
+	/* Intelligent Dynamic Positioning for Mobile Drawer */
+	.platform-mobile .premium-drawer {
+		width: 85% !important;
+	}
+	
+	.platform-mobile .responsive-container {
+		padding-left: 12px !important;
+		padding-right: 12px !important;
+		padding-top: 10px !important;
+	}
+
+	/* Overall Fluidity: GPU acceleration for core elements */
+	.ios-app * {
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+	}
+
+	.v-main {
+		transition: padding 0.3s var(--spring-easing);
+	}
 		overflow-y: auto;
 	}
 

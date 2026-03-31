@@ -42,6 +42,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		refinedQuery = "tecnologia OR computer science OR software OR tecnologia brasil OR computaçao"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
 		refinedQuery = "saúde OR medicina OR health OR medicina brasil OR saúde pública"
+	} else if strings.Contains(lowercaseQ, "dentist") || strings.Contains(lowercaseQ, "dental") || strings.Contains(lowercaseQ, "odontolog") {
+		refinedQuery = query + " OR odontologia OR dentistry OR medical dental OR dentist"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
 		refinedQuery = "ciências OR science OR física OR química OR biologia"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {

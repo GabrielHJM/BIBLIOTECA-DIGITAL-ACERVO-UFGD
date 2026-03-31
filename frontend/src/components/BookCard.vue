@@ -80,8 +80,11 @@
 
 <script setup>
 /* eslint-disable no-undef */
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { gsap } from 'gsap';
+import { useDevice } from '@/composables/useDevice';
+
+const { isMobile } = useDevice();
 
 const props = defineProps({
   book: {
@@ -110,8 +113,11 @@ const handleToggleFavorite = () => {
   if (heartIcon.value) {
     const el = heartIcon.value.$el || heartIcon.value;
     const tl = gsap.timeline();
-    tl.to(el, { scale: 1.5, rotation: 15, duration: 0.15, ease: "back.out(2)" })
-      .to(el, { rotation: -15, duration: 0.1, ease: "none" })
+    // Reduced motion for mobile
+    const scaleFactor = isMobile.value ? 1.2 : 1.5;
+    
+    tl.to(el, { scale: scaleFactor, rotation: 10, duration: 0.15, ease: "back.out(2)" })
+      .to(el, { rotation: -10, duration: 0.1, ease: "none" })
       .to(el, { scale: 1, rotation: 0, duration: 0.3, ease: "elastic.out(1, 0.3)" });
   }
   emit('toggle-favorite', props.book);
@@ -166,7 +172,17 @@ const getBookIcon = (category, title) => {
     radial-gradient(circle at 50% 50%, #0033FF 0%, transparent 50%);
   filter: blur(40px);
   animation: mesh-rotate 15s linear infinite;
+  opacity: 0.5; /* Reduced opacity for mobile performance */
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.platform-desktop .mesh-gradient {
   opacity: 0.7;
+}
+
+.platform-mobile .mesh-gradient {
+  animation-duration: 25s; /* Slower rotation on mobile to save CPU/GPU */
 }
 
 @keyframes mesh-rotate {
@@ -178,7 +194,8 @@ const getBookIcon = (category, title) => {
   position: absolute;
   inset: 6px;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(10px) saturate(140%); /* Lighter blur for mobile */
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 10px;
   z-index: 2;
