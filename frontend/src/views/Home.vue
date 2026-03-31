@@ -408,18 +408,6 @@ export default {
 	position: relative;
 }
 
-.acervus-brand::after {
-	content: '';
-	position: absolute;
-	left: 0;
-	bottom: 10px;
-	width: 100%;
-	height: 3px;
-	background: linear-gradient(90deg, transparent, rgba(var(--ios-blue-rgb), 0.5), transparent);
-	transform: scaleX(0);
-	animation: line-grow 1.5s ease 0.5s forwards;
-}
-
 .subtitle-hero {
 	font-size: 1.5rem;
 	font-weight: 400;
@@ -438,10 +426,6 @@ export default {
 @keyframes title-reveal {
 	from { opacity: 0; transform: translateY(30px) scale(0.95); }
 	to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes line-grow {
-	to { transform: scaleX(1); }
 }
 
 @keyframes shimmer {
