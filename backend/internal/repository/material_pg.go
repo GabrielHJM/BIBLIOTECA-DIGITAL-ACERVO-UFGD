@@ -56,7 +56,6 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 
 	args := []interface{}{}
 	argCount := 1
-	ftsQuery := ""
 
 	if termo != "" {
 		// Intelligent FTS: Use websearch_to_tsquery for natural language and support prefix matching (:*)
