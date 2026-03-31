@@ -80,7 +80,7 @@
 
 <script setup>
 /* eslint-disable no-undef */
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { gsap } from 'gsap';
 import { useDevice } from '@/composables/useDevice';
 

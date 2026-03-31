@@ -830,9 +830,14 @@ export default {
 		-webkit-backface-visibility: hidden;
 	}
 
-	.v-main {
-		transition: padding 0.3s var(--spring-easing);
-	}
+	.public-page {
+		padding-top: 0 !important;
+		padding-left: 0 !important;
+		min-height: 100vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
 		overflow-y: auto;
 	}
 
