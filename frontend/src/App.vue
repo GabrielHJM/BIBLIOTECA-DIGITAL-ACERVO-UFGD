@@ -139,6 +139,7 @@
 			v-model="drawer"
 			location="right"
 			temporary
+			touchless
 			:width="isMobile ? 280 : 350"
 			class="premium-drawer"
 		>
