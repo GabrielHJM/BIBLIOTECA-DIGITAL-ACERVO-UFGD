@@ -140,6 +140,8 @@
 			location="right"
 			temporary
 			touchless
+			:permanent="false"
+			scrim="rgba(0, 10, 20, 0.7)"
 			:width="isMobile ? 280 : 350"
 			class="premium-drawer"
 		>
@@ -814,11 +816,7 @@ export default {
 		border-radius: 12px !important;
 	}
 
-	/* Intelligent Dynamic Positioning for Mobile Drawer */
-	.platform-mobile .premium-drawer {
-		width: 85% !important;
-	}
-	
+	/* Overall Fluidity: GPU acceleration for core elements */
 	.platform-mobile .responsive-container {
 		padding-left: 12px !important;
 		padding-right: 12px !important;
