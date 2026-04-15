@@ -60,36 +60,99 @@ O ecossistema foi projetado utilizando *Clean Architecture*, garantindo alta con
   </table>
 </div>
 
-## 🏗️ Arquitetura do Sistema
+## 🏗️ Arquitetura e Engenharia de Dados
 
-Os motores de Front e Back rodam de forma independente, comunicando-se via API RESTful.
+O Acervus Core foi construído sobre o princípio da **Alta Disponibilidade** e **Baixa Latência**. Abaixo, detalhamos como o fluxo de informação cruza as camadas do sistema.
+
+### 1. Visão Geral da Arquitetura (Clean Architecture)
+O sistema segue os preceitos da Arquitetura Limpa em Go, isolando a regra de negócio dos detalhes de infraestrutura (Banco de Dados e APIs Externas).
 
 ```mermaid
 graph TD
-    subgraph Frontend [Vue.js PWA]
-        UI[Views & Components]
-        API_Client[Axios Client]
+    subgraph "Camada de Cliente (Frontend)"
+        UX[Interface Vue.js 3 / Vuetify]
+        ST[Gerenciamento de Estado - Pinia]
+        AX[Axios HTTP Client]
     end
 
-    subgraph Backend [Golang Clean API]
+    subgraph "Portão de Entrada (Backend Go)"
         HND[Handlers & Middlewares]
-        UC[Usecases]
-        REP[Postgres & Redis Repositories]
-        HARV[Multi-Harvester CRON]
+        AUTH[JWT / Auth Middleware]
     end
 
-    subgraph External [APIs Externas]
-        GB[Google Books]
-        ARX[ArXiv]
-        CAP[CAPES / Semantic Scholar]
+    subgraph "Núcleo de Processamento (Usecases)"
+        BUSCA[Usecase: Pesquisa de Materiais]
+        FAV[Usecase: Gestão de Favoritos]
     end
 
-    UI --> API_Client
-    API_Client -- JSON HTTP --> HND
-    HND --> UC
-    UC --> REP
-    HARV -- Fetch Background --> GB & ARX & CAP
-    HARV -- Ingest --> REP
+    subgraph "Camada de Dados & Driver"
+        REP[Repositórios & Interfaces]
+        PG[(PostgreSQL FTS)]
+        RD[(Redis Cache)]
+    end
+
+    subgraph "Ecossistema Harvester (Coleta)"
+        MULTI[Multi-Source Harvester]
+        DOAJ[DOAJ / Academic API]
+        GB[Google Books API]
+        SS[Semantic Scholar]
+    end
+
+    UX --> ST
+    ST --> AX
+    AX -- "Requests" --> HND
+    HND --> AUTH
+    AUTH --> BUSCA
+    BUSCA --> REP
+    REP --> PG
+    REP --> RD
+    BUSCA --> MULTI
+    MULTI --> DOAJ & GB & SS
+```
+
+### 2. O Pipeline Inteligente de Busca
+Diferente de bibliotecas convencionais, o Acervus Core utiliza um pipeline híbrido e concorrente para garantir que o usuário nunca fique sem resultados.
+
+```mermaid
+flowchart TD
+    START((Início da Busca)) --> QUERY{Possui no Cache?}
+    QUERY -- Sim --> RET_CACHE(Retorno Ultrarrápido Redis)
+    QUERY -- Não --> L_SEARCH[Pesquisa FTS no PostgreSQL]
+    
+    L_SEARCH --> CHECK_LIMIT{Resultados < Limite?}
+    
+    CHECK_LIMIT -- Não --> SCORE[Cálculo de Relevância & Novidade]
+    CHECK_LIMIT -- Sim --> HARV[Gatilho de Coleta Externa]
+    
+    subgraph "Multi-Harvester Concorrente"
+        HARV --> W1[Worker A - DOAJ]
+        HARV --> W2[Worker B - Semantic Scholar]
+        HARV --> W3[Worker C - ArXiv / Google]
+    end
+    
+    W1 & W2 & W3 --> MERGE[Unificação de Resultados]
+    MERGE --> VERIFY[Verificador de URLs Mortas]
+    VERIFY --> DEDUP[Deduplicação por Assinatura Digital]
+    
+    DEDUP --> DB_SAVE[(Persistência em Background)]
+    DEDUP --> SCORE
+    
+    RET_CACHE & SCORE --> END((Entrega ao Usuário))
+```
+
+### 3. Ecossistema de Fontes (Harvesters)
+Atualmente, o Acervus Core atua como um hub para **7 grandes bases de conhecimento** mundiais, priorizando o idioma Português em suas expansões de busca:
+
+| Provedor | Tipo de Acervo | Foco |
+| :--- | :--- | :--- |
+| **DOAJ** | Acadêmico / Científico | Artigos e Periódicos em Português |
+| **Google Books** | Digital / Ebooks | Livros e Literaturas Diversas |
+| **Semantic Scholar** | Científico (IA) | Pesquisas de Alto Impacto |
+| **ArXiv** | Exatas / Tecnologia | Pre-prints técnicos e Ciência |
+| **CAPES** | Brasileiro / Acadêmico | Dissertações e Teses |
+| **Open Library** | Domínio Público | Clássicos e Acervos do Mundo |
+| **Gutendex** | Literatura Clássica | eBooks Gratuitos e Educacionais |
+
 
 ---
 
