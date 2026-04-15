@@ -74,11 +74,11 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 		query += fmt.Sprintf(", ts_rank_cd(search_vector, to_tsquery('portuguese', $%d)) as rank", argCount)
 		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
 		
-		// Hybrid search: FTS with prefix support OR ILIKE fallback for unaccented matches
-		query += fmt.Sprintf(" AND (search_vector @@ to_tsquery('portuguese', $%d) OR unaccent(titulo) ILIKE unaccent($%d) OR unaccent(autor) ILIKE unaccent($%d))", argCount, argCount+1, argCount+1)
+		// Busca estritamente por AND (FTS), removido o fallback OR ILIKE para precisão extrema
+		query += fmt.Sprintf(" AND search_vector @@ to_tsquery('portuguese', $%d)", argCount)
 
-		args = append(args, formattedQuery, "%"+termo+"%")
-		argCount += 2
+		args = append(args, formattedQuery)
+		argCount += 1
 	} else {
 		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
 	}

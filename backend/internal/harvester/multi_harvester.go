@@ -18,6 +18,7 @@ type MultiSourceHarvester struct {
 	gb    *GoogleBooksHarvester
 	ol    *OpenLibraryHarvester
 	gut   *GutendexHarvester
+	doaj  *DOAJHarvester
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
@@ -28,6 +29,7 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 		gb:    NewGoogleBooksHarvester(),
 		ol:    NewOpenLibraryHarvester(),
 		gut:   NewGutendexHarvester(),
+		doaj:  NewDOAJHarvester(),
 	}
 }
 
@@ -37,21 +39,21 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseQ := strings.ToLower(query)
 	lowercaseC := strings.ToLower(category)
 
-	// Contextual expansion for better academic coverage (Português/Brasil prioritized)
+	// Contextual expansion for better academic coverage (Português/Brasil prioritized) - AND logic
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "tecnologia OR computer science OR software OR tecnologia brasil OR computaçao"
+		refinedQuery = "tecnologia AND computação"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "saúde OR medicina OR health OR medicina brasil OR saúde pública"
-	} else if strings.Contains(lowercaseQ, "dentist") || strings.Contains(lowercaseQ, "dental") || strings.Contains(lowercaseQ, "odontolog") {
-		refinedQuery = query + " OR odontologia OR dentistry OR medical dental OR dentist"
+		refinedQuery = "saúde AND medicina"
+	} else if strings.Contains(lowercaseQ, "odontolog") {
+		refinedQuery = "odontologia AND saúde"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
-		refinedQuery = "ciências OR science OR física OR química OR biologia"
+		refinedQuery = "ciências AND pesquisa"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
-		refinedQuery = "matemática OR mathematics OR álgebra OR cálculo"
+		refinedQuery = "matemática AND cálculo"
 	} else if strings.Contains(lowercaseQ, "brasil") || strings.Contains(lowercaseC, "brasil") {
-		refinedQuery = query + " AND (repositório OR arquivo OR universidade OR brasil)"
+		refinedQuery = query + " AND brasil"
 	} else if lowercaseQ == "" {
-		refinedQuery = "livro OR acadêmico OR pesquisa OR ciência"
+		refinedQuery = "livro AND acadêmico"
 	}
 
 	var allMaterials []material.Material
@@ -108,6 +110,11 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 					if err == nil { resultsChan <- mats }
 				}(p)
 			}
+		},
+		// DOAJ (Directory of Open Access Journals)
+		func(c context.Context) {
+			mats, err := h.doaj.Search(c, refinedQuery, category, limit)
+			if err == nil { resultsChan <- mats }
 		},
 	}
 

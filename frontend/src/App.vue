@@ -347,6 +347,7 @@ export default {
 		},
 		logout() {
 			auth.logout()
+			this.favoritesStore.list = [] // Clear favorites to prevent ghost books for next user
 			this.$router.push('/')
 		},
 		async doSearch() {
@@ -360,10 +361,10 @@ export default {
 
 				// ALWAYS redirect to /explorar to show search results properly
 				if (this.$route.path !== '/explorar') {
-					this.$router.push({ path: '/explorar', query: { q } })
+					this.$router.push({ path: '/explorar', query: { q, categoria: 'Todos' } })
 				} else {
 					// If already on /explorar, update the query which will trigger the watch and fetch results
-					this.$router.replace({ path: '/explorar', query: { q } })
+					this.$router.replace({ path: '/explorar', query: { q, categoria: 'Todos' } })
 				}
 			} finally {
 				this.loading = false

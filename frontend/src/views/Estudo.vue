@@ -120,35 +120,39 @@
 				</v-snackbar>
 			</v-container>
 
-			<!-- Citation Dialog -->
-			<v-dialog v-model="showCitationDialog" max-width="500" scrim="rgba(0, 10, 20, 0.85)">
-				<v-card class="citation-card pa-6" rounded="xl">
-					<div class="d-flex align-center mb-4">
-						<h3 class="text-h6 font-weight-bold" style="color: #ffffff !important;">Citação</h3>
-						<v-spacer></v-spacer>
-						<v-btn icon="mdi-close" variant="text" size="small" @click="showCitationDialog = false"></v-btn>
-					</div>
+			<!-- Citation Premium Dialog -->
+			<v-dialog v-model="showCitationDialog" max-width="600" transition="dialog-bottom-transition" scrim="rgba(0, 10, 20, 0.85)">
+				<div class="premium-citation-modal">
+					<div class="glass-modal-bg"></div>
+					<div class="modal-content-container pa-6">
+						<div class="d-flex align-center mb-6">
+							<v-icon color="primary" class="mr-3" size="28">mdi-format-quote-open</v-icon>
+							<h3 class="text-h5 font-weight-black text-white">Gerar Citação</h3>
+							<v-spacer></v-spacer>
+							<v-btn icon="mdi-close" variant="tonal" color="white" class="ios-btn-close" size="small" @click="showCitationDialog = false"></v-btn>
+						</div>
 
-					<v-tabs v-model="citationTab" color="primary" density="compact" class="mb-4">
-						<v-tab value="ABNT" class="text-none font-weight-bold">ABNT</v-tab>
-						<v-tab value="APA" class="text-none font-weight-bold">APA</v-tab>
-						<v-tab value="BibTeX" class="text-none font-weight-bold">BibTeX</v-tab>
-					</v-tabs>
+						<v-tabs v-model="citationTab" color="primary" bg-color="rgba(255,255,255,0.05)" class="premium-tabs rounded-xl mb-6" hide-slider>
+							<v-tab value="ABNT" class="text-none font-weight-bold flex-1-1">ABNT</v-tab>
+							<v-tab value="APA" class="text-none font-weight-bold flex-1-1">APA</v-tab>
+							<v-tab value="BibTeX" class="text-none font-weight-bold flex-1-1">BibTeX</v-tab>
+						</v-tabs>
 
-					<v-window v-model="citationTab">
-						<v-window-item v-for="style in ['ABNT', 'APA', 'BibTeX']" :key="style" :value="style">
-							<div class="citation-copy-box pa-4 rounded-lg" @click="copyCitation(style)">
-								<p class="text-body-2 font-mono opacity-80 mb-0" style="color: #ffffff !important;">
-									{{ getCitation(style) }}
-								</p>
-								<div class="mt-3 d-flex align-center">
-									<v-icon size="14" color="primary" class="mr-1">mdi-content-copy</v-icon>
-									<span class="text-caption color-primary font-weight-bold" style="color: var(--ios-blue) !important;">Copiar</span>
+						<v-window v-model="citationTab" class="rounded-xl overflow-visible">
+							<v-window-item v-for="style in ['ABNT', 'APA', 'BibTeX']" :key="style" :value="style">
+								<div class="citation-glass-box" @click="copyCitation(style)">
+									<div class="citation-text">
+										{{ getCitation(style) }}
+									</div>
+									<div class="copy-action-bar">
+										<v-icon size="16" color="#00E5FF">mdi-content-copy</v-icon>
+										<span>CLIQUE PARA COPIAR</span>
+									</div>
 								</div>
-							</div>
-						</v-window-item>
-					</v-window>
-				</v-card>
+							</v-window-item>
+						</v-window>
+					</div>
+				</div>
 			</v-dialog>
 		</div>
 
@@ -495,23 +499,84 @@ export default {
 		line-height: 1.6;
 	}
 
-	.citation-card {
-		background: var(--glass-bg) !important;
-		backdrop-filter: var(--glass-blur);
-		-webkit-backdrop-filter: var(--glass-blur);
-		border: 1px solid var(--glass-border) !important;
-		color: #ffffff !important;
+	.premium-citation-modal {
+		position: relative;
+		border-radius: 32px;
+		overflow: hidden;
+		border: 1px solid rgba(255,255,255,0.15);
+		box-shadow: 0 40px 100px rgba(0,0,0,0.8);
+		transform: translateY(0);
 	}
 
-	.citation-copy-box {
-		background: var(--glass-bg);
-		border: 1px solid var(--glass-border);
+	.glass-modal-bg {
+		position: absolute;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background: rgba(15, 23, 42, 0.7);
+		backdrop-filter: blur(40px) saturate(200%);
+		-webkit-backdrop-filter: blur(40px) saturate(200%);
+		z-index: 1;
+	}
+
+	.modal-content-container {
+		position: relative;
+		z-index: 2;
+	}
+
+	.ios-btn-close {
+		border-radius: 50% !important;
+		background: rgba(255,255,255,0.1) !important;
+	}
+
+	.premium-tabs .v-tab {
+		border-radius: 100px !important;
+		margin: 4px;
+		transition: all 0.3s ease;
+	}
+	.premium-tabs .v-tab--selected {
+		background: linear-gradient(135deg, #007AFF, #00C1FF) !important;
+		color: white !important;
+		box-shadow: 0 4px 15px rgba(0,122,255,0.4);
+	}
+
+	.citation-glass-box {
+		background: rgba(255, 255, 255, 0.03);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 20px;
+		padding: 24px;
 		cursor: pointer;
-		transition: background 0.2s;
+		transition: all 0.4s var(--spring-easing);
+		position: relative;
+		overflow: hidden;
 	}
 
-	.citation-copy-box:hover {
-		background: rgba(0, 0, 0, 0.5);
+	.citation-glass-box:hover {
+		background: rgba(255, 255, 255, 0.08);
+		border-color: rgba(0, 229, 255, 0.4);
+		transform: translateY(-4px);
+		box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+	}
+
+	.citation-text {
+		color: #ffffff;
+		font-family: monospace;
+		font-size: 0.95rem;
+		line-height: 1.6;
+		opacity: 0.9;
+		margin-bottom: 20px;
+	}
+
+	.copy-action-bar {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		background: rgba(0, 229, 255, 0.1);
+		padding: 10px;
+		border-radius: 12px;
+		color: #00E5FF;
+		font-weight: 800;
+		font-size: 0.75rem;
+		letter-spacing: 1px;
 	}
 
 	.loading-wrapper {

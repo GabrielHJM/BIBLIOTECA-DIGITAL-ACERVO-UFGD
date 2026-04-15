@@ -44,7 +44,7 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 	isSparse := len(materiaisIniciais) < limit || limit > 50 
 	hasQuery := termo != "" || categoria != ""
 
-	if hasQuery && isSparse && uc.Harvester != nil {
+	if hasQuery && isSparse && uc.Harvester != nil && offset == 0 {
 		// Calculate harvest depth based on the machine's strength (implied by requester)
 		harvestLimit := limit
 		if limit < 40 { harvestLimit = 60 } // Minimum decent harvest
@@ -99,58 +99,82 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		materiais = append(materiais, m)
 	}
 
-	// 4. Score-based Sorting (Efficient Unification)
-	type ScoredMaterial struct {
-		m     material.Material
-		score float64
-	}
-
-	scored := make([]ScoredMaterial, 0, len(materiais))
-	normalizedTermo := strings.ToLower(utils.RemoveAccents(termo))
-
-	for _, m := range materiais {
-		score := 0.0
-		
-		// 1. Base Score from DB Relevance (if available)
-		score += float64(m.Relevancia) * 1.0
-		
-		// 2. Text Match Quality Boost
-		mTitleLow := strings.ToLower(utils.RemoveAccents(m.Titulo))
-		mAuthorLow := strings.ToLower(utils.RemoveAccents(m.Autor))
-		
-		if normalizedTermo != "" {
-			if strings.HasPrefix(mTitleLow, normalizedTermo) { score += 100 }
-			if strings.Contains(mTitleLow, normalizedTermo) { score += 50 }
-			if strings.Contains(mAuthorLow, normalizedTermo) { score += 30 }
+	if sortParam == "relevancia" || sortParam == "" {
+		type ScoredMaterial struct {
+			m     material.Material
+			score float64
 		}
 
-		// 3. Metadata Quality Boost
-		if m.CapaURL != "" { score += 20 }
-		if m.Descricao != "" && len(m.Descricao) > 50 { score += 10 }
-		if m.MediaNota > 4.0 { score += 15 }
-		
-		// 4. Freshness Boost (Linear decay for older items)
-		yearDiff := time.Now().Year() - m.AnoPublicacao
-		if yearDiff < 0 { yearDiff = 0 }
-		if yearDiff < 5 {
-			score += 25
-		} else if yearDiff < 10 {
-			score += 10
+		scored := make([]ScoredMaterial, 0, len(materiais))
+		normalizedTermo := strings.ToLower(utils.RemoveAccents(termo))
+
+		for _, m := range materiais {
+			score := 0.0
+			
+			score += float64(m.Relevancia) * 1.0
+			
+			mTitleLow := strings.ToLower(utils.RemoveAccents(m.Titulo))
+			mAuthorLow := strings.ToLower(utils.RemoveAccents(m.Autor))
+			
+			if normalizedTermo != "" {
+				if strings.HasPrefix(mTitleLow, normalizedTermo) { score += 100 }
+				if strings.Contains(mTitleLow, normalizedTermo) { score += 50 }
+				if strings.Contains(mAuthorLow, normalizedTermo) { score += 30 }
+			}
+
+			if m.CapaURL != "" { score += 20 }
+			if m.Descricao != "" && len(m.Descricao) > 50 { score += 10 }
+			if m.MediaNota > 4.0 { score += 15 }
+			
+			yearDiff := time.Now().Year() - m.AnoPublicacao
+			if yearDiff < 0 { yearDiff = 0 }
+			if yearDiff < 5 {
+				score += 25
+			} else if yearDiff < 10 {
+				score += 10
+			}
+
+			scored = append(scored, ScoredMaterial{m, score})
 		}
 
-		scored = append(scored, ScoredMaterial{m, score})
+		sort.SliceStable(scored, func(i, j int) bool {
+			return scored[i].score > scored[j].score
+		})
+
+		materiais = make([]material.Material, 0, len(scored))
+		for _, sm := range scored {
+			materiais = append(materiais, sm.m)
+		}
+	} else {
+		// Respect original sort constraints
+		sort.SliceStable(materiais, func(i, j int) bool {
+			switch sortParam {
+			case "az":
+				a := strings.ToLower(utils.RemoveAccents(materiais[i].Titulo))
+				b := strings.ToLower(utils.RemoveAccents(materiais[j].Titulo))
+				if a == b { return materiais[i].ID > materiais[j].ID }
+				return a < b
+			case "za":
+				a := strings.ToLower(utils.RemoveAccents(materiais[i].Titulo))
+				b := strings.ToLower(utils.RemoveAccents(materiais[j].Titulo))
+				if a == b { return materiais[i].ID > materiais[j].ID }
+				return a > b
+			case "recent":
+				if materiais[i].AnoPublicacao == materiais[j].AnoPublicacao {
+					return materiais[i].ID > materiais[j].ID
+				}
+				return materiais[i].AnoPublicacao > materiais[j].AnoPublicacao
+			case "oldest":
+				if materiais[i].AnoPublicacao == materiais[j].AnoPublicacao {
+					return materiais[i].ID > materiais[j].ID
+				}
+				return materiais[i].AnoPublicacao < materiais[j].AnoPublicacao
+			}
+			return false
+		})
 	}
 
-	// Efficient sorting
-	sort.Slice(scored, func(i, j int) bool {
-		return scored[i].score > scored[j].score
-	})
-
-	finalMaterials := make([]material.Material, 0, len(scored))
-	for _, sm := range scored {
-		finalMaterials = append(finalMaterials, sm.m)
-	}
-
+	finalMaterials := materiais
 	if limit > 0 && len(finalMaterials) > limit {
 		finalMaterials = finalMaterials[:limit]
 	}

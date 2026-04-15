@@ -135,6 +135,7 @@ export default {
 		],
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
 		searchTimeout: null,
+		longRequestTimeout: null,
 		observer: null
 	}),
 	setup() {
@@ -181,6 +182,10 @@ export default {
 		}
 	},
 	unmounted() {
+		this.isFetching = false;
+		this.loading = false;
+		if (this.longRequestTimeout) clearTimeout(this.longRequestTimeout);
+		if (this.searchTimeout) clearTimeout(this.searchTimeout);
 		if (this.observer) {
 			this.observer.disconnect();
 		}
@@ -201,6 +206,13 @@ export default {
 
 			this.isFetching = true;
 			this.loading = true;
+
+			if (this.longRequestTimeout) clearTimeout(this.longRequestTimeout);
+			this.longRequestTimeout = setTimeout(() => {
+				if (this.loading && reset) {
+					this.notify('A busca está demorando um pouco mais, conectando aos acervos externos...', 'info');
+				}
+			}, 3000);
 
 			try {
 				// Sincronizar favoritos se necessário
@@ -249,6 +261,7 @@ export default {
 				console.error('Erro na pesquisa avançada:', error)
 				this.notify('Erro ao realizar busca. Tente novamente.', 'error')
 			} finally {
+				if (this.longRequestTimeout) clearTimeout(this.longRequestTimeout);
 				this.loading = false;
 				this.isFetching = false;
 			}
