@@ -55,7 +55,7 @@
 					variant="text"
 					color="primary"
 					class="explorar-todos-btn text-none"
-					@click="$router.push('/explorar')"
+					@click="$router.push({ path: '/explorar', query: { categoria: 'Todos' } })"
 				>
 					Explorar Tudo
 					<v-icon end icon="mdi-arrow-right" size="18"></v-icon>

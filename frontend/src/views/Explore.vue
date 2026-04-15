@@ -84,6 +84,21 @@
 					</v-col>
 				</v-row>
 
+				<!-- Timeout Warning -->
+				<v-row dense v-if="loading && showTimeoutWarning" class="mb-4">
+					<v-col cols="12">
+						<v-alert
+							type="info"
+							variant="tonal"
+							class="rounded-xl font-weight-medium"
+							icon="mdi-rocket-launch-outline"
+							elevation="0"
+						>
+							A busca está demorando um pouco mais. O Acervus Core está conectando às bibliotecas e bases acadêmicas externas para expandir seus resultados!
+						</v-alert>
+					</v-col>
+				</v-row>
+
 				<!-- Loading More Shimmer -->
 				<v-row dense v-if="loading">
 					<v-col v-for="n in 4" :key="'skeleton-more-'+n" cols="12" sm="12" md="6" lg="6" class="pa-2">
@@ -136,6 +151,7 @@ export default {
 		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
 		searchTimeout: null,
 		longRequestTimeout: null,
+		showTimeoutWarning: false,
 		observer: null
 	}),
 	setup() {
@@ -206,11 +222,12 @@ export default {
 
 			this.isFetching = true;
 			this.loading = true;
+			this.showTimeoutWarning = false;
 
 			if (this.longRequestTimeout) clearTimeout(this.longRequestTimeout);
 			this.longRequestTimeout = setTimeout(() => {
 				if (this.loading && reset) {
-					this.notify('A busca está demorando um pouco mais, conectando aos acervos externos...', 'info');
+					this.showTimeoutWarning = true;
 				}
 			}, 3000);
 

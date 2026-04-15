@@ -58,26 +58,14 @@ func (r *MaterialPostgres) Pesquisar(ctx context.Context, termo, categoria, font
 	argCount := 1
 
 	if termo != "" {
-		// Intelligent FTS: Use websearch_to_tsquery for natural language and support prefix matching (:*)
-		// We split the term and add :* to each word to allow "dent" to match "dentista"
-		words := strings.Fields(termo)
-		ftsQueryParts := []string{}
-		for _, w := range words {
-			if len(w) > 2 {
-				ftsQueryParts = append(ftsQueryParts, w+":*")
-			} else {
-				ftsQueryParts = append(ftsQueryParts, w)
-			}
-		}
-		formattedQuery := strings.Join(ftsQueryParts, " & ")
-
-		query += fmt.Sprintf(", ts_rank_cd(search_vector, to_tsquery('portuguese', $%d)) as rank", argCount)
+		// Super intelligent natural language FTS (websearch_to_tsquery)
+		// handles phrases, OR, AND, and ignores stopwords correctly
+		query += fmt.Sprintf(", ts_rank_cd(search_vector, websearch_to_tsquery('portuguese', $%d)) as rank", argCount)
 		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
 		
-		// Busca estritamente por AND (FTS), removido o fallback OR ILIKE para precisão extrema
-		query += fmt.Sprintf(" AND search_vector @@ to_tsquery('portuguese', $%d)", argCount)
+		query += fmt.Sprintf(" AND search_vector @@ websearch_to_tsquery('portuguese', $%d)", argCount)
 
-		args = append(args, formattedQuery)
+		args = append(args, termo)
 		argCount += 1
 	} else {
 		query += " FROM materiais WHERE status = 'aprovado' AND deleted_at IS NULL"
