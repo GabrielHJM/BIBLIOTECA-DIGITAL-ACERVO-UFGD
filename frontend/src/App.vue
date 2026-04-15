@@ -23,7 +23,7 @@
 				<v-text-field
 					v-model="searchInput"
 					ref="globalSearch"
-					placeholder="Buscar conhecimento... (Ctrl+K)"
+					placeholder="Buscar conhecimento..."
 					variant="solo"
 					rounded="pill"
 					flat
@@ -37,9 +37,6 @@
 					@blur="isSearchFocused = false"
 					@keyup.enter="doSearch"
 				>
-					<template v-slot:append-inner>
-						<kbd class="search-kbd hidden-sm-and-down">⌘ K</kbd>
-					</template>
 				</v-text-field>
 			</div>
 
