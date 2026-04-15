@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://capsule-render.vercel.app/api?type=waving&color=00ADD8&height=200&section=header&text=Acervus%20Core&fontSize=40&fontAlignY=38&desc=Sua%20Nova%20Plataforma%20de%20Conhecimento&descAlignY=55&descAlign=50" alt="Banner Acervus Core" width="100%" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=007AFF&height=220&section=header&text=Acervus%20Core&fontSize=50&fontAlignY=38&desc=O%20Hub%20Inteligente%20de%20Conhecimento%20Acadêmico&descAlignY=55&descAlign=50" alt="Banner Acervus Core" width="100%" />
 
   <br>
 
@@ -7,58 +7,49 @@
   [![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white)](https://go.dev/)
   [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
   [![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+  [![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 
-    <strong>O Acervus Core unifica acervos acadêmicos em uma única plataforma inteligente. Com arquitetura robusta em Go, Vue.js e PostgreSQL, ele moderniza a experiência de pesquisa e estudo digital.</strong>
+  <strong>A plataforma que unifica o acesso à ciência. O Acervus Core utiliza algoritmos avançados de busca e inteligência concorrente para consolidar milhões de livros e artigos acadêmicos em um ecossistema intuitivo e ultra-rápido.</strong>
 
-  <a href="#-como-rodar-o-projeto">🚀 Começar Agora</a> •
-  <a href="#-arquitetura-do-sistema">⚙️ Arquitetura</a> •
-  <a href="#-funcionalidades-de-destaque">✨ Funcionalidades</a>
+  <br>
+
+  <a href="#-core-engine">💡 Funcionalidades</a> •
+  <a href="#-arquitetura-e-engenharia-de-dados">⚙️ Arquitetura</a> •
+  <a href="#-como-rodar-o-projeto">🚀 Início Rápido</a>
 </div>
 
 ---
 
-# 📖 PARTE I: APRESENTAÇÃO DO PROJETO
+# 📖 PARTE I: VISÃO GERAL
 
-## O Resgate do Conhecimento Centralizado
-O cenário acadêmico atual sofre com a fragmentação do conhecimento: livros, artigos e teses estão espalhados em múltiplos repositórios que não se comunicam. 
+O cenário acadêmico atual sofre com a fragmentação extrema. Livros, artigos científicos e teses de mestrado estão isolados em múltiplos silos que não se comunicam. 
 
-Desenvolvido como Trabalho de Conclusão de Curso (TCC) em Sistemas de Informação pela Universidade Federal da Grande Dourados (UFGD), este projeto resolve esse problema. A plataforma atua como um hub inteligente, unificando o acervo de diversas fontes (Google Books, ArXiv, CAPES, Semantic Scholar) em um ecossistema ágil e focado na experiência do estudante.
+O **Acervus Core**, desenvolvido como projeto de TCC em Sistemas de Informação pela **Universidade Federal da Grande Dourados (UFGD)**, surge para quebrar essas barreiras. Ele não é apenas uma biblioteca; é um motor de busca de alta precisão que atua como um hub centralizado, coletando, purificando e categorizando materiais de bases mundiais em tempo real.
 
-**🔗 Repositório Oficial:** [GabrielHJM/BIBLIOTECA-DIGITAL-ACERVO-UFGD](https://github.com/GabrielHJM/BIBLIOTECA-DIGITAL-ACERVO-UFGD)
+## ✨ Core Engine: O Coração do Sistema
 
-## 💻 Telas e Interface (PWA Ready)
+A plataforma foi reconstruída para oferecer uma experiência "Premium" focada em performance e precisão científica.
 
-A interface foi projetada como uma *Single-Page Application* (SPA) limpa, livre de distrações e orientada ao aprendizado.
+### 🔍 Busca de Precisão Cirúrgica (Lógica AND)
+Implementamos um motor de **Full-Text Search (FTS)** inteligente no PostgreSQL. Diferente de buscadores comuns que trazem resultados irrelevantes, o Acervus Core utiliza lógica estrita de interseção (**AND**):
+- **O que significa?** Se você busca "Engenharia de Software", o sistema garante que apenas materiais que contenham ambos os termos sejam exibidos em rank prioritário.
+- **Natural Language Handling**: Suporte nativo para linguagem natural, ignorando "stop-words" e focando no que realmente importa.
 
-| Dashboard & Explorar | Leitura & Estudo | Ferramentas Ativas |
-| :---: | :---: | :---: |
-| <img src="frontend/public/logo-biblioteca.png" width="150" alt="Home"> | <img src="frontend/src/assets/images/site-images/content/book-image-3.jpg" width="150" alt="Detalhes"> | <img src="frontend/src/assets/images/site-images/content/book-image-2.jpg" width="150" alt="Flashcards"> |
-| *Vitrine inteligente e busca em tempo real.* | *Consumo imersivo do material.* | *Anotações, flashcards e gamificação.* |
+### 🤖 Multi-Source Harvesting (7 APIs Integradas)
+Nosso sistema de coleta concorrente varre as maiores bibliotecas do mundo simultaneamente:
+- **DOAJ (Novo)**: Acesso direto ao maior diretório de artigos científicos de acesso aberto, com foco em materiais em Português.
+- **Google Books, Semantic Scholar, ArXiv, Open Library, CAPES e Gutendex**.
 
-> **Nota para deploy:** Adicione prints reais das telas na pasta `frontend/src/assets/images/site-images/` para ilustrar a documentação perfeitamente.
-
-## ✨ Funcionalidades de Destaque
-- 🤖 **Multi-Harvester Automático:** Robôs em *background* sincronizam dados continuamente de fontes externas.
-- 🔍 **Full-Text Search (FTS):** Motor de busca ultrarrápido nativo do PostgreSQL.
-- 📚 **Espaço de Estudo:** Gestão de Flashcards, histórico de leitura e painel de anotações.
+### 🎨 Experiência de Estudo Premium
+- **Interface Glassmorphism**: Design inspirado no ecossistema iOS, com transparências fluidas e transições suaves.
+- **Gerador de Citações Pro**: Gere citações automáticas em formatos **ABNT, APA e BibTeX** com um clique, através de um modal flutuante de última geração.
+- **Paginação Inteligente**: Os filtros nunca são perdidos durante a navegação. O sistema preserva o estado da sua pesquisa mesmo durante o scroll infinito.
 
 ---
 
-# ⚙️ PARTE II: ESPECIFICAÇÕES TÉCNICAS
+# ⚙️ PARTE II: TÉCNICA E ENGENHARIA
 
-O ecossistema foi projetado utilizando *Clean Architecture*, garantindo alta concorrência, baixo uso de memória e escalabilidade.
-
-## 🛠️ Stack Tecnológica
-
-<div align="center">
-  <table>
-    <tr>
-      <td align="center" width="33%"><b>Frontend (Port: 8081)</b><br><br>Vue.js 3<br>Vuetify 3<br>Vue Router<br>Service Workers (PWA)</td>
-      <td align="center" width="33%"><b>Backend (Port: 8080)</b><br><br>Golang 1.25<br>Clean Architecture<br>JWT & Rate Limiting</td>
-      <td align="center" width="33%"><b>Database & Infra</b><br><br>PostgreSQL (FTS)<br>Redis (Cache)<br>Swagger (Docs)<br>Node.js (Concurrently)</td>
-    </tr>
-  </table>
-</div>
+A arquitetura foi projetada seguindo os princípios da **Clean Architecture**, garantindo que o sistema seja escalável, testável e extremamente leve.
 
 ## 🏗️ Arquitetura e Engenharia de Dados
 
@@ -141,64 +132,41 @@ flowchart TD
 ```
 
 ### 3. Ecossistema de Fontes (Harvesters)
-Atualmente, o Acervus Core atua como um hub para **7 grandes bases de conhecimento** mundiais, priorizando o idioma Português em suas expansões de busca:
 
-| Provedor | Tipo de Acervo | Foco |
+| Provedor | Tipo de Acervo | Foco Principal |
 | :--- | :--- | :--- |
-| **DOAJ** | Acadêmico / Científico | Artigos e Periódicos em Português |
-| **Google Books** | Digital / Ebooks | Livros e Literaturas Diversas |
-| **Semantic Scholar** | Científico (IA) | Pesquisas de Alto Impacto |
-| **ArXiv** | Exatas / Tecnologia | Pre-prints técnicos e Ciência |
-| **CAPES** | Brasileiro / Acadêmico | Dissertações e Teses |
-| **Open Library** | Domínio Público | Clássicos e Acervos do Mundo |
-| **Gutendex** | Literatura Clássica | eBooks Gratuitos e Educacionais |
-
+| **DOAJ** | Acadêmico | Artigos científicos em Português |
+| **Google Books** | Digital | Ebooks e literatura mundial |
+| **Semantic Scholar** | Científico (IA) | Pesquisas de impacto |
+| **ArXiv** | Tecnologia | Ciência da computação e física |
+| **CAPES** | Brasileiro | Teses e dissertações nacionais |
+| **Open Library** | Domínio Público | Clássicos universais |
+| **Gutendex** | Literatura | Projetos educacionais |
 
 ---
 
-# 🚀 PARTE III: COMO RODAR E FAZER DEPLOY
+# 🚀 PARTE III: INSTALAÇÃO E DEPLOY
 
-O sistema agora possui integração completa com **Docker**, facilitando tanto o desenvolvimento local quanto a publicação online.
+O Acervus Core é **Docker Ready**. Você pode subir todo o ecossistema (Frontend, Backend, Postgres, Redis) em menos de 2 minutos.
 
-## 🐳 Rodando Localmente com Docker (Recomendado)
-
-Para subir o ecossistema completo (Frontend + Backend + Banco de Dados) com um único comando:
+## 🐳 Rodando Localmente (Recomendado)
 
 ```powershell
 docker-compose up --build
 ```
+- **Interface Web**: `http://localhost:8082`
+- **Porta Backend**: `8080` (Proxied via `8082` no container)
 
-- **Frontend & Backend:** [http://localhost:8082](http://localhost:8082)
-- **Banco de Dados:** Rodando no container (porta interna 5432, externa 5433).
-
-## ☁️ Deploy Público (Render)
-
-Este repositório está pronto para deploy automático no **Render** via Blueprint:
-
-1.  Crie um novo **Blueprint** no dashboard do Render.
-2.  Conecte este repositório.
-3.  O Render configurará automaticamente o Web Service (Docker) e o PostgreSQL.
+## ☁️ Cloud Deployment (Render)
+Este repositório está configurado para deploy automático no **Render**. Ele utiliza o `render.yaml` (Blueprint) para provisionar o banco PostgreSQL, o cache Redis e as instâncias Docker de forma orquestrada.
 
 ---
 
-# 🧪 PARTE IV: CONTRIBUIÇÃO E TESTES
+# 📄 LICENÇA E CRÉDITOS
 
-## 🛠️ Desenvolvimento Manual (Sem Docker)
-
-### Backend
-```powershell
-cd backend
-go run cmd/server/main.go
-```
-
-### Frontend
-```powershell
-cd frontend
-npm install
-npm run serve
-```
+Projeto desenvolvido por **Gabriel** (GabrielHJM) como requisito para o TCC de Sistemas de Informação na **UFGD**.
 
 ---
-
-## 📄 Licença
-Desenvolvido por **Gabriel** como projeto de TCC - Sistemas de Informação - UFGD.
+<div align="center">
+  Feito com ❤️ por acadêmicos para acadêmicos.
+</div>
