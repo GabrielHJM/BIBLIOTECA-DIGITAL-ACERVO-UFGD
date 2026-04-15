@@ -128,10 +128,12 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 			
 			yearDiff := time.Now().Year() - m.AnoPublicacao
 			if yearDiff < 0 { yearDiff = 0 }
-			if yearDiff < 5 {
-				score += 25
-			} else if yearDiff < 10 {
-				score += 10
+			
+			// Granular Freshness Boost: Newer books get progressively more points
+			if yearDiff < 10 {
+				score += float64(30 - (yearDiff * 3)) // 0=30pts, 1=27pts, 2=24pts...
+			} else if yearDiff < 20 {
+				score += 5
 			}
 
 			scored = append(scored, ScoredMaterial{m, score})

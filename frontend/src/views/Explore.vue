@@ -148,7 +148,7 @@ export default {
 			{ label: 'Data de Publicação (Antigos)', value: 'oldest' },
 			{ label: 'Aleatório', value: 'random' }
 		],
-		yearsList: Array.from({length: 30}, (_, i) => 2025 - i),
+		yearsList: Array.from({length: 40}, (_, i) => new Date().getFullYear() - i),
 		searchTimeout: null,
 		longRequestTimeout: null,
 		showTimeoutWarning: false,
