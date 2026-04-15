@@ -34,13 +34,6 @@
 				</div>
 			</div>
 
-			<!-- Stats Floating Bar -->
-			<div class="stats-glass-bar">
-				<div class="stat-unit" v-for="stat in stats" :key="stat.label">
-					<span class="stat-val">{{ stat.value }}</span>
-					<span class="stat-lbl">{{ stat.label }}</span>
-				</div>
-			</div>
 		</section>
 
 		<!-- Categories Section -->
@@ -210,12 +203,6 @@ export default {
 			loading: true,
 			hoveredFeature: null,
 			pillTransforms: {},
-			stats: [
-				{ value: '5K+', label: 'Materiais Livres' },
-				{ value: '50+', label: 'Categorias' },
-				{ value: 'Grátis', label: 'Acesso' },
-				{ value: '24/7', label: 'Disponível' }
-			],
 			categoriasMock: [
 				{ nome: 'TECNOLOGIA', livros: [], icon: 'mdi-laptop', iconColor: '#007AFF' },
 				{ nome: 'SAÚDE', livros: [], icon: 'mdi-heart-pulse', iconColor: '#FF6B9D' },
