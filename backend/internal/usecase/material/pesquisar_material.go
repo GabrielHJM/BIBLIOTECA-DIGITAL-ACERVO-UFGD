@@ -40,8 +40,8 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 	}
 
 	// 2. High Density Harvesting (Trigger if local database is too sparse)
-	// We define "sparse" as having less than half of the requested limit OR if the user specifically asked for a high limit
-	isSparse := len(materiaisIniciais) < limit || limit > 50 
+	// We define "sparse" as having less than 2 results found locally
+	isSparse := len(materiaisIniciais) < 2
 	hasQuery := termo != "" || categoria != ""
 
 	if hasQuery && isSparse && uc.Harvester != nil && offset == 0 {
@@ -51,10 +51,20 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 
 		harvested, err := uc.Harvester.Search(ctx, termo, categoria, fonte, anoInicio, anoFim, harvestLimit)
 		if err == nil && len(harvested) > 0 {
-			// Persist in background (non-blocking for results but we want them for next time)
-			for i := range harvested {
+			// Persist top results synchronously to ensure they have valid database IDs for the UI
+			// We only save the amount we actually need to return (limit)
+			numToSaveSync := limit
+			if len(harvested) < numToSaveSync {
+				numToSaveSync = len(harvested)
+			}
+
+			for i := 0; i < numToSaveSync; i++ {
+				_ = uc.Repo.Criar(ctx, &harvested[i])
+			}
+
+			// Persist the rest in background
+			for i := numToSaveSync; i < len(harvested); i++ {
 				go func(m *material.Material) {
-					// We use a separate context for persistence to avoid truncation if response is sent
 					_ = uc.Repo.Criar(context.Background(), m)
 				}(&harvested[i])
 			}
@@ -84,7 +94,7 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 	// Parallel Batch Verification
 	statusMap := make(map[string]bool)
 	if uc.Verifier != nil && len(urlsToCheck) > 0 {
-		verifyCtx, cancel := context.WithTimeout(ctx, 5*time.Second) // Generous timeout for high volume
+		verifyCtx, cancel := context.WithTimeout(ctx, 4*time.Second) // Increased timeout for stricter checks
 		defer cancel()
 		statusMap = uc.Verifier.VerifyBatch(verifyCtx, urlsToCheck)
 	}

@@ -119,7 +119,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	}
 
 	// 3. Execute concurrently with timeout safety (Fast fail for responsive UI)
-	searchCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+	searchCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
 	defer cancel()
 
 	for _, task := range tasks {

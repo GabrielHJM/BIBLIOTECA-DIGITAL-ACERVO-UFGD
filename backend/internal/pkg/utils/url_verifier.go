@@ -60,45 +60,52 @@ func (v *URLVerifier) VerifyBatch(ctx context.Context, urls []string) map[string
 	return results
 }
 
-// IsAlive performs a rapid HEAD/GET request to check if a URL is reachable
+// IsAlive performs a rapid HEAD/GET request to check if a URL is reachable and accessible
 func (v *URLVerifier) IsAlive(ctx context.Context, url string) bool {
 	// 1. Try HEAD first (faster, no body)
 	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
 	if err != nil {
-		return true // Optimistic
+		return false // Failed to create request
 	}
 	
-	// Add common headers to avoid being blocked as a bot
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
 	resp, err := v.client.Do(req)
 	if err == nil {
 		defer resp.Body.Close()
+		
+		// Forbidden or Unauthorized: Definitively not accessible
+		if resp.StatusCode == http.StatusUnauthorized || resp.StatusCode == http.StatusForbidden || resp.StatusCode == http.StatusNotFound {
+			return false
+		}
+
 		if resp.StatusCode < 400 {
 			return true
 		}
-		if resp.StatusCode >= 500 {
-			return true // Server error might be temporary
-		}
 	}
 
-	// 2. Fallback to GET with a very small range if HEAD fails
+	// 2. Fallback to GET with a very small range if HEAD fails or returns ambiguous results
 	req, err = http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		return true
+		return false
 	}
 	req.Header.Set("Range", "bytes=0-0")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
 
 	resp, err = v.client.Do(req)
 	if err != nil {
-		// On network/timeout/context errors, be optimistic
-		return true
+		// On network error or timeout, we now return false to prevent user from seeing broken links
+		return false
 	}
 	defer resp.Body.Close()
 
+	// Strict check for 4xx errors
 	if resp.StatusCode >= 400 && resp.StatusCode < 500 {
-		// Only definitively dead if 404/403 etc.
+		return false
+	}
+
+	// Also check for 5xx errors (server down)
+	if resp.StatusCode >= 500 {
 		return false
 	}
 
