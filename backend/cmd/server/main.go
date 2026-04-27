@@ -204,7 +204,12 @@ func main() {
 		
 		// Check if file exists in dist
 		path := r.URL.Path
-		if path == "/" {
+		if path == "/" || path == "/index.html" {
+			// Previne o cache da página principal para garantir que atualizações do GitHub 
+			// carreguem a versão mais nova do frontend imediatamente sem precisar de CTRL+F5
+			w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+			w.Header().Set("Pragma", "no-cache")
+			w.Header().Set("Expires", "0")
 			fs.ServeHTTP(w, r)
 			return
 		}
@@ -234,6 +239,10 @@ func main() {
 		}
 
 		// Fallback to index.html for SPA routing
+		// Como é a rota SPA que devolve o index, também forçamos o no-cache
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		w.Header().Set("Pragma", "no-cache")
+		w.Header().Set("Expires", "0")
 		http.ServeFile(w, r, "dist/index.html")
 	})
 
