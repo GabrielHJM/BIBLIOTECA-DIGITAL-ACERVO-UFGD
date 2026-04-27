@@ -268,27 +268,15 @@
 		<!-- Global Accessibility Panel -->
 		<AccessibilityPanel />
 
-		<!-- Global Notifications (Snackbar) -->
-		<v-snackbar
-			v-model="snackbar.show"
-			:color="snackbar.color"
-			:timeout="snackbar.timeout"
-			rounded="pill"
-			class="premium-snackbar"
-		>
-			<div class="d-flex align-center">
-				<v-icon start size="20" class="mr-2">{{ snackbar.icon }}</v-icon>
-				<span class="font-weight-bold">{{ snackbar.text }}</span>
-			</div>
-			<template v-slot:actions>
-				<v-btn variant="text" @click="snackbar.show = false" icon="mdi-close" size="small"></v-btn>
-			</template>
-		</v-snackbar>
+		<!-- Global Notifications (iOS Style) -->
+		<IOSNotification />
 	</v-app>
 </template>
 
 <script>
 import AccessibilityPanel from './components/AccessibilityPanel.vue'
+import IOSNotification from './components/IOSNotification.vue'
+import { iosNotificationStore } from '@/services/IOSNotificationStore'
 import '@/assets/styles/premium.css'
 import { ref, computed, reactive } from 'vue'
 import auth, { state as authState } from '@/auth'
@@ -299,19 +287,12 @@ import { useDevice } from '@/composables/useDevice'
 
 export default {
 	name: 'App',
-	components: { AccessibilityPanel },
+	components: { AccessibilityPanel, IOSNotification },
 	data() {
 		return {
 			publicRoutes: ['/login', '/cadastro', '/esqueci-senha'],
 			searchInput: '',
 			isSearchFocused: false,
-			snackbar: {
-				show: false,
-				text: '',
-				color: 'surface',
-				icon: 'mdi-information',
-				timeout: 4000
-			},
 			notificationMenuOpen: false,
 			notifications: [],
 			lastWelcomeId: null,
@@ -328,19 +309,7 @@ export default {
 	},
 	methods: {
 		notify(text, type = 'info') {
-			this.snackbar.text = text
-			this.snackbar.show = true
-
-			const types = {
-				success: { color: 'success', icon: 'mdi-check-circle' },
-				error: { color: 'error', icon: 'mdi-alert-circle' },
-				warning: { color: 'warning', icon: 'mdi-alert' },
-				info: { color: 'info', icon: 'mdi-information' }
-			}
-
-			const config = types[type] || types.info
-			this.snackbar.color = config.color
-			this.snackbar.icon = config.icon
+			iosNotificationStore.addNotification(text, type);
 		},
 		logout() {
 			auth.logout()

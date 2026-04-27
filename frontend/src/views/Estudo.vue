@@ -161,25 +161,6 @@
 			<v-progress-circular indeterminate color="primary" size="64" width="6"></v-progress-circular>
 		</div>
 
-		<!-- Error / 404 State -->
-		<div v-else class="not-found-wrapper d-flex flex-column justify-center align-center fill-height pa-8">
-			<div class="not-found-content d-flex flex-column align-center animate-up">
-				<v-img src="/not-found.png" width="400" height="400" class="mb-6 drop-shadow-premium"></v-img>
-				<h2 class="text-h3 font-weight-black text-white text-center mb-4">Material não encontrado</h2>
-				<p class="text-h6 opacity-70 text-white text-center mb-8 max-width-600">
-					O material que você procura pode ter sido removido, ter o ID inválido ou não estar mais disponível em nossa base de dados.
-				</p>
-				<v-btn
-					color="primary"
-					size="x-large"
-					prepend-icon="mdi-arrow-left"
-					class="text-none font-weight-black ios-btn-large"
-					@click="goBack"
-                >
-					Voltar para Galeria
-				</v-btn>
-			</div>
-		</div>
 	</div>
 </template>
 
@@ -333,6 +314,8 @@ export default {
 			}
 		} catch (error) {
 			console.error('Erro ao carregar material:', error);
+			this.notify('Material indisponível ou não encontrado.', 'error');
+			this.$router.replace('/explorar');
 		} finally {
 			this.loading = false;
 		}
@@ -608,39 +591,4 @@ export default {
 		.text-h4 { font-size: 2rem !important; }
 	}
 
-	/* 404 Specific Styles */
-	.not-found-wrapper {
-		min-height: 90vh;
-		background: radial-gradient(circle at center, rgba(0, 122, 255, 0.05) 0%, transparent 70%);
-	}
-
-	.animate-up {
-		animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-	}
-
-	@keyframes fadeInUp {
-		from { opacity: 0; transform: translateY(40px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.drop-shadow-premium {
-		filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
-	}
-
-	.max-width-600 {
-		max-width: 600px;
-	}
-
-	.ios-btn-large {
-		border-radius: 18px !important;
-		padding: 0 40px !important;
-		height: 64px !important;
-		box-shadow: 0 10px 30px rgba(0, 122, 255, 0.3) !important;
-		transition: all 0.3s ease;
-	}
-
-	.ios-btn-large:hover {
-		transform: scale(1.05);
-		box-shadow: 0 15px 40px rgba(0, 122, 255, 0.4) !important;
-	}
 </style>

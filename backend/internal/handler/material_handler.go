@@ -124,6 +124,12 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 	})
 	
 	mux.HandleFunc("GET /materiais/dashboard", func(w http.ResponseWriter, r *http.Request) {
+		var cachedResult map[string]interface{}
+		if c != nil && c.Get("dashboard_cache", &cachedResult) {
+			JSONSuccess(w, cachedResult, http.StatusOK)
+			return
+		}
+
 		result := make(map[string]interface{})
 		categories := []string{"TECNOLOGIA", "SAÚDE", "MATEMÁTICA", "CIÊNCIAS", "HISTÓRIA", "CONTABILIDADE"}
 		
@@ -181,6 +187,10 @@ func RegisterMaterialRoutes(mux *http.ServeMux, db *sql.DB, c cache.Cache) {
 			case <-r.Context().Done():
 				return
 			}
+		}
+		
+		if c != nil {
+			c.Set("dashboard_cache", result, 15*time.Minute)
 		}
 		
 		JSONSuccess(w, result, http.StatusOK)
