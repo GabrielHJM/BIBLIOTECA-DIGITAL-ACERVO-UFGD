@@ -100,10 +100,8 @@
 				</v-row>
 
 				<!-- Loading More Shimmer -->
-				<v-row dense v-if="loading">
-					<v-col v-for="n in 4" :key="'skeleton-more-'+n" cols="12" sm="12" md="6" lg="6" class="pa-2">
-						<v-skeleton-loader type="card" :theme="isDarkTheme ? 'dark' : 'light'" class="rounded-xl"></v-skeleton-loader>
-					</v-col>
+				<v-row dense v-if="loading" class="mt-8 mb-8" justify="center">
+					<CloudLoader text="Buscando no acervo..." height="200px" />
 				</v-row>
 
 				<!-- Intersection Observer Sentinel -->

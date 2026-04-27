@@ -35,7 +35,7 @@
     <v-container class="content-area mt-4">
       <!-- Loading -->
       <div v-if="loading" class="d-flex justify-center align-center" style="min-height:300px">
-        <v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+        <CloudLoader text="Carregando anotações..." height="200px" />
       </div>
 
       <!-- Empty state -->

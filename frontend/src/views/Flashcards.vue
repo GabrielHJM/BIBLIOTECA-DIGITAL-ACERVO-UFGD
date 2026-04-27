@@ -20,7 +20,7 @@
 			</div>
 
 			<div v-if="loading" class="text-center pa-16">
-				<v-progress-circular indeterminate color="primary" size="64" width="6"></v-progress-circular>
+				<CloudLoader text="Carregando cartões..." height="200px" />
 			</div>
 
 			<div v-else-if="cards.length === 0" class="text-center pa-16 ios-glass-card reader-rounding border-cyan">

@@ -77,7 +77,7 @@
 			</div>
 
 			<v-row v-else justify="center" class="mt-12">
-				<v-progress-circular indeterminate color="primary" size="64"></v-progress-circular>
+				<CloudLoader text="Carregando favoritos..." height="200px" />
 			</v-row>
 		</v-container>
 	</div>

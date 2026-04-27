@@ -157,8 +157,8 @@
 		</div>
 
 		<!-- Loading State -->
-		<div v-else-if="loading" class="d-flex justify-center align-center fill-height loading-wrapper">
-			<v-progress-circular indeterminate color="primary" size="64" width="6"></v-progress-circular>
+		<div v-else-if="loading" class="d-flex justify-center align-center fill-height loading-wrapper mt-16">
+			<CloudLoader text="Abrindo material..." height="200px" />
 		</div>
 
 	</div>

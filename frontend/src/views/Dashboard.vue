@@ -230,7 +230,7 @@
 				</v-row>
 
 				<v-row v-if="loading" justify="center" class="mt-6 mb-8">
-					<v-progress-circular indeterminate color="primary" size="48"></v-progress-circular>
+					<CloudLoader text="Carregando dashboard..." height="150px" />
 				</v-row>
 
 				<!-- Intersection Observer Sentinel -->
