@@ -5,8 +5,8 @@
 		<section class="apple-hero" ref="heroSection">
 			<div class="hero-content-center">
 				<div class="pill-badge fade-up-delay-1">A sua biblioteca inteligente</div>
-				<h1 class="apple-huge-title fade-up-delay-2">
-					Acervus Core.
+				<h1 class="apple-huge-title fade-up-delay-2 apple-gradient-text">
+					Acervus Core
 				</h1>
 				<h2 class="apple-subtitle fade-up-delay-3">
 					O conhecimento ao seu alcance.<br>
@@ -32,10 +32,10 @@
 		<section class="apple-categories-section">
 			<div class="section-container">
 				<div class="apple-section-header fade-on-scroll">
-					<h3 class="apple-section-title">Explore as estantes.</h3>
+					<h3 class="apple-section-title apple-gradient-text">Explore as estantes</h3>
 					<p class="apple-section-desc">Milhares de recursos organizados para você.</p>
-					<button class="apple-btn-link mt-2" @click="$router.push({ path: '/explorar', query: { categoria: 'Todos' } })">
-						Explorar Tudo <v-icon size="16">mdi-chevron-right</v-icon>
+					<button class="apple-btn-accent mt-4" @click="$router.push({ path: '/explorar', query: { categoria: 'Todos' } })">
+						Explorar Tudo <v-icon size="18" class="ml-1">mdi-arrow-right</v-icon>
 					</button>
 				</div>
 
@@ -88,7 +88,7 @@
 		<section class="apple-features-section">
 			<div class="section-container">
 				<div class="apple-section-header center-text fade-on-scroll">
-					<h3 class="apple-section-title">Inovação e Acessibilidade.</h3>
+					<h3 class="apple-section-title apple-gradient-text">Inovação e Acessibilidade</h3>
 					<p class="apple-section-desc">Um ecossistema feito para a sua evolução.</p>
 				</div>
 
@@ -234,12 +234,12 @@ export default {
 /* Hero Section */
 .apple-hero {
 	position: relative;
-	min-height: 90vh;
+	min-height: 70vh;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	text-align: center;
-	padding: 100px 20px;
+	padding: 80px 20px 40px;
 	overflow: hidden;
 }
 
@@ -322,6 +322,34 @@ export default {
 
 .apple-btn-link:hover {
 	opacity: 0.8;
+}
+
+.apple-btn-accent {
+	background: linear-gradient(135deg, #007AFF 0%, #00E5FF 100%);
+	color: #ffffff;
+	padding: 14px 32px;
+	border-radius: 100px;
+	font-size: 16px;
+	font-weight: 700;
+	border: none;
+	cursor: pointer;
+	transition: all 0.4s var(--spring-easing);
+	display: inline-flex;
+	align-items: center;
+	box-shadow: 0 10px 20px rgba(0, 122, 255, 0.3);
+}
+
+.apple-btn-accent:hover {
+	transform: scale(1.05) translateY(-2px);
+	box-shadow: 0 15px 30px rgba(0, 122, 255, 0.5);
+}
+
+.apple-gradient-text {
+	background: linear-gradient(135deg, #00E5FF 0%, #007AFF 100%);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	background-clip: text;
+	color: transparent;
 }
 
 .hero-glow {

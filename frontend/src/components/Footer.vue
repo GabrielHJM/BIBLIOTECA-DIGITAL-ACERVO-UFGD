@@ -30,9 +30,8 @@
 				<div class="footer-col">
 					<h3 class="col-title">Legal & Suporte</h3>
 					<ul class="footer-links">
-						<li><a href="#">Termos de Uso</a></li>
-						<li><a href="#">Política de Privacidade</a></li>
-						<li><a href="mailto:contato@acervus.core">Suporte Técnico</a></li>
+						<li><router-link to="/termos">Termos & Privacidade</router-link></li>
+						<li><router-link to="/suporte">Suporte Técnico</router-link></li>
 					</ul>
 				</div>
 
@@ -40,9 +39,8 @@
 				<div class="footer-col">
 					<h3 class="col-title">Conecte-se</h3>
 					<div class="social-icons">
-						<a href="#" class="social-btn"><v-icon size="20">mdi-github</v-icon></a>
-						<a href="#" class="social-btn"><v-icon size="20">mdi-linkedin</v-icon></a>
-						<a href="#" class="social-btn"><v-icon size="20">mdi-instagram</v-icon></a>
+						<a href="https://github.com/GabrielHJM" target="_blank" rel="noopener noreferrer" class="social-btn"><v-icon size="20">mdi-github</v-icon></a>
+						<a href="mailto:acervuscore@gmail.com" class="social-btn"><v-icon size="20">mdi-email</v-icon></a>
 					</div>
 					<div class="mt-4 text-caption opacity-60">
 						Universidade Federal da Grande Dourados (UFGD)
@@ -74,10 +72,10 @@ export default {
 
 <style scoped>
 .premium-footer {
-	background: rgba(5, 10, 20, 0.8);
+	background: rgba(0, 122, 255, 0.05);
 	backdrop-filter: blur(20px);
 	-webkit-backdrop-filter: blur(20px);
-	border-top: 1px solid rgba(255, 255, 255, 0.05);
+	border-top: 1px solid rgba(0, 122, 255, 0.15);
 	padding: 80px 0 30px;
 	color: #ffffff;
 	margin-top: 40px;

@@ -33,6 +33,18 @@ const routes = [
 		meta: { requiresAuth: false }
 	},
 	{
+		path: '/suporte',
+		name: 'suporte',
+		component: () => import(/* webpackChunkName: "info" */ '@/views/Suporte.vue'),
+		meta: { requiresAuth: false }
+	},
+	{
+		path: '/termos',
+		name: 'termos',
+		component: () => import(/* webpackChunkName: "info" */ '@/views/Termos.vue'),
+		meta: { requiresAuth: false }
+	},
+	{
 		path: '/explorar',
 		name: 'explorar',
 		component: () => import(/* webpackChunkName: "explore" */ '@/views/Explore.vue'),
