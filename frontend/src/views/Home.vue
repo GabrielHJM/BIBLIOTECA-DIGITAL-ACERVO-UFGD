@@ -364,7 +364,7 @@ export default {
 
 /* Sections */
 .apple-categories-section, .apple-features-section {
-	padding: 120px 0;
+	padding: 60px 0;
 	position: relative;
 	z-index: 5;
 }
@@ -457,12 +457,38 @@ export default {
 .book-cover-mini {
 	width: 48px;
 	height: 64px;
-	background: linear-gradient(135deg, #2c2c2e, #1c1c1e);
+	background: #000;
+	position: relative;
+	overflow: hidden;
 	border-radius: 8px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.book-cover-mini::before {
+	content: '';
+	position: absolute;
+	top: -50%; left: -50%; width: 200%; height: 200%;
+	background: radial-gradient(circle at 30% 30%, #007AFF 0%, transparent 60%), radial-gradient(circle at 70% 70%, #5AC8FA 0%, transparent 60%);
+	filter: blur(15px);
+	opacity: 0.8;
+}
+
+.book-cover-mini::after {
+	content: '';
+	position: absolute;
+	inset: 2px;
+	background: rgba(255, 255, 255, 0.05);
+	backdrop-filter: blur(10px) saturate(180%);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 6px;
+}
+
+.book-cover-mini .v-icon {
+	position: relative;
+	z-index: 2;
 }
 
 .book-info {

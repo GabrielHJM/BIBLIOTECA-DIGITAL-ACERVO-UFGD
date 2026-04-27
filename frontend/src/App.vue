@@ -42,6 +42,13 @@
 
 			<v-spacer></v-spacer>
 
+			<!-- Header Desktop Links -->
+			<div class="header-links hidden-md-and-down mr-6">
+				<router-link to="/explorar" class="header-link">Explorar</router-link>
+				<router-link v-if="isLoggedIn" to="/dashboard" class="header-link">Dashboard</router-link>
+				<router-link to="/sobre-nos" class="header-link">Sobre Nós</router-link>
+			</div>
+
 			<!-- User Actions -->
 			<div class="nav-actions-wrapper d-flex align-center mr-2 mr-sm-8" style="gap: 8px;">
 
@@ -262,6 +269,8 @@
 			</div>
 		</v-main>
 
+		<!-- Footer -->
+		<AppFooter v-if="showBar" />
 
 		<!-- Global Accessibility Panel -->
 
@@ -276,6 +285,7 @@
 <script>
 import AccessibilityPanel from './components/AccessibilityPanel.vue'
 import IOSNotification from './components/IOSNotification.vue'
+import AppFooter from './components/Footer.vue'
 import { iosNotificationStore } from '@/services/IOSNotificationStore'
 import '@/assets/styles/premium.css'
 import { ref, computed, reactive } from 'vue'
@@ -287,7 +297,7 @@ import { useDevice } from '@/composables/useDevice'
 
 export default {
 	name: 'App',
-	components: { AccessibilityPanel, IOSNotification },
+	components: { AccessibilityPanel, IOSNotification, AppFooter },
 	data() {
 		return {
 			publicRoutes: ['/login', '/cadastro', '/esqueci-senha'],
@@ -653,6 +663,27 @@ export default {
 		color: var(--ios-cyan);
 		letter-spacing: 2px;
 		transition: all 0.3s ease;
+	}
+
+	.header-links {
+		display: flex;
+		gap: 24px;
+		align-items: center;
+	}
+	
+	.header-link {
+		color: rgba(255,255,255,0.7);
+		text-decoration: none;
+		font-size: 0.95rem;
+		font-weight: 600;
+		transition: all 0.3s var(--spring-easing);
+		padding: 6px 12px;
+		border-radius: 8px;
+	}
+	
+	.header-link:hover {
+		color: #ffffff;
+		background: rgba(255,255,255,0.1);
 	}
 
 	.header-logo-container:hover .subtitle-accent {
