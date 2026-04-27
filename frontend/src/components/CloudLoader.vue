@@ -2,6 +2,11 @@
   <div class="cloud-loader-wrapper" :style="{ minHeight: height }">
     <div class="cloud-pulse-container">
       <v-icon class="cloud-icon" size="64" :color="color">mdi-cloud</v-icon>
+      <div class="rain-drops">
+        <div class="drop drop-1"></div>
+        <div class="drop drop-2"></div>
+        <div class="drop drop-3"></div>
+      </div>
       <div class="cloud-shadow"></div>
     </div>
     <div v-if="text" class="cloud-text mt-4">{{ text }}</div>
@@ -102,11 +107,37 @@ export default {
 }
 
 @keyframes pulseText {
-  0% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+/* Rain Effect */
+.rain-drops {
+  position: absolute;
+  top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  z-index: 1;
+}
+
+.drop {
+  width: 2px;
+  height: 12px;
+  background: linear-gradient(to bottom, transparent, rgba(0, 229, 255, 0.8));
+  border-radius: 4px;
+  opacity: 0;
+  animation: rainFall 1.2s infinite ease-in;
+}
+
+.drop-1 { animation-delay: 0.1s; height: 10px; margin-top: 5px; }
+.drop-2 { animation-delay: 0.5s; height: 14px; }
+.drop-3 { animation-delay: 0.3s; height: 12px; margin-top: 2px; }
+
+@keyframes rainFall {
+  0% { transform: translateY(0); opacity: 0; }
+  20% { opacity: 1; }
+  80% { transform: translateY(35px); opacity: 1; height: 4px; }
+  100% { transform: translateY(40px) scaleY(0); opacity: 0; }
 }
 </style>

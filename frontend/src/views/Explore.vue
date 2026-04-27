@@ -130,7 +130,7 @@ export default {
 			categoria: 'Todos',
 			ano_inicio: null,
 			ano_fim: null,
-			sort: 'az'
+			sort: 'recent'
 		},
 		isFetching: false,
 		hasInitialFetchDone: false,
@@ -178,12 +178,16 @@ export default {
 				// Prevent double fetching if already fetching
 				if (this.loading) return;
 				let changed = false;
-				if (query.q && query.q !== this.filters.q) {
-					this.filters.q = query.q;
+				
+				const newQ = query.q || '';
+				if (newQ !== this.filters.q) {
+					this.filters.q = newQ;
 					changed = true;
 				}
-				if (query.categoria && query.categoria !== this.filters.categoria) {
-					this.filters.categoria = query.categoria;
+				
+				const newCategoria = query.categoria || 'Todos';
+				if (newCategoria !== this.filters.categoria) {
+					this.filters.categoria = newCategoria;
 					changed = true;
 				}
 
