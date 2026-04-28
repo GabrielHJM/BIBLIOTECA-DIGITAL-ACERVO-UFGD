@@ -158,6 +158,10 @@ export default {
 	async mounted() {
 		await this.fetchMateriais();
 		this.setupIntersectionObserver();
+		window.addEventListener('scroll', this.handleDynamicScroll, { passive: true });
+	},
+	beforeUnmount() {
+		window.removeEventListener('scroll', this.handleDynamicScroll);
 	},
 	methods: {
 		setupIntersectionObserver() {
@@ -178,6 +182,29 @@ export default {
 
 			const elements = document.querySelectorAll('.fade-on-scroll');
 			elements.forEach(el => observer.observe(el));
+		},
+		handleDynamicScroll() {
+			// Algoritmo Super Inteligente de Renovação Sensorial (Leve e sem custo de rede)
+			const currentScroll = window.scrollY || document.documentElement.scrollTop;
+			const delta = Math.abs(currentScroll - (this.lastScrollPos || 0));
+			this.scrollAccumulator = (this.scrollAccumulator || 0) + delta;
+			this.lastScrollPos = currentScroll;
+
+			// A cada 500px rolados, o acervo se renova dinamicamente
+			if (this.scrollAccumulator > 500) {
+				this.scrollAccumulator = 0;
+				this.renovarPrateleiras();
+			}
+		},
+		renovarPrateleiras() {
+			// Rotaciona silenciosamente os livros de forma suave
+			this.categoriasMock.forEach(cat => {
+				if (cat.livros && cat.livros.length > 5) {
+					// Move 1 ou 2 livros do início para o fim (efeito infinito)
+					const moved = cat.livros.splice(0, 1);
+					cat.livros.push(...moved);
+				}
+			});
 		},
 		async fetchMateriais() {
 			this.loading = true;

@@ -12,44 +12,79 @@ import (
 )
 
 type MultiSourceHarvester struct {
-	capes *CAPESHarvester
-	ss    *SemanticScholarHarvester
-	arxiv *ArXivHarvester
-	gb    *GoogleBooksHarvester
-	ol    *OpenLibraryHarvester
-	gut   *GutendexHarvester
-	doaj  *DOAJHarvester
-	ia    *InternetArchiveHarvester
-	cross *CrossrefHarvester
-	epmc  *EuropePMCHarvester
-	dblp  *DBLPHarvester
-	plos  *PLOSHarvester
+	capes    *CAPESHarvester
+	ss       *SemanticScholarHarvester
+	arxiv    *ArXivHarvester
+	gb       *GoogleBooksHarvester
+	ol       *OpenLibraryHarvester
+	gut      *GutendexHarvester
+	doaj     *DOAJHarvester
+	ia       *InternetArchiveHarvester
+	cross    *CrossrefHarvester
+	epmc     *EuropePMCHarvester
+	dblp     *DBLPHarvester
+	plos     *PLOSHarvester
+	openalex *OpenAlexHarvester
+	zenodo   *ZenodoHarvester
+	hal      *HALHarvester
+	pubmed   *PubMedHarvester
+	osf      *OSFHarvester
+	base     *BASEHarvester
+	core     *COREHarvester
+	scielo   *SciELOHarvester
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
+	GlobalSupervisor.RegisterAPI("GoogleBooks", "https://www.googleapis.com/books/v1/volumes?q=test")
+	GlobalSupervisor.RegisterAPI("SemanticScholar", "https://api.semanticscholar.org/graph/v1/paper/search?query=test")
+	GlobalSupervisor.RegisterAPI("ArXiv", "http://export.arxiv.org/api/query?search_query=all:test")
+	GlobalSupervisor.RegisterAPI("CAPES", "https://api.crossref.org/works?query=test")
+	GlobalSupervisor.RegisterAPI("OpenLibrary", "https://openlibrary.org/search.json?q=test")
+	GlobalSupervisor.RegisterAPI("Gutendex", "https://gutendex.com/books/?search=test")
+	GlobalSupervisor.RegisterAPI("DOAJ", "https://doaj.org/api/search/articles/test")
+	GlobalSupervisor.RegisterAPI("InternetArchive", "https://archive.org/advancedsearch.php?q=test")
+	GlobalSupervisor.RegisterAPI("Crossref", "https://api.crossref.org/works?query=test")
+	GlobalSupervisor.RegisterAPI("EuropePMC", "https://www.ebi.ac.uk/europepmc/webservices/rest/search?query=test")
+	GlobalSupervisor.RegisterAPI("DBLP", "https://dblp.org/search/publ/api?q=test")
+	GlobalSupervisor.RegisterAPI("PLOS", "https://api.plos.org/search?q=test")
+	GlobalSupervisor.RegisterAPI("OpenAlex", "https://api.openalex.org/works?search=test")
+	GlobalSupervisor.RegisterAPI("Zenodo", "https://zenodo.org/api/records?q=test")
+	GlobalSupervisor.RegisterAPI("HAL", "https://api.archives-ouvertes.fr/search/?q=test")
+	GlobalSupervisor.RegisterAPI("PubMed", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=test")
+	GlobalSupervisor.RegisterAPI("OSF", "https://api.osf.io/v2/nodes/?filter[title]=test")
+	GlobalSupervisor.RegisterAPI("BASE", "https://api.base-search.net/cgi-bin/BaseHttpSearch/v1/")
+	GlobalSupervisor.RegisterAPI("CORE", "https://api.core.ac.uk/v3/search/works")
+	GlobalSupervisor.RegisterAPI("SciELO", "https://search.scielo.org/")
+
 	return &MultiSourceHarvester{
-		capes: NewCAPESHarvester(),
-		ss:    NewSemanticScholarHarvester(),
-		arxiv: NewArXivHarvester(),
-		gb:    NewGoogleBooksHarvester(),
-		ol:    NewOpenLibraryHarvester(),
-		gut:   NewGutendexHarvester(),
-		doaj:  NewDOAJHarvester(),
-		ia:    NewInternetArchiveHarvester(),
-		cross: NewCrossrefHarvester(),
-		epmc:  NewEuropePMCHarvester(),
-		dblp:  NewDBLPHarvester(),
-		plos:  NewPLOSHarvester(),
+		capes:    NewCAPESHarvester(),
+		ss:       NewSemanticScholarHarvester(),
+		arxiv:    NewArXivHarvester(),
+		gb:       NewGoogleBooksHarvester(),
+		ol:       NewOpenLibraryHarvester(),
+		gut:      NewGutendexHarvester(),
+		doaj:     NewDOAJHarvester(),
+		ia:       NewInternetArchiveHarvester(),
+		cross:    NewCrossrefHarvester(),
+		epmc:     NewEuropePMCHarvester(),
+		dblp:     NewDBLPHarvester(),
+		plos:     NewPLOSHarvester(),
+		openalex: NewOpenAlexHarvester(),
+		zenodo:   NewZenodoHarvester(),
+		hal:      NewHALHarvester(),
+		pubmed:   NewPubMedHarvester(),
+		osf:      NewOSFHarvester(),
+		base:     NewBASEHarvester(),
+		core:     NewCOREHarvester(),
+		scielo:   NewSciELOHarvester(),
 	}
 }
 
 func (h *MultiSourceHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error) {
-	// 1. Query Expansion (Modularized Logic)
 	refinedQuery := query
 	lowercaseQ := strings.ToLower(query)
 	lowercaseC := strings.ToLower(category)
 
-	// Contextual expansion for better academic coverage (Português/Brasil prioritized)
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
 		refinedQuery = "tecnologia computação"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
@@ -68,41 +103,36 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	resultsChan := make(chan []material.Material, 100)
 	var wg sync.WaitGroup
  
-	// 2. High Capacity Worker Pool Logic
-	// Reduce pages to sweep for significantly faster results while still keeping volume decent
 	pagesToSweep := 2
 	if limit > 20 {
 		pagesToSweep = 4
 	}
 
-	// Calculate start page for APIs that use pages instead of offsets
-	// Assume an average of 40 items per page for providers like OpenLibrary
 	startPage := (offset / 40) + 1
 
-	// Define tasks for the worker pool
 	tasks := []func(ctx context.Context){
-		// Google Books Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("GoogleBooks") { return }
 			mats, err := h.gb.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// Semantic Scholar Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("SemanticScholar") { return }
 			mats, err := h.ss.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// ArXiv Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("ArXiv") { return }
 			mats, err := h.arxiv.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// CAPES/Crossref
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("CAPES") { return }
 			mats, err := h.capes.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-	// Open Library Sweep (Multiple Pages in Parallel)
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("OpenLibrary") { return }
 			for p := startPage; p < startPage+pagesToSweep; p++ {
 				wg.Add(1)
 				go func(page int) {
@@ -112,8 +142,8 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				}(p)
 			}
 		},
-		// Gutendex Sweep (Multiple Pages in Parallel)
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("Gutendex") { return }
 			for p := startPage; p < startPage+pagesToSweep; p++ {
 				wg.Add(1)
 				go func(page int) {
@@ -123,40 +153,80 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				}(p)
 			}
 		},
-		// DOAJ (Directory of Open Access Journals)
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("DOAJ") { return }
 			mats, err := h.doaj.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// Internet Archive Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("InternetArchive") { return }
 			mats, err := h.ia.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// Crossref Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("Crossref") { return }
 			mats, err := h.cross.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// Europe PMC Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("EuropePMC") { return }
 			mats, err := h.epmc.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// DBLP Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("DBLP") { return }
 			mats, err := h.dblp.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
-		// PLOS Sweep
 		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("PLOS") { return }
 			mats, err := h.plos.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		// The 8 new APIs
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("OpenAlex") { return }
+			mats, err := h.openalex.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("Zenodo") { return }
+			mats, err := h.zenodo.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("HAL") { return }
+			mats, err := h.hal.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("PubMed") { return }
+			mats, err := h.pubmed.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("OSF") { return }
+			mats, err := h.osf.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("BASE") { return }
+			mats, err := h.base.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("CORE") { return }
+			mats, err := h.core.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		func(c context.Context) {
+			if !GlobalSupervisor.IsOnline("SciELO") { return }
+			mats, err := h.scielo.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 	}
 
-	// 3. Execute concurrently with timeout safety (Fast fail for responsive UI)
-	searchCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	searchCtx, cancel := context.WithTimeout(ctx, 15*time.Second) // Increased timeout slightly for more APIs
 	defer cancel()
 
 	for _, task := range tasks {
@@ -167,48 +237,46 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		}(task)
 	}
 
-	// Close results channel when all workers are done
 	go func() {
 		wg.Wait()
 		close(resultsChan)
 	}()
 
-	// 4. Collect results
 	for mats := range resultsChan {
 		allMaterials = append(allMaterials, mats...)
 	}
 
-	// 5. Intelligent Deduplication and Filtering
 	uniqueMaterials := make([]material.Material, 0)
 	seen := make(map[string]bool)
 
 	for _, m := range allMaterials {
-		// Clean junk and enforce "Online Reading Only" rule
 		if m.Titulo == "" || m.PDFURL == "" || !m.Disponivel {
 			continue
 		}
 
-		// Restrict to proper browser readers/PDFs to prevent redirecting to external homepages
 		lowerURL := strings.ToLower(m.PDFURL)
 		isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
 			strings.Contains(lowerURL, "reader") || 
 			strings.Contains(lowerURL, "view") || 
-			strings.Contains(lowerURL, "archive.org/download") ||
-			strings.Contains(lowerURL, "archive.org/stream") ||
+			strings.Contains(lowerURL, "archive.org") ||
 			strings.Contains(lowerURL, "books.google") ||
 			strings.Contains(lowerURL, "gutendex.com") ||
-			strings.Contains(lowerURL, "arxiv.org/pdf") ||
+			strings.Contains(lowerURL, "arxiv.org") ||
 			strings.Contains(lowerURL, "crossref.org") ||
 			strings.Contains(lowerURL, "europepmc.org") ||
 			strings.Contains(lowerURL, "dblp.org") ||
 			strings.Contains(lowerURL, "plos.org") ||
-			strings.Contains(lowerURL, "doi.org")
+			strings.Contains(lowerURL, "doi.org") ||
+			strings.Contains(lowerURL, "openalex.org") ||
+			strings.Contains(lowerURL, "zenodo.org") ||
+			strings.Contains(lowerURL, "archives-ouvertes.fr") ||
+			strings.Contains(lowerURL, "nih.gov") ||
+			strings.Contains(lowerURL, "osf.io")
 
 		if !isValidReader {
 			continue
 		}
 
-		// Signature for deduplication
 		sig := strings.ToLower(m.Titulo + ":" + m.Autor)
 		if m.ExternoID != "" {
 			sig = m.ExternoID
@@ -220,7 +288,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		}
 	}
 
-	logger.Info("HighCapacity search completed", 
+	logger.Info("HighCapacity search completed with Supervisor checks", 
 		zap.Int("total_harvested", len(allMaterials)), 
 		zap.Int("unique_high_quality", len(uniqueMaterials)),
 		zap.String("query", query))
