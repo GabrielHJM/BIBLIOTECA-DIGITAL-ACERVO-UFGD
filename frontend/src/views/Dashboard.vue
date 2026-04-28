@@ -151,7 +151,17 @@
 				<v-col cols="12">
 					<PremiumCard title="Meus Favoritos" icon="mdi-heart" icon-color="pink">
 						<template v-slot:action>
-							<v-btn variant="text" color="pink" size="small" class="text-none" @click="$router.push('/favoritos')">Ver Tudo</v-btn>
+							<v-btn 
+								variant="tonal" 
+								color="pink" 
+								size="small" 
+								rounded="pill"
+								class="text-caption font-weight-bold px-4 text-none" 
+								append-icon="mdi-arrow-right"
+								@click="$router.push('/favoritos')"
+							>
+								Ver Todos
+							</v-btn>
 						</template>
 						<v-slide-group show-arrows class="pa-2">
 							<v-slide-group-item
