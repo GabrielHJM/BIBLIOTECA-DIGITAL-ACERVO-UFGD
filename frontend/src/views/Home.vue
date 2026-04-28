@@ -174,8 +174,8 @@ export default {
 		setupIntersectionObserver() {
 			const options = {
 				root: null,
-				rootMargin: '0px',
-				threshold: 0.15
+				rootMargin: '300px', // Aciona o fade bem antes do scroll
+				threshold: 0.05
 			};
 			
 			const observer = new IntersectionObserver((entries, observer) => {
