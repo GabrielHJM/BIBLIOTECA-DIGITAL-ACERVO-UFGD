@@ -18,7 +18,7 @@ COPY backend/ ./
 # Copy the built frontend to a "dist" folder inside the backend build context
 # so the Go server can serve it.
 COPY --from=frontend-builder /app/frontend/dist ./dist
-RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main ./cmd/server
 
 # Stage 3: Final Image
 FROM alpine:latest
