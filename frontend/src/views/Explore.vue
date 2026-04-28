@@ -9,7 +9,7 @@
 						<v-col cols="12" sm="4" class="pa-2">
 							<v-select
 								v-model="filters.categoria"
-								:items="['Todos', ...categoriasMock]"
+								:items="['TODOS', ...categoriasMock]"
 								label="Categoria"
 								variant="solo-filled"
 								density="comfortable"
@@ -127,7 +127,7 @@ export default {
 		showFilters: false,
 		filters: {
 			q: '',
-			categoria: 'Todos',
+			categoria: 'TODOS',
 			ano_inicio: null,
 			ano_fim: null,
 			sort: 'recent'
@@ -186,7 +186,7 @@ export default {
 					changed = true;
 				}
 				
-				const newCategoria = query.categoria || 'Todos';
+				const newCategoria = query.categoria || 'TODOS';
 				if (newCategoria !== this.filters.categoria) {
 					this.filters.categoria = newCategoria;
 					changed = true;
@@ -241,8 +241,8 @@ export default {
 					await this.fetchGlobalFavorites();
 				}
 
-				// Trata o valor "Todos" como string vazia para a API
-				const categoriaParaBusca = (this.filters.categoria === 'Todos' || !this.filters.categoria) ? '' : this.filters.categoria;
+				// Trata o valor "TODOS" como string vazia para a API
+				const categoriaParaBusca = (this.filters.categoria === 'TODOS' || !this.filters.categoria) ? '' : this.filters.categoria;
 
 				const response = await MaterialService.pesquisar(
 					this.filters.q,
@@ -325,7 +325,7 @@ export default {
 			}, 400);
 		},
 		limparFiltros() {
-			this.filters = { q: '', categoria: 'Todos', ano_inicio: null, ano_fim: null };
+			this.filters = { q: '', categoria: 'TODOS', ano_inicio: null, ano_fim: null };
 			this.$router.replace({ path: '/explorar', query: {} });
 			this.buscar();
 		},

@@ -337,10 +337,10 @@ export default {
 
 				// ALWAYS redirect to /explorar to show search results properly
 				if (this.$route.path !== '/explorar') {
-					this.$router.push({ path: '/explorar', query: { q, categoria: 'Todos' } })
+					this.$router.push({ path: '/explorar', query: { q, categoria: 'TODOS' } })
 				} else {
 					// If already on /explorar, update the query which will trigger the watch and fetch results
-					this.$router.replace({ path: '/explorar', query: { q, categoria: 'Todos' } })
+					this.$router.replace({ path: '/explorar', query: { q, categoria: 'TODOS' } })
 				}
 			} finally {
 				this.loading = false

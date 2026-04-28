@@ -39,21 +39,21 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseQ := strings.ToLower(query)
 	lowercaseC := strings.ToLower(category)
 
-	// Contextual expansion for better academic coverage (Português/Brasil prioritized) - AND logic
+	// Contextual expansion for better academic coverage (Português/Brasil prioritized)
 	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "tecnologia AND computação"
+		refinedQuery = "tecnologia computação"
 	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "saúde AND medicina"
+		refinedQuery = "saúde medicina"
 	} else if strings.Contains(lowercaseQ, "odontolog") {
-		refinedQuery = "odontologia AND saúde"
+		refinedQuery = "odontologia saúde"
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
-		refinedQuery = "ciências AND pesquisa"
+		refinedQuery = "ciências pesquisa"
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
-		refinedQuery = "matemática AND cálculo"
+		refinedQuery = "matemática cálculo"
 	} else if strings.Contains(lowercaseQ, "brasil") || strings.Contains(lowercaseC, "brasil") {
-		refinedQuery = query + " AND brasil"
+		refinedQuery = query + " brasil"
 	} else if lowercaseQ == "" {
-		refinedQuery = "livro AND acadêmico"
+		refinedQuery = "livro"
 	}
 
 	var allMaterials []material.Material
@@ -61,10 +61,10 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	var wg sync.WaitGroup
  
 	// 2. High Capacity Worker Pool Logic
-	// We will sweep up to 5 pages for each high-yield source to force more volume
-	pagesToSweep := 3
+	// We will sweep up to 20 pages for each high-yield source to force more volume
+	pagesToSweep := 10
 	if limit > 20 {
-		pagesToSweep = 5
+		pagesToSweep = 20
 	}
 
 	// Define tasks for the worker pool
@@ -119,7 +119,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	}
 
 	// 3. Execute concurrently with timeout safety (Fast fail for responsive UI)
-	searchCtx, cancel := context.WithTimeout(ctx, 8*time.Second)
+	searchCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
 
 	for _, task := range tasks {
@@ -148,20 +148,6 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	for _, m := range allMaterials {
 		// Clean junk and enforce "Online Reading Only" rule
 		if m.Titulo == "" || m.PDFURL == "" {
-			continue
-		}
-
-		// Final check: URL must look like a PDF or a known online reader
-		lowerURL := strings.ToLower(m.PDFURL)
-		isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
-			strings.Contains(lowerURL, "reader") || 
-			strings.Contains(lowerURL, "view") || 
-			strings.Contains(lowerURL, "archive.org/download") ||
-			strings.Contains(lowerURL, "books.google") ||
-			strings.Contains(lowerURL, "gutendex.com") ||
-			strings.Contains(lowerURL, "arxiv.org/pdf")
-
-		if !isValidReader {
 			continue
 		}
 

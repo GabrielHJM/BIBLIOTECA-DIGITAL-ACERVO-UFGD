@@ -28,6 +28,8 @@ type GoogleBooksResponse struct {
 			ImageLinks    struct {
 				Thumbnail string `json:"thumbnail"`
 			} `json:"imageLinks"`
+			PreviewLink string `json:"previewLink"`
+			InfoLink    string `json:"infoLink"`
 		} `json:"volumeInfo"`
 		AccessInfo struct {
 			Viewability string `json:"viewability"`
@@ -140,17 +142,14 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		}
 
 		if pdfURL == "" {
-			continue
+			if item.VolumeInfo.PreviewLink != "" {
+				pdfURL = item.VolumeInfo.PreviewLink
+			} else if item.VolumeInfo.InfoLink != "" {
+				pdfURL = item.VolumeInfo.InfoLink
+			}
 		}
 
-		// Ensure the link is likely an ebook or reader
-		lowerPDF := strings.ToLower(pdfURL)
-		if !strings.Contains(lowerPDF, "reader") && 
-		   !strings.HasSuffix(lowerPDF, ".pdf") && 
-		   !strings.Contains(lowerPDF, "download") && 
-		   !strings.Contains(lowerPDF, "acs") &&
-		   !strings.Contains(lowerPDF, "googleapis") &&
-		   !strings.Contains(lowerPDF, "books.google") {
+		if pdfURL == "" {
 			continue
 		}
 

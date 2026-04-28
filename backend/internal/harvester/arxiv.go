@@ -114,21 +114,22 @@ func (h *ArXivHarvester) Search(ctx context.Context, query string, category stri
 			continue
 		}
 
-		// STRICT PDF RULE
 		var pdfURL string
 		for _, link := range item.Links {
 			if link.Title == "pdf" || link.Type == "application/pdf" {
 				pdfURL = link.Href
-				// Ensure it ends with .pdf
-				if !strings.HasSuffix(pdfURL, ".pdf") {
-					pdfURL = pdfURL + ".pdf"
-				}
 				break
+			} else if link.Type == "text/html" {
+				pdfURL = link.Href
 			}
 		}
 
-		if pdfURL == "" || !strings.HasSuffix(pdfURL, ".pdf") {
-			continue // Skip if no PDF found
+		if pdfURL == "" {
+			if len(item.Links) > 0 {
+				pdfURL = item.Links[0].Href
+			} else {
+				continue
+			}
 		}
 
 		var authors []string
