@@ -38,7 +38,7 @@ func (uc *ListarConteudosUseCase) Execute(ctx context.Context, limit, offset int
 		discoveryCats := []string{"TECNOLOGIA", "CIÊNCIAS", "EDUCAÇÃO", "SAÚDE", "DIREITO"}
 		cat := discoveryCats[time.Now().UnixNano()%int64(len(discoveryCats))]
 		
-		harvested, err := uc.Harvester.Search(ctx, "", cat, "", 0, 0, harvestLimit)
+		harvested, err := uc.Harvester.Search(ctx, "", cat, "", 0, 0, harvestLimit, offset)
 		if err == nil && len(harvested) > 0 {
 			for i := range harvested {
 				_ = uc.Repo.Criar(ctx, &harvested[i])

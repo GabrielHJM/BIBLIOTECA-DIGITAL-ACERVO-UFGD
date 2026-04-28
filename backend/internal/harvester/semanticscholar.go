@@ -43,7 +43,7 @@ func NewSemanticScholarHarvester() *SemanticScholarHarvester {
 	}
 }
 
-func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, category string, limit int, offset int) ([]material.Material, error) {
 	limiter := GetRateLimiter()
 
 	searchTerm := query
@@ -54,7 +54,7 @@ func (h *SemanticScholarHarvester) Search(ctx context.Context, query string, cat
 		searchTerm = "science"
 	}
 
-	searchURL := fmt.Sprintf("%s?query=%s&limit=%d&fields=title,authors,year,abstract,openAccessPdf,citationCount,journal", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	searchURL := fmt.Sprintf("%s?query=%s&limit=%d&offset=%d&fields=title,authors,year,abstract,openAccessPdf,citationCount,journal", h.BaseURL, url.QueryEscape(searchTerm), limit, offset)
 
 	// Max 3 retries with exponential backoff
 	var resp *http.Response

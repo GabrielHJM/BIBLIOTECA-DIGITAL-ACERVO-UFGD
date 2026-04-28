@@ -47,7 +47,7 @@ func NewDOAJHarvester() *DOAJHarvester {
 	}
 }
 
-func (h *DOAJHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *DOAJHarvester) Search(ctx context.Context, query string, category string, limit int, offset int) ([]material.Material, error) {
 	limiter := GetRateLimiter()
 
 	searchTerm := query
@@ -62,7 +62,8 @@ func (h *DOAJHarvester) Search(ctx context.Context, query string, category strin
 	// We can use Lucene query syntax: Portuguese AND (query)
 	doajQuery := fmt.Sprintf(`language:"Portuguese" AND (%s)`, searchTerm)
 
-	searchURL := fmt.Sprintf("%s%s?pageSize=%d", h.BaseURL, url.PathEscape(doajQuery), limit)
+	startPage := (offset / limit) + 1
+	searchURL := fmt.Sprintf("%s%s?pageSize=%d&page=%d", h.BaseURL, url.PathEscape(doajQuery), limit, startPage)
 
 	var resp *http.Response
 	var err error

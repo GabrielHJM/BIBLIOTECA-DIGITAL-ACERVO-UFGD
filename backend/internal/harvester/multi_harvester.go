@@ -33,7 +33,7 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 	}
 }
 
-func (h *MultiSourceHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error) {
+func (h *MultiSourceHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error) {
 	// 1. Query Expansion (Modularized Logic)
 	refinedQuery := query
 	lowercaseQ := strings.ToLower(query)
@@ -67,31 +67,35 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		pagesToSweep = 4
 	}
 
+	// Calculate start page for APIs that use pages instead of offsets
+	// Assume an average of 40 items per page for providers like OpenLibrary
+	startPage := (offset / 40) + 1
+
 	// Define tasks for the worker pool
 	tasks := []func(ctx context.Context){
 		// Google Books Sweep
 		func(c context.Context) {
-			mats, err := h.gb.Search(c, refinedQuery, category, limit)
+			mats, err := h.gb.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 		// Semantic Scholar Sweep
 		func(c context.Context) {
-			mats, err := h.ss.Search(c, refinedQuery, category, limit)
+			mats, err := h.ss.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 		// ArXiv Sweep
 		func(c context.Context) {
-			mats, err := h.arxiv.Search(c, refinedQuery, category, limit)
+			mats, err := h.arxiv.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 		// CAPES/Crossref
 		func(c context.Context) {
-			mats, err := h.capes.Search(c, refinedQuery, category, limit)
+			mats, err := h.capes.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 	// Open Library Sweep (Multiple Pages in Parallel)
 		func(c context.Context) {
-			for p := 1; p <= pagesToSweep; p++ {
+			for p := startPage; p < startPage+pagesToSweep; p++ {
 				wg.Add(1)
 				go func(page int) {
 					defer wg.Done()
@@ -102,7 +106,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		},
 		// Gutendex Sweep (Multiple Pages in Parallel)
 		func(c context.Context) {
-			for p := 1; p <= pagesToSweep; p++ {
+			for p := startPage; p < startPage+pagesToSweep; p++ {
 				wg.Add(1)
 				go func(page int) {
 					defer wg.Done()
@@ -113,7 +117,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		},
 		// DOAJ (Directory of Open Access Journals)
 		func(c context.Context) {
-			mats, err := h.doaj.Search(c, refinedQuery, category, limit)
+			mats, err := h.doaj.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
 	}

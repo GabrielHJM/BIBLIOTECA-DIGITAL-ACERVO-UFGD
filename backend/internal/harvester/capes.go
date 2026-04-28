@@ -52,7 +52,7 @@ func NewCAPESHarvester() *CAPESHarvester {
 	}
 }
 
-func (h *CAPESHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *CAPESHarvester) Search(ctx context.Context, query string, category string, limit int, offset int) ([]material.Material, error) {
 	limiter := GetRateLimiter()
 
 	searchTerm := query
@@ -63,7 +63,7 @@ func (h *CAPESHarvester) Search(ctx context.Context, query string, category stri
 		searchTerm = "science"
 	}
 
-	searchURL := fmt.Sprintf("%s?query=%s&filter=has-full-text:true&rows=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	searchURL := fmt.Sprintf("%s?query=%s&filter=has-full-text:true&rows=%d&offset=%d", h.BaseURL, url.QueryEscape(searchTerm), limit, offset)
 
 	// Max 3 retries with exponential backoff
 	var resp *http.Response

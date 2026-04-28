@@ -53,7 +53,7 @@ func NewGoogleBooksHarvester() *GoogleBooksHarvester {
 	}
 }
 
-func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, category string, limit int, offset int) ([]material.Material, error) {
 	limiter := GetRateLimiter()
 
 	searchTerm := query
@@ -71,7 +71,7 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 	}
 	langParam := "&langRestrict=pt"
 	
-	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks%s&maxResults=%d%s", h.BaseURL, url.QueryEscape(searchTerm), langParam, limit, keyParam)
+	searchURL := fmt.Sprintf("%s?q=%s&filter=free-ebooks%s&maxResults=%d&startIndex=%d%s", h.BaseURL, url.QueryEscape(searchTerm), langParam, limit, offset, keyParam)
 
 	// Max 3 retries with exponential backoff
 	var resp *http.Response

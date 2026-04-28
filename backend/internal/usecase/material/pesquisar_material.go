@@ -12,7 +12,7 @@ import (
 )
 
 type Harvester interface {
-	Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error)
+	Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error)
 }
 
 type PesquisarMaterialUseCase struct {
@@ -44,12 +44,12 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 	isSparse := len(materiaisIniciais) < 2
 	hasQuery := termo != "" || categoria != ""
 
-	if hasQuery && isSparse && uc.Harvester != nil && offset == 0 {
+	if hasQuery && isSparse && uc.Harvester != nil {
 		// Calculate harvest depth based on the machine's strength (implied by requester)
 		harvestLimit := limit
 		if limit < 40 { harvestLimit = 60 } // Minimum decent harvest
 
-		harvested, err := uc.Harvester.Search(ctx, termo, categoria, fonte, anoInicio, anoFim, harvestLimit)
+		harvested, err := uc.Harvester.Search(ctx, termo, categoria, fonte, anoInicio, anoFim, harvestLimit, offset)
 		if err == nil && len(harvested) > 0 {
 			// Persist top results synchronously to ensure they have valid database IDs for the UI
 			// We only save the amount we actually need to return (limit)

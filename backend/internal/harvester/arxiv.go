@@ -48,7 +48,7 @@ func NewArXivHarvester() *ArXivHarvester {
 	}
 }
 
-func (h *ArXivHarvester) Search(ctx context.Context, query string, category string, limit int) ([]material.Material, error) {
+func (h *ArXivHarvester) Search(ctx context.Context, query string, category string, limit int, offset int) ([]material.Material, error) {
 	limiter := GetRateLimiter()
 
 	searchTerm := query
@@ -56,7 +56,7 @@ func (h *ArXivHarvester) Search(ctx context.Context, query string, category stri
 		searchTerm = "all"
 	}
 
-	searchURL := fmt.Sprintf("%s?search_query=all:%s&start=0&max_results=%d", h.BaseURL, url.QueryEscape(searchTerm), limit)
+	searchURL := fmt.Sprintf("%s?search_query=all:%s&start=%d&max_results=%d", h.BaseURL, url.QueryEscape(searchTerm), offset, limit)
 
 	// Max 3 retries with exponential backoff
 	var resp *http.Response

@@ -342,7 +342,7 @@ func syncBooks(repo *repository.MaterialPostgres, mh *harvester.MultiSourceHarve
 
 	for _, cat := range categories {
 		// Fetch more books per category for a richer initial experience
-		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 15)
+		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 15, 0)
 		if err == nil {
 			count := 0
 			for i := range mats {
