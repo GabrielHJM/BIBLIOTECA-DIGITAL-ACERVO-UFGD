@@ -152,8 +152,8 @@
 					<PremiumCard title="Meus Favoritos" icon="mdi-heart" icon-color="pink">
 						<template v-slot:action>
 							<v-btn 
-								variant="tonal" 
-								color="pink" 
+								variant="flat" 
+								color="primary" 
 								size="small" 
 								rounded="pill"
 								class="text-caption font-weight-bold px-4 text-none" 

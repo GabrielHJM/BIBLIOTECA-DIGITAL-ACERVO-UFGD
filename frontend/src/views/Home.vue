@@ -67,7 +67,7 @@
 							</template>
 							<template v-else-if="cat.livros && cat.livros.length > 0">
 								<div 
-									v-for="livro in cat.livros.slice(0,3)" 
+									v-for="livro in cat.livros.slice(0,4)" 
 									:key="livro.id"
 									class="apple-book-row"
 									@click="$router.push('/estudo/' + livro.id)"
@@ -78,6 +78,7 @@
 									<div class="book-info">
 										<div class="book-title">{{ livro.titulo }}</div>
 										<div class="book-author">{{ livro.autor || 'Autor Desconhecido' }}</div>
+										<div class="book-source">{{ livro.fonte || 'Acervo Global' }}</div>
 									</div>
 								</div>
 							</template>
@@ -159,9 +160,15 @@ export default {
 		await this.fetchMateriais();
 		this.setupIntersectionObserver();
 		window.addEventListener('scroll', this.handleDynamicScroll, { passive: true });
+		
+		// Auto-Update Sem F5 (a cada 2 minutos)
+		this.autoUpdateInterval = setInterval(() => {
+			this.garantirEstantesCheias();
+		}, 120000);
 	},
 	beforeUnmount() {
 		window.removeEventListener('scroll', this.handleDynamicScroll);
+		if (this.autoUpdateInterval) clearInterval(this.autoUpdateInterval);
 	},
 	methods: {
 		setupIntersectionObserver() {
@@ -217,10 +224,36 @@ export default {
 						cat.livros = dashboardData[cat.nome];
 					}
 				});
+				this.garantirEstantesCheias(dashboardData);
 			} catch (err) {
 				console.error("Erro ao carregar dados da Home:", err);
 			} finally {
 				this.loading = false;
+			}
+		},
+		async garantirEstantesCheias(preFetchedData = null) {
+			// Função modular inteligente que preenche espaços vazios e atualiza a UI sem F5
+			try {
+				const data = preFetchedData || (await MaterialService.dashboard()).data;
+				if (!data) return;
+
+				this.categoriasMock.forEach(cat => {
+					if (data[cat.nome]) {
+						const novosLivros = data[cat.nome];
+						if (!cat.livros) cat.livros = [];
+						
+						// Adiciona apenas os que não existem (Unique merge)
+						const idsExistentes = new Set(cat.livros.map(l => l.id));
+						const unicos = novosLivros.filter(l => !idsExistentes.has(l.id));
+						
+						if (unicos.length > 0) {
+							// Adiciona ao final para a rolagem infinita natural
+							cat.livros.push(...unicos);
+						}
+					}
+				});
+			} catch (e) {
+				console.error("Falha ao garantir estantes cheias", e);
 			}
 		},
 		getBookIcon(category, title) {
@@ -571,6 +604,21 @@ export default {
 .book-author {
 	font-size: 13px;
 	color: #a1a1a6;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	line-height: 1.2;
+}
+
+.book-source {
+	font-size: 11px;
+	color: #007AFF;
+	font-weight: 600;
+	margin-top: 4px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
 }
 
 .empty-shelf {

@@ -135,7 +135,7 @@ export default {
 		isFetching: false,
 		hasInitialFetchDone: false,
 		offset: 0,
-		limit: 16,
+		limit: 40,
 		hasMore: true,
 
 		categoriasMock: ['TECNOLOGIA', 'SAÚDE', 'MATEMÁTICA', 'CIÊNCIAS', 'HISTÓRIA', 'EDUCAÇÃO', 'JURÍDICO', 'LITERATURA BRASILEIRA', 'CONTABILIDADE', 'DIREITO BRASILEIRO', 'SAÚDE PÚBLICA BRASIL', 'TECNOLOGIA BRASIL'],
