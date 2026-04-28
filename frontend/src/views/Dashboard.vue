@@ -157,7 +157,7 @@
 								size="small" 
 								rounded="pill"
 								class="text-caption font-weight-bold px-4 text-none" 
-								append-icon="mdi-arrow-right"
+								prepend-icon="mdi-heart-multiple-outline"
 								@click="$router.push('/favoritos')"
 							>
 								Ver Todos

@@ -44,9 +44,9 @@
 
 			<!-- Header Desktop Links -->
 			<div class="header-links hidden-md-and-down mr-6">
-				<router-link to="/explorar" class="header-link">Explorar</router-link>
-				<router-link v-if="isLoggedIn" to="/dashboard" class="header-link">Dashboard</router-link>
-				<router-link to="/sobre-nos" class="header-link">Sobre Nós</router-link>
+				<router-link to="/explorar" class="header-btn"><v-icon size="18" class="mr-2">mdi-compass-outline</v-icon> Explorar</router-link>
+				<router-link v-if="isLoggedIn" to="/dashboard" class="header-btn"><v-icon size="18" class="mr-2">mdi-view-dashboard-outline</v-icon> Dashboard</router-link>
+				<router-link to="/sobre-nos" class="header-btn"><v-icon size="18" class="mr-2">mdi-information-outline</v-icon> Sobre Nós</router-link>
 			</div>
 
 			<!-- User Actions -->
@@ -667,23 +667,30 @@ export default {
 
 	.header-links {
 		display: flex;
-		gap: 24px;
+		gap: 16px;
 		align-items: center;
 	}
 	
-	.header-link {
-		color: rgba(255,255,255,0.7);
+	.header-btn {
+		color: rgba(255,255,255,0.85);
 		text-decoration: none;
 		font-size: 0.95rem;
 		font-weight: 600;
-		transition: all 0.3s var(--spring-easing);
-		padding: 6px 12px;
-		border-radius: 8px;
+		transition: all 0.4s var(--spring-easing);
+		padding: 8px 18px;
+		border-radius: 100px;
+		display: flex;
+		align-items: center;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.08);
 	}
 	
-	.header-link:hover {
+	.header-btn:hover {
 		color: #ffffff;
-		background: rgba(255,255,255,0.1);
+		background: rgba(255, 255, 255, 0.12);
+		border-color: rgba(255, 255, 255, 0.2);
+		transform: translateY(-2px);
+		box-shadow: 0 8px 16px rgba(0,0,0,0.2);
 	}
 
 	.header-logo-container:hover .subtitle-accent {

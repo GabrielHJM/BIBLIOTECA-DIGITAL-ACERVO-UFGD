@@ -51,7 +51,7 @@
 						<router-link to="/esqueci-senha" class="forgot-link">Esqueceu a senha?</router-link>
 					</div>
 
-					<v-btn class="ios-primary-btn w-100 mb-6" @click="login" :loading="loading" height="56" elevation="0">
+					<v-btn class="ios-primary-btn w-100 mb-6" @click="login" :loading="loading" height="56" elevation="0" prepend-icon="mdi-login">
 						Entrar
 					</v-btn>
 

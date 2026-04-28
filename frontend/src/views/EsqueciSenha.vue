@@ -71,7 +71,7 @@
 						</div>
 					</div>
 
-					<v-btn class="ios-primary-btn w-100 mb-6" @click="redefinirSenha" :loading="loading" height="56" elevation="0" :disabled="loading">
+					<v-btn class="ios-primary-btn w-100 mb-6" @click="redefinirSenha" :loading="loading" height="56" elevation="0" :disabled="loading" prepend-icon="mdi-email-fast">
 						Redefinir Senha
 					</v-btn>
 

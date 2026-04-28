@@ -15,11 +15,17 @@
 				
 				<div class="hero-actions fade-up-delay-4">
 					<template v-if="!isLoggedIn">
-						<button class="apple-btn-primary" @click="$router.push('/cadastro')">Começar Agora</button>
-						<button class="apple-btn-link" @click="$router.push('/login')">Entrar <v-icon size="16">mdi-chevron-right</v-icon></button>
+						<button class="apple-btn-accent" @click="$router.push('/cadastro')">
+							<v-icon size="18" class="mr-2">mdi-rocket</v-icon> Começar Agora
+						</button>
+						<button class="apple-btn-primary" @click="$router.push('/login')">
+							<v-icon size="18" class="mr-2">mdi-login</v-icon> Entrar
+						</button>
 					</template>
 					<template v-else>
-						<button class="apple-btn-primary" @click="$router.push('/dashboard')">Ver Meu Dashboard</button>
+						<button class="apple-btn-accent" @click="$router.push('/dashboard')">
+							<v-icon size="18" class="mr-2">mdi-view-dashboard</v-icon> Ver Meu Dashboard
+						</button>
 					</template>
 				</div>
 			</div>
@@ -35,7 +41,7 @@
 					<h3 class="apple-section-title apple-gradient-text">Explore as estantes</h3>
 					<p class="apple-section-desc">Milhares de recursos organizados para você.</p>
 					<button class="apple-btn-accent mt-4" @click="$router.push({ path: '/explorar', query: { categoria: 'TODOS' } })">
-						Explorar Tudo <v-icon size="18" class="ml-1">mdi-arrow-right</v-icon>
+						<v-icon size="18" class="mr-2">mdi-compass</v-icon> Explorar Tudo
 					</button>
 				</div>
 
@@ -300,6 +306,8 @@ export default {
 	border: none;
 	cursor: pointer;
 	transition: all 0.3s ease;
+	display: inline-flex;
+	align-items: center;
 }
 
 .apple-btn-primary:hover {
