@@ -31,7 +31,7 @@ func main() {
 
 	if source == "all" || source == "capes" {
 		h := harvester.NewCAPESHarvester()
-		materials, err := h.Search(context.Background(), "ciência", "", 10)
+		materials, err := h.Search(context.Background(), "ciência", "", 10, 0)
 		if err != nil {
 			logger.Error("Erro ao coletar CAPES", zap.Error(err))
 		} else {
@@ -41,7 +41,7 @@ func main() {
 
 	if source == "all" || source == "semanticscholar" {
 		h := harvester.NewSemanticScholarHarvester()
-		materials, err := h.Search(context.Background(), "tecnologia", "Computação", 15)
+		materials, err := h.Search(context.Background(), "tecnologia", "Computação", 15, 0)
 		if err != nil {
 			logger.Error("Erro ao coletar Semantic Scholar", zap.Error(err))
 		} else {
