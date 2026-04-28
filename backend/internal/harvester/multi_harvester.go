@@ -19,6 +19,11 @@ type MultiSourceHarvester struct {
 	ol    *OpenLibraryHarvester
 	gut   *GutendexHarvester
 	doaj  *DOAJHarvester
+	ia    *InternetArchiveHarvester
+	cross *CrossrefHarvester
+	epmc  *EuropePMCHarvester
+	dblp  *DBLPHarvester
+	plos  *PLOSHarvester
 }
 
 func NewMultiSourceHarvester() *MultiSourceHarvester {
@@ -30,6 +35,11 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 		ol:    NewOpenLibraryHarvester(),
 		gut:   NewGutendexHarvester(),
 		doaj:  NewDOAJHarvester(),
+		ia:    NewInternetArchiveHarvester(),
+		cross: NewCrossrefHarvester(),
+		epmc:  NewEuropePMCHarvester(),
+		dblp:  NewDBLPHarvester(),
+		plos:  NewPLOSHarvester(),
 	}
 }
 
@@ -46,12 +56,10 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		refinedQuery = "saúde medicina"
 	} else if strings.Contains(lowercaseQ, "odontolog") {
 		refinedQuery = "odontologia saúde"
-	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" {
+	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" || lowercaseC == "science" {
 		refinedQuery = "ciências pesquisa"
-	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" {
+	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" || lowercaseC == "mathematics" {
 		refinedQuery = "matemática cálculo"
-	} else if strings.Contains(lowercaseQ, "brasil") || strings.Contains(lowercaseC, "brasil") {
-		refinedQuery = query + " brasil"
 	} else if lowercaseQ == "" {
 		refinedQuery = "livro"
 	}
@@ -120,6 +128,31 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 			mats, err := h.doaj.Search(c, refinedQuery, category, limit, offset)
 			if err == nil { resultsChan <- mats }
 		},
+		// Internet Archive Sweep
+		func(c context.Context) {
+			mats, err := h.ia.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		// Crossref Sweep
+		func(c context.Context) {
+			mats, err := h.cross.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		// Europe PMC Sweep
+		func(c context.Context) {
+			mats, err := h.epmc.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		// DBLP Sweep
+		func(c context.Context) {
+			mats, err := h.dblp.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
+		// PLOS Sweep
+		func(c context.Context) {
+			mats, err := h.plos.Search(c, refinedQuery, category, limit, offset)
+			if err == nil { resultsChan <- mats }
+		},
 	}
 
 	// 3. Execute concurrently with timeout safety (Fast fail for responsive UI)
@@ -164,7 +197,12 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 			strings.Contains(lowerURL, "archive.org/stream") ||
 			strings.Contains(lowerURL, "books.google") ||
 			strings.Contains(lowerURL, "gutendex.com") ||
-			strings.Contains(lowerURL, "arxiv.org/pdf")
+			strings.Contains(lowerURL, "arxiv.org/pdf") ||
+			strings.Contains(lowerURL, "crossref.org") ||
+			strings.Contains(lowerURL, "europepmc.org") ||
+			strings.Contains(lowerURL, "dblp.org") ||
+			strings.Contains(lowerURL, "plos.org") ||
+			strings.Contains(lowerURL, "doi.org")
 
 		if !isValidReader {
 			continue

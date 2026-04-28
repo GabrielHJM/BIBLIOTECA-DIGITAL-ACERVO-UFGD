@@ -19,8 +19,6 @@ package main
 // @name Authorization
 
 import (
-	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -31,10 +29,8 @@ import (
 	"biblioteca-digital-api/config"
 	"biblioteca-digital-api/internal/handler"
 	"biblioteca-digital-api/internal/handler/middleware"
-	"biblioteca-digital-api/internal/harvester"
 	"biblioteca-digital-api/internal/pkg/cache"
 	"biblioteca-digital-api/internal/pkg/logger"
-	"biblioteca-digital-api/internal/repository"
 	"sync"
 
 	_ "biblioteca-digital-api/docs"
@@ -144,6 +140,7 @@ func main() {
 		{"usuarios_cpf", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS cpf TEXT;`},
 		{"usuarios_data_nascimento", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS data_nascimento DATE;`},
 		{"usuarios_username", `ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS username TEXT UNIQUE;`},
+		{"materiais_last_link_check", `ALTER TABLE materiais ADD COLUMN IF NOT EXISTS last_link_check TIMESTAMP DEFAULT '2000-01-01 00:00:00';`},
 	}
 
 	for _, m := range migrations {
@@ -192,8 +189,9 @@ func main() {
 	}
 	_, _ = db.Exec(`CREATE INDEX IF NOT EXISTS idx_historico_usuario ON historico_leitura(usuario_id);`)
 
-	// Inicia o worker de sincronização em segundo plano
+	// Inicia os workers em segundo plano
 	go startBackgroundSync(db)
+	go startDeadLinkChecker(db)
 
 	mux := http.NewServeMux()
 	// Serve static files from the "dist" directory
@@ -308,56 +306,4 @@ func main() {
 	}
 }
 
-func startBackgroundSync(db *sql.DB) {
-	ticker := time.NewTicker(30 * time.Minute)
-	defer ticker.Stop()
 
-	repo := &repository.MaterialPostgres{DB: db}
-	mh := harvester.NewMultiSourceHarvester()
-
-	// Executa uma vez no início
-	logger.Info("Starting initial background synchronization")
-	syncBooks(repo, mh)
-
-	for range ticker.C {
-		logger.Info("Executing periodic background synchronization")
-		syncBooks(repo, mh)
-	}
-}
-
-func syncBooks(repo *repository.MaterialPostgres, mh *harvester.MultiSourceHarvester) {
-	if !syncMu.TryLock() {
-		logger.Warn("Background synchronization already in progress, skipping this run")
-		return
-	}
-	defer syncMu.Unlock()
-
-	// High-yield categories for initial population
-	categories := []string{
-		"TECNOLOGIA", "SAÚDE", "DIREITO", "CIÊNCIAS", "MATEMÁTICA", "EDUCAÇÃO", 
-		"LITERATURA BRASILEIRA", "HISTÓRIA DO BRASIL", "CONTABILIDADE",
-	}
-	
-	logger.Info("Sync: Starting high-volume harvest", zap.Int("categories_count", len(categories)))
-
-	for _, cat := range categories {
-		// Fetch more books per category for a richer initial experience
-		mats, err := mh.Search(context.Background(), "", cat, "", 0, 0, 15, 0)
-		if err == nil {
-			count := 0
-			for i := range mats {
-				if err := repo.Criar(context.Background(), &mats[i]); err != nil {
-					if !strings.Contains(err.Error(), "já existe") {
-						logger.Debug("Sync: Failed to save material", zap.String("title", mats[i].Titulo), zap.Error(err))
-					}
-				} else {
-					count++
-				}
-			}
-			logger.Info("Sync: Category populated", zap.String("category", cat), zap.Int("new_books", count))
-		} else {
-			logger.Error("Harvester search failed during sync", zap.String("category", cat), zap.Error(err))
-		}
-	}
-	logger.Info("Background synchronization completed successfully")
-}
