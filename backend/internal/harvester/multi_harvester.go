@@ -61,10 +61,10 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	var wg sync.WaitGroup
  
 	// 2. High Capacity Worker Pool Logic
-	// We will sweep up to 20 pages for each high-yield source to force more volume
-	pagesToSweep := 10
+	// Reduce pages to sweep for significantly faster results while still keeping volume decent
+	pagesToSweep := 2
 	if limit > 20 {
-		pagesToSweep = 20
+		pagesToSweep = 4
 	}
 
 	// Define tasks for the worker pool
@@ -119,7 +119,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	}
 
 	// 3. Execute concurrently with timeout safety (Fast fail for responsive UI)
-	searchCtx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	searchCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	for _, task := range tasks {
@@ -147,7 +147,22 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 
 	for _, m := range allMaterials {
 		// Clean junk and enforce "Online Reading Only" rule
-		if m.Titulo == "" || m.PDFURL == "" {
+		if m.Titulo == "" || m.PDFURL == "" || !m.Disponivel {
+			continue
+		}
+
+		// Restrict to proper browser readers/PDFs to prevent redirecting to external homepages
+		lowerURL := strings.ToLower(m.PDFURL)
+		isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
+			strings.Contains(lowerURL, "reader") || 
+			strings.Contains(lowerURL, "view") || 
+			strings.Contains(lowerURL, "archive.org/download") ||
+			strings.Contains(lowerURL, "archive.org/stream") ||
+			strings.Contains(lowerURL, "books.google") ||
+			strings.Contains(lowerURL, "gutendex.com") ||
+			strings.Contains(lowerURL, "arxiv.org/pdf")
+
+		if !isValidReader {
 			continue
 		}
 

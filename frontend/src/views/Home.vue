@@ -34,7 +34,7 @@
 				<div class="apple-section-header fade-on-scroll">
 					<h3 class="apple-section-title apple-gradient-text">Explore as estantes</h3>
 					<p class="apple-section-desc">Milhares de recursos organizados para você.</p>
-					<button class="apple-btn-accent mt-4" @click="$router.push({ path: '/explorar', query: { categoria: 'Todos' } })">
+					<button class="apple-btn-accent mt-4" @click="$router.push({ path: '/explorar', query: { categoria: 'TODOS' } })">
 						Explorar Tudo <v-icon size="18" class="ml-1">mdi-arrow-right</v-icon>
 					</button>
 				</div>

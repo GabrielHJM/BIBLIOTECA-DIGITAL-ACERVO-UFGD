@@ -164,7 +164,7 @@ export default {
 		activeFiltersCount() {
 			let count = 0;
 			if (this.filters.ano_inicio) count++;
-			if (this.filters.categoria && this.filters.categoria !== 'Todos') count++;
+			if (this.filters.categoria && this.filters.categoria !== 'TODOS') count++;
 			return count;
 		}
 	},

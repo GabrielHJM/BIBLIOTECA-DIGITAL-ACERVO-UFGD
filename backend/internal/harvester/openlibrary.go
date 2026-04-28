@@ -111,9 +111,6 @@ func (h *OpenLibraryHarvester) Search(ctx context.Context, query string, categor
 		if len(doc.IA) > 0 {
 			// Internet Archive PDF direct link
 			pdfURL = fmt.Sprintf("https://archive.org/download/%s/%s.pdf", doc.IA[0], doc.IA[0])
-		} else {
-			// Fallback para a página de detalhes nativa
-			pdfURL = fmt.Sprintf("https://openlibrary.org%s", doc.Key)
 		}
 
 		if pdfURL == "" {

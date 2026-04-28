@@ -125,7 +125,7 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 
 	var materials []material.Material
 	for _, item := range data.Items {
-		if item.VolumeInfo.Title == "" {
+		if item.VolumeInfo.Title == "" || item.AccessInfo.Viewability == "NO_PAGES" {
 			continue
 		}
 
@@ -144,8 +144,6 @@ func (h *GoogleBooksHarvester) Search(ctx context.Context, query string, categor
 		if pdfURL == "" {
 			if item.VolumeInfo.PreviewLink != "" {
 				pdfURL = item.VolumeInfo.PreviewLink
-			} else if item.VolumeInfo.InfoLink != "" {
-				pdfURL = item.VolumeInfo.InfoLink
 			}
 		}
 
