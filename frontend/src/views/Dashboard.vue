@@ -243,12 +243,16 @@ export default {
 	},
 	created() {
 		this.user = auth.getUser()
-		if (this.user && this.user.id) {
-			this.buscarHistorico()
-			this.buscarFavoritos()
-			this.buscarEstatisticas()
-		}	},
+	},
 	mounted() {
+		if (this.user && this.user.id) {
+			// Atraso intencional para permitir que a animação de transição da página (ios-page) termine
+			setTimeout(() => {
+				this.buscarHistorico()
+				this.buscarFavoritos()
+				this.buscarEstatisticas()
+			}, 300)
+		}
 	},
 	beforeUnmount() {
 	},

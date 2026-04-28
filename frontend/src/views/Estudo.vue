@@ -303,22 +303,26 @@ export default {
 			return 'mdi-book-open-page-variant';
 		}
 	},
-	async mounted() {
+	mounted() {
 		this.isAuthenticated = auth.isAuthenticated();
 		const id = this.$route.params.id;
-		try {
-			const response = await MaterialService.obterDetalhes(id);
-			this.material = response.data;
-			if (this.isAuthenticated && this.material) {
-				MaterialService.registrarLeitura(auth.getUser().id, this.material.id);
+		
+		// Atraso intencional para permitir fluidez na transição ios-page
+		setTimeout(async () => {
+			try {
+				const response = await MaterialService.obterDetalhes(id);
+				this.material = response.data;
+				if (this.isAuthenticated && this.material) {
+					MaterialService.registrarLeitura(auth.getUser().id, this.material.id);
+				}
+			} catch (error) {
+				console.error('Erro ao carregar material:', error);
+				this.notify('Material indisponível ou não encontrado.', 'error');
+				this.$router.replace('/explorar');
+			} finally {
+				this.loading = false;
 			}
-		} catch (error) {
-			console.error('Erro ao carregar material:', error);
-			this.notify('Material indisponível ou não encontrado.', 'error');
-			this.$router.replace('/explorar');
-		} finally {
-			this.loading = false;
-		}
+		}, 300);
 	}
 }
 </script>

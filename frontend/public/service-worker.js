@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bib-digital-v1';
+const CACHE_NAME = 'bib-digital-v2';
 const ASSETS = [
 	'/',
 	'/index.html',
@@ -32,24 +32,21 @@ self.addEventListener('activate', (event) => {
 	);
 });
 
-// Estratégia Stale-While-Revalidate
 self.addEventListener('fetch', (event) => {
-	// Ignora requisições de API para não cachear dados sensíveis de forma agressiva aqui
-	// (Pode ser ajustado para cachear prefetched data se necessário)
-	if (event.request.url.includes('/api/')) {
-		return;
-	}
-
+	// Estratégia Network First para garantir que os usuários sempre recebam
+	// as atualizações mais recentes do GitHub e Backend automaticamente sem CTRL+F5.
 	event.respondWith(
-		caches.open(CACHE_NAME).then((cache) => {
-			return cache.match(event.request).then((cachedResponse) => {
-				const fetchedResponse = fetch(event.request).then((networkResponse) => {
+		fetch(event.request)
+			.then((networkResponse) => {
+				// Atualiza o cache com a versão mais nova
+				return caches.open(CACHE_NAME).then((cache) => {
 					cache.put(event.request, networkResponse.clone());
 					return networkResponse;
 				});
-
-				return cachedResponse || fetchedResponse;
-			});
-		})
+			})
+			.catch(() => {
+				// Fallback offline: se falhar (sem internet), tenta pegar do cache
+				return caches.match(event.request);
+			})
 	);
 });

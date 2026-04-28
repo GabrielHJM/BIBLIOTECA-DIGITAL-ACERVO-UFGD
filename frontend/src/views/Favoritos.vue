@@ -110,10 +110,16 @@ export default {
 	},
 	created() {
 		this.user = auth.getUser();
-		if (this.user) {
-			this.buscarFavoritos();
-		} else {
+		if (!this.user) {
 			this.$router.push('/login');
+		}
+	},
+	mounted() {
+		if (this.user) {
+			// Atraso intencional para permitir fluidez na transição ios-page
+			setTimeout(() => {
+				this.buscarFavoritos();
+			}, 300);
 		}
 	},
 	methods: {

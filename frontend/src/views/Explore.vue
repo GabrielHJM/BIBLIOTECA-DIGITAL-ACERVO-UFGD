@@ -194,7 +194,10 @@ export default {
 
 				// Fetch once correctly
 				if (changed || !this.hasInitialFetchDone) {
-					this.buscar();
+					// Atraso intencional para permitir fluidez na transição ios-page
+					setTimeout(() => {
+						this.buscar();
+					}, 300);
 					this.hasInitialFetchDone = true;
 				}
 			}
