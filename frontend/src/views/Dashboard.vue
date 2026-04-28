@@ -4,13 +4,7 @@
 			<!-- Expert Statistics Dashboard Section -->
 			<v-row v-if="stats && !loading" class="mb-4 px-4 fade-in">
 				<v-col cols="12" md="12">
-					<div class="premium-card-blur pa-5 h-100">
-						<div class="d-flex align-center justify-space-between mb-4">
-							<h3 class="text-overline font-weight-bold opacity-60 d-flex align-center">
-								<v-icon color="amber" class="mr-2" size="18">mdi-medal</v-icon>
-								Minhas Conquistas
-							</h3>
-						</div>
+					<PremiumCard title="Minhas Conquistas" icon="mdi-medal" icon-color="amber">
 						<div class="badges-scroll-wrap">
 							<div v-if="stats.badges && stats.badges.length > 0" class="d-flex flex-wrap gap-2">
 								<v-chip
@@ -29,43 +23,34 @@
 								<span>Leia para desbloquear medalhas!</span>
 							</div>
 						</div>
-					</div>
+					</PremiumCard>
 				</v-col>
 			</v-row>
 
 			<!-- Study Hub Section -->
 			<v-row class="mb-6 px-4">
 				<v-col cols="12">
-					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">
-						<v-icon color="amber" class="mr-2">mdi-school-outline</v-icon>
-						Hub de Estudos
-					</h2>
-				</v-col>
-				<v-col cols="12">
-					<v-card class="study-hub-card notes premium-glow reader-rounding cursor-pointer" @click="$router.push('/anotacoes')">
-						<div class="d-flex align-center pa-6">
-							<div class="hub-icon-wrap cyan">
-								<v-icon size="40" color="cyan">mdi-notebook-edit-outline</v-icon>
+					<PremiumCard title="Hub de Estudos" icon="mdi-school-outline" icon-color="cyan">
+						<v-card class="study-hub-card notes premium-glow reader-rounding cursor-pointer bg-transparent border-0" elevation="0" @click="$router.push('/anotacoes')">
+							<div class="d-flex align-center pa-2">
+								<div class="hub-icon-wrap cyan">
+									<v-icon size="40" color="cyan">mdi-notebook-edit-outline</v-icon>
+								</div>
+								<div class="ml-6">
+									<h3 class="text-h5 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">Minhas Anotações</h3>
+									<p class="text-body-2 opacity-60" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-2'">Acesse todas as notas que você fez durante a leitura.</p>
+								</div>
+								<v-spacer></v-spacer>
+								<v-icon color="white" class="opacity-20">mdi-chevron-right</v-icon>
 							</div>
-							<div class="ml-6">
-								<h3 class="text-h5 font-weight-black" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">Minhas Anotações</h3>
-								<p class="text-body-2 opacity-60" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-2'">Acesse todas as notas que você fez durante a leitura.</p>
-							</div>
-							<v-spacer></v-spacer>
-							<v-icon color="white" class="opacity-20">mdi-chevron-right</v-icon>
-						</div>
-					</v-card>
+						</v-card>
+					</PremiumCard>
 				</v-col>
 			</v-row>
 
-			<!-- Insights Section (New) -->
+			<!-- Insights Section -->
 			<v-row v-if="stats && !loading" class="mb-6 px-4 fade-in">
-				<v-col cols="12">
-					<h2 class="text-h5 font-weight-bold mb-4 d-flex align-center" :class="isDarkTheme ? 'text-white' : 'text-primary-darken-4'">
-						<v-icon color="primary" class="mr-2">mdi-chart-areaspline</v-icon>
-						Insights de Estudo
-					</h2>
-				</v-col>
+
 
 				<!-- Top Categorias -->
 				<v-col cols="12" md="6">
@@ -126,116 +111,80 @@
 				</v-col>
 			</v-row>
 
-			<!-- Header Section -->
-			<v-row align="center" class="mb-6 px-4">
-				<v-col cols="12" class="py-2">
-					<h1 class="text-h4 text-sm-h3 font-weight-bold tracking-tight" :class="isDarkTheme ? 'text-white' : 'text-primary'">Recentes</h1>
+			<!-- Histórico de Leitura Section -->
+			<v-row v-if="historico.length > 0 && !loading" class="mb-6 px-4">
+				<v-col cols="12">
+					<PremiumCard title="Recentes" icon="mdi-history" icon-color="primary">
+						<v-slide-group show-arrows class="pa-2 premium-slider">
+							<v-slide-group-item
+								v-for="(livro, index) in historico"
+								:key="'hist-'+index"
+							>
+								<v-card
+									class="ios-history-card ma-2 premium-shadow-hover"
+									elevation="0"
+									@click="$router.push('/estudo/' + livro.id)"
+								>
+									<div class="mini-premium-cover-ios-dashboard">
+										<div class="mesh-gradient-mini"></div>
+										<div class="glass-overlay-mini">
+											<div class="cover-content-ios-mini">
+												<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
+												<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
+												<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+											</div>
+										</div>
+										<div class="glass-shine"></div>
+									</div>
+									<div class="pa-3">
+										<div class="text-caption font-weight-bold history-title-premium" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
+									</div>
+								</v-card>
+							</v-slide-group-item>
+						</v-slide-group>
+					</PremiumCard>
 				</v-col>
 			</v-row>
 
-			<!-- Histórico de Leitura Section -->
-			<div v-if="historico.length > 0 && !loading" class="mb-6 mt-2">
-				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">
-					<v-icon color="primary" class="mr-2">mdi-history</v-icon>
-					Continuar Lendo
-				</h2>
-				<v-slide-group show-arrows class="pa-2 premium-slider">
-					<v-slide-group-item
-						v-for="(livro, index) in historico"
-						:key="'hist-'+index"
-					>
-						<v-card
-							class="ios-history-card ma-2 premium-shadow-hover"
-							elevation="0"
-							@click="$router.push('/estudo/' + livro.id)"
-						>
-							<div class="mini-premium-cover-ios-dashboard">
-								<div class="mesh-gradient-mini"></div>
-								<div class="glass-overlay-mini">
-									<div class="cover-content-ios-mini">
-										<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
-										<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
-										<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
-									</div>
-								</div>
-								<div class="glass-shine"></div>
-							</div>
-							<div class="pa-3">
-								<div class="text-caption font-weight-bold history-title-premium" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
-							</div>
-						</v-card>
-					</v-slide-group-item>
-				</v-slide-group>
-			</div>
-
-
-
 			<!-- Meus Favoritos Section -->
-			<div v-if="favoritos.length > 0 && !loading" class="mb-6 mt-2">
-				<h2 class="text-h5 font-weight-bold mb-4 px-4 px-sm-2 d-flex align-center" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">
-					<v-icon color="pink" class="mr-2">mdi-heart</v-icon>
-					Meus Favoritos
-					<v-spacer></v-spacer>
-					<v-btn variant="text" color="pink" size="small" class="text-none" @click="$router.push('/favoritos')">Ver Tudo</v-btn>
-				</h2>
-				<v-slide-group show-arrows class="pa-2">
-					<v-slide-group-item
-						v-for="(livro, index) in favoritos"
-						:key="'fav-'+index"
-					>
-						<v-card
-							class="ios-history-card ma-2"
-							elevation="4"
-							@click="$router.push('/estudo/' + livro.id)"
-						>
-							<div class="mini-premium-cover-ios-dashboard">
-								<div class="mesh-gradient-mini"></div>
-								<div class="glass-overlay-mini">
-									<div class="cover-content-ios-mini">
-										<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
-										<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
-										<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+			<v-row v-if="favoritos.length > 0 && !loading" class="mb-6 px-4">
+				<v-col cols="12">
+					<PremiumCard title="Meus Favoritos" icon="mdi-heart" icon-color="pink">
+						<template v-slot:action>
+							<v-btn variant="text" color="pink" size="small" class="text-none" @click="$router.push('/favoritos')">Ver Tudo</v-btn>
+						</template>
+						<v-slide-group show-arrows class="pa-2">
+							<v-slide-group-item
+								v-for="(livro, index) in favoritos"
+								:key="'fav-'+index"
+							>
+								<v-card
+									class="ios-history-card ma-2"
+									elevation="4"
+									@click="$router.push('/estudo/' + livro.id)"
+								>
+									<div class="mini-premium-cover-ios-dashboard">
+										<div class="mesh-gradient-mini"></div>
+										<div class="glass-overlay-mini">
+											<div class="cover-content-ios-mini">
+												<v-icon class="cover-icon-ios mb-1" size="24" color="rgba(255,255,255,0.7)">{{ getBookIcon(livro.categoria, livro.titulo) }}</v-icon>
+												<div class="cover-title-ios-mini">{{ livro.titulo }}</div>
+												<div class="cover-summary-ios-mini">{{ livro.resumo }}</div>
+											</div>
+										</div>
+										<div class="glass-shine"></div>
 									</div>
-								</div>
-								<div class="glass-shine"></div>
-							</div>
-							<div class="pa-2">
-								<div class="text-caption font-weight-bold history-title" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
-							</div>
-						</v-card>
-					</v-slide-group-item>
-				</v-slide-group>
-			</div>
+									<div class="pa-2">
+										<div class="text-caption font-weight-bold history-title" :class="isDarkTheme ? 'text-white' : 'text-grey-darken-3'">{{ livro.titulo }}</div>
+									</div>
+								</v-card>
+							</v-slide-group-item>
+						</v-slide-group>
+					</PremiumCard>
+				</v-col>
+			</v-row>
 
-			<!-- Content Grid -->
-			<div>
-				<v-row class="px-2">
-					<v-col
-						v-for="(livro, index) in livros"
-						:key="livro.id"
-						cols="12"
-						sm="12"
-						md="6"
-						lg="6"
-						class="pa-4"
-					>
-						<BookCard
-							:book="livro"
-							:is-favorited="isFavorited(livro.id)"
-							:animation-delay="index * 50"
-							@toggle-favorite="toggleFavorite"
-							@share="shareBook(livro.id)"
-						/>
-					</v-col>
-				</v-row>
 
-				<v-row v-if="loading" justify="center" class="mt-6 mb-8">
-					<CloudLoader text="Carregando dashboard..." height="150px" />
-				</v-row>
-
-				<!-- Intersection Observer Sentinel -->
-				<div ref="loadMoreSentinel" class="load-more-sentinel-modern"></div>
-			</div>
 		</v-container>
 
 	</div>
@@ -260,16 +209,10 @@ export default {
 		return { isDarkTheme };
 	},
 	data: () => ({
-		livros: [],
 		historico: [],
-		searchQuery: '',
 		loading: false,
 		user: {},
-		stats: null,
-		limit: 16,
-		offset: 0,
-		observer: null,
-		hasMore: true
+		stats: null
 	}),
 	computed: {
 		favoritos() {
@@ -290,17 +233,14 @@ export default {
 	},
 	created() {
 		this.user = auth.getUser()
-		this.buscar(true)
 		if (this.user && this.user.id) {
 			this.buscarHistorico()
 			this.buscarFavoritos()
 			this.buscarEstatisticas()
 		}	},
 	mounted() {
-		this.initObserver();
 	},
 	beforeUnmount() {
-		if (this.observer) this.observer.disconnect();
 	},
 	methods: {
 		async buscarEstatisticas() {
@@ -316,56 +256,7 @@ export default {
 				console.error('Erro ao buscar estatísticas:', error);
 			}
 		},
-		async buscar(reset = true) {
-			if (reset) {
-				this.offset = 0;
-				this.livros = [];
-				this.hasMore = true;
-			}
-			if (!this.hasMore && !reset) return;
 
-			this.loading = true;
-			try {
-				const response = await MaterialService.pesquisar(
-					this.searchQuery, '', '', 0, 0, this.limit, this.offset, 'relevancia'
-				);
-				const novosLivros = response.data || [];
-				
-				if (reset) {
-					this.livros = novosLivros;
-				} else {
-					this.livros = [...this.livros, ...novosLivros];
-				}
-				
-				this.hasMore = novosLivros.length === this.limit;
-				this.offset += this.limit;
-			} catch (error) {
-				console.error('Erro ao buscar materiais:', error);
-			} finally {
-				this.loading = false;
-			}
-		},
-		async loadMore() {
-			if (this.loading || !this.hasMore) return;
-			await this.buscar(false);
-		},
-		initObserver() {
-			const options = {
-				root: null,
-				rootMargin: '400px', // Trigger earlier for smoother "YouTube" feel
-				threshold: 0.1
-			};
-
-			this.observer = new IntersectionObserver((entries) => {
-				if (entries[0].isIntersecting && !this.loading && this.hasMore) {
-					this.loadMore();
-				}
-			}, options);
-
-			if (this.$refs.loadMoreSentinel) {
-				this.observer.observe(this.$refs.loadMoreSentinel);
-			}
-		},
 		getBookIcon(category, title) {
 			const text = ((category || '') + ' ' + (title || '')).toLowerCase();
 			if (text.includes('tecnologia') || text.includes('comput') || text.includes('software') || text.includes('program') || text.includes('digital')) return 'mdi-laptop';

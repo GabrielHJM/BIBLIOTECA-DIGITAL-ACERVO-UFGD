@@ -170,6 +170,7 @@ export default {
 	},
 	mounted() {
 		this.initObserver();
+		document.addEventListener('scroll', this.handleScroll, { passive: true, capture: true });
 	},
 	watch: {
 		'$route.query': {
@@ -306,6 +307,17 @@ export default {
 				this.observer.observe(this.$refs.loadMoreSentinel);
 			}
 		},
+		handleScroll() {
+			if (this.loading || !this.hasMore || this.isFetching) return;
+			
+			if (this.$refs.loadMoreSentinel) {
+				const rect = this.$refs.loadMoreSentinel.getBoundingClientRect();
+				// Se a sentinela estiver a 800px ou menos de entrar na tela (ou já na tela)
+				if (rect.top > 0 && rect.top <= window.innerHeight + 800) {
+					this.loadMore();
+				}
+			}
+		},
 		onSearchInput() {
 			if (this.searchTimeout) clearTimeout(this.searchTimeout);
 			this.searchTimeout = setTimeout(() => {
@@ -363,6 +375,7 @@ export default {
 	beforeUnmount() {
 		if (this.searchTimeout) clearTimeout(this.searchTimeout);
 		if (this.observer) this.observer.disconnect();
+		document.removeEventListener('scroll', this.handleScroll, { capture: true });
 	}
 }
 </script>
