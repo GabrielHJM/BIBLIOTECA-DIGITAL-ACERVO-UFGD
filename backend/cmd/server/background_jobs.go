@@ -55,7 +55,7 @@ func startBackgroundSync(db *sql.DB) {
 	}
 
 	// Start the API Supervisor
-	harvester.GlobalSupervisor.StartMonitoring(10 * time.Minute)
+	harvester.GlobalSupervisor.StartMonitoring(1 * time.Minute)
 
 	// Executa num loop infinito contínuo, com pausas para evitar Rate Limits
 	go func() {
