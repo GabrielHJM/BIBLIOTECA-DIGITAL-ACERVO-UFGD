@@ -143,26 +143,42 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 
 	startPage := (offset / 40) + 1
 
+	executeWithBackoff := func(c context.Context, apiName string, fetch func() ([]material.Material, error)) {
+		if !GlobalSupervisor.IsOnline(apiName) { return }
+		
+		retries := 3
+		backoff := 500 * time.Millisecond
+		
+		for i := 0; i < retries; i++ {
+			if c.Err() != nil { return }
+			mats, err := fetch()
+			if err == nil {
+				if len(mats) > 0 {
+					resultsChan <- mats
+				}
+				return
+			}
+			select {
+			case <-time.After(backoff):
+				backoff *= 2
+			case <-c.Done():
+				return
+			}
+		}
+	}
+
 	tasks := []func(ctx context.Context){
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("GoogleBooks") { return }
-			mats, err := h.gb.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "GoogleBooks", func() ([]material.Material, error) { return h.gb.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("SemanticScholar") { return }
-			mats, err := h.ss.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "SemanticScholar", func() ([]material.Material, error) { return h.ss.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("ArXiv") { return }
-			mats, err := h.arxiv.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "ArXiv", func() ([]material.Material, error) { return h.arxiv.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("CAPES") { return }
-			mats, err := h.capes.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "CAPES", func() ([]material.Material, error) { return h.capes.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
 			if !GlobalSupervisor.IsOnline("OpenLibrary") { return }
@@ -170,8 +186,7 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				wg.Add(1)
 				go func(page int) {
 					defer wg.Done()
-					mats, err := h.ol.Search(c, refinedQuery, category, page, limit/2)
-					if err == nil { resultsChan <- mats }
+					executeWithBackoff(c, "OpenLibrary", func() ([]material.Material, error) { return h.ol.Search(c, refinedQuery, category, page, limit/2) })
 				}(p)
 			}
 		},
@@ -181,81 +196,51 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 				wg.Add(1)
 				go func(page int) {
 					defer wg.Done()
-					mats, err := h.gut.Search(c, refinedQuery, category, page)
-					if err == nil { resultsChan <- mats }
+					executeWithBackoff(c, "Gutendex", func() ([]material.Material, error) { return h.gut.Search(c, refinedQuery, category, page) })
 				}(p)
 			}
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("DOAJ") { return }
-			mats, err := h.doaj.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "DOAJ", func() ([]material.Material, error) { return h.doaj.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("InternetArchive") { return }
-			mats, err := h.ia.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "InternetArchive", func() ([]material.Material, error) { return h.ia.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("Crossref") { return }
-			mats, err := h.cross.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "Crossref", func() ([]material.Material, error) { return h.cross.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("EuropePMC") { return }
-			mats, err := h.epmc.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "EuropePMC", func() ([]material.Material, error) { return h.epmc.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("DBLP") { return }
-			mats, err := h.dblp.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "DBLP", func() ([]material.Material, error) { return h.dblp.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("PLOS") { return }
-			mats, err := h.plos.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
-		},
-		// The 8 new APIs
-		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("OpenAlex") { return }
-			mats, err := h.openalex.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "PLOS", func() ([]material.Material, error) { return h.plos.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("Zenodo") { return }
-			mats, err := h.zenodo.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "OpenAlex", func() ([]material.Material, error) { return h.openalex.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("HAL") { return }
-			mats, err := h.hal.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "Zenodo", func() ([]material.Material, error) { return h.zenodo.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("PubMed") { return }
-			mats, err := h.pubmed.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "HAL", func() ([]material.Material, error) { return h.hal.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("OSF") { return }
-			mats, err := h.osf.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "PubMed", func() ([]material.Material, error) { return h.pubmed.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("BASE") { return }
-			mats, err := h.base.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "OSF", func() ([]material.Material, error) { return h.osf.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("CORE") { return }
-			mats, err := h.core.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "BASE", func() ([]material.Material, error) { return h.base.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
-			if !GlobalSupervisor.IsOnline("SciELO") { return }
-			mats, err := h.scielo.Search(c, refinedQuery, category, limit, offset)
-			if err == nil { resultsChan <- mats }
+			executeWithBackoff(c, "CORE", func() ([]material.Material, error) { return h.core.Search(c, refinedQuery, category, limit, offset) })
+		},
+		func(c context.Context) {
+			executeWithBackoff(c, "SciELO", func() ([]material.Material, error) { return h.scielo.Search(c, refinedQuery, category, limit, offset) })
 		},
 	}
 

@@ -23,6 +23,12 @@ type PesquisarMaterialUseCase struct {
 }
 
 func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categoria, fonte string, anoInicio, anoFim int, tags []string, limit, offset int, sortParam string) ([]material.Material, error) {
+	if anoInicio == 0 && termo != "" {
+		termo, anoInicio = utils.ParseSmartQuery(termo)
+		if anoInicio != 0 && anoFim == 0 {
+			anoFim = anoInicio
+		}
+	}
 	cacheKey := fmt.Sprintf("search:%s:%s:%s:%d:%d:%d:%d:%s", termo, categoria, fonte, anoInicio, anoFim, limit, offset, sortParam)
 	if uc.Cache != nil {
 		var cached []material.Material
@@ -92,9 +98,9 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		}()
 	}
 
-	// 3. Deduplication and Verification
+	// 3. Deduplication and Verification (Fuzzy Matching + Metadata Fusion)
 	var materiais []material.Material
-	uniqueMap := make(map[string]material.Material)
+	uniqueList := make([]material.Material, 0)
 	urlsToCheck := make([]string, 0)
 
 	for _, m := range materiaisIniciais {
@@ -102,8 +108,32 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		if sig == "" {
 			sig = strings.ToLower(m.Titulo + ":" + m.Autor)
 		}
-		if _, exists := uniqueMap[sig]; !exists {
-			uniqueMap[sig] = m
+		
+		isDuplicate := false
+		for i, existing := range uniqueList {
+			existingSig := existing.ExternoID
+			if existingSig == "" {
+				existingSig = strings.ToLower(existing.Titulo + ":" + existing.Autor)
+			}
+			
+			if sig == existingSig || utils.IsTitleSimilar(m.Titulo, existing.Titulo) {
+				isDuplicate = true
+				// Fusão de Metadados (Metadata Fusion)
+				if existing.CapaURL == "" && m.CapaURL != "" {
+					uniqueList[i].CapaURL = m.CapaURL
+				}
+				if existing.PDFURL == "" && m.PDFURL != "" {
+					uniqueList[i].PDFURL = m.PDFURL
+				}
+				if len(m.Descricao) > len(existing.Descricao) {
+					uniqueList[i].Descricao = m.Descricao
+				}
+				break
+			}
+		}
+
+		if !isDuplicate {
+			uniqueList = append(uniqueList, m)
 			if m.PDFURL != "" {
 				urlsToCheck = append(urlsToCheck, m.PDFURL)
 			}
@@ -118,7 +148,7 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		statusMap = uc.Verifier.VerifyBatch(verifyCtx, urlsToCheck)
 	}
 
-	for _, m := range uniqueMap {
+	for _, m := range uniqueList {
 		if m.PDFURL != "" {
 			// Optimistic: Only exclude if explicitly reported as DEAD (404/403 etc)
 			if alive, exists := statusMap[m.PDFURL]; exists && !alive {
