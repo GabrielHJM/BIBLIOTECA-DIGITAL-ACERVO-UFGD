@@ -272,10 +272,10 @@ export default {
 					}
 				}
 
-				this.hasMore = novosLivrosRaw.length === this.limit;
-				if (novosLivrosRaw.length > 0) {
-					this.offset += this.limit;
-				}
+				// Motor de Força: A biblioteca é viva e infinita. Sempre tente buscar mais.
+				this.hasMore = true;
+				// Sempre avança o offset para forçar as APIs a buscarem novas páginas profundas.
+				this.offset += this.limit;
 
 				if (reset && this.livros.length === 0) {
 					this.notify('Nenhum material encontrado para sua busca.', 'info')

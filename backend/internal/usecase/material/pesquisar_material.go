@@ -39,38 +39,57 @@ func (uc *PesquisarMaterialUseCase) Execute(ctx context.Context, termo, categori
 		return nil, localErr
 	}
 
-	// 2. High Density Harvesting (Trigger if local database is too sparse)
-	// We define "sparse" as having less than 2 results found locally
-	isSparse := len(materiaisIniciais) < 2
-	hasQuery := termo != "" || categoria != ""
+	// 2. High Density Harvesting ("Motor de Força")
+	// Trigger synchronous fast-yield harvest if local database doesn't have enough results to fill the page
+	needsHarvest := len(materiaisIniciais) < limit
 
-	if hasQuery && isSparse && uc.Harvester != nil {
-		// Calculate harvest depth based on the machine's strength (implied by requester)
-		harvestLimit := limit
-		if limit < 40 { harvestLimit = 60 } // Minimum decent harvest
+	if uc.Harvester != nil {
+		// Se precisamos de resultados AGORA, rodamos síncrono com timeout curto
+		if needsHarvest {
+			harvestLimit := limit
+			if limit < 40 { harvestLimit = 60 }
 
-		harvested, err := uc.Harvester.Search(ctx, termo, categoria, fonte, anoInicio, anoFim, harvestLimit, offset)
-		if err == nil && len(harvested) > 0 {
-			// Persist top results synchronously to ensure they have valid database IDs for the UI
-			// We only save the amount we actually need to return (limit)
-			numToSaveSync := limit
-			if len(harvested) < numToSaveSync {
-				numToSaveSync = len(harvested)
+			// Usar um contexto mais curto para não prender o usuário
+			fastCtx, cancelFast := context.WithTimeout(ctx, 6*time.Second)
+			defer cancelFast()
+
+			harvested, err := uc.Harvester.Search(fastCtx, termo, categoria, fonte, anoInicio, anoFim, harvestLimit, offset)
+			if err == nil && len(harvested) > 0 {
+				numToSaveSync := limit
+				if len(harvested) < numToSaveSync {
+					numToSaveSync = len(harvested)
+				}
+
+				for i := 0; i < numToSaveSync; i++ {
+					_ = uc.Repo.Criar(ctx, &harvested[i])
+				}
+
+				for i := numToSaveSync; i < len(harvested); i++ {
+					go func(m *material.Material) {
+						_ = uc.Repo.Criar(context.Background(), m)
+					}(&harvested[i])
+				}
+				materiaisIniciais = append(materiaisIniciais, harvested...)
 			}
-
-			for i := 0; i < numToSaveSync; i++ {
-				_ = uc.Repo.Criar(ctx, &harvested[i])
-			}
-
-			// Persist the rest in background
-			for i := numToSaveSync; i < len(harvested); i++ {
-				go func(m *material.Material) {
-					_ = uc.Repo.Criar(context.Background(), m)
-				}(&harvested[i])
-			}
-			// Combine results
-			materiaisIniciais = append(materiaisIniciais, harvested...)
 		}
+
+		// Background Auto-Feeding: SEMPRE rodar uma busca na PRÓXIMA página em background
+		// para manter a biblioteca crescendo infinitamente
+		go func() {
+			bgCtx, cancelBg := context.WithTimeout(context.Background(), 30*time.Second)
+			defer cancelBg()
+			
+			nextOffset := offset + limit
+			if nextOffset == 0 { nextOffset = limit }
+			
+			// Busca profunda silenciosa
+			bgHarvested, errBg := uc.Harvester.Search(bgCtx, termo, categoria, fonte, anoInicio, anoFim, limit, nextOffset)
+			if errBg == nil {
+				for i := range bgHarvested {
+					_ = uc.Repo.Criar(bgCtx, &bgHarvested[i])
+				}
+			}
+		}()
 	}
 
 	// 3. Deduplication and Verification

@@ -85,18 +85,51 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 	lowercaseQ := strings.ToLower(query)
 	lowercaseC := strings.ToLower(category)
 
-	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" {
-		refinedQuery = "tecnologia computação"
-	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" {
-		refinedQuery = "saúde medicina"
-	} else if strings.Contains(lowercaseQ, "odontolog") {
-		refinedQuery = "odontologia saúde"
+	idx := 0
+	if limit > 0 {
+		idx = (offset / limit)
+	} else {
+		idx = offset
+	}
+
+	if lowercaseQ == "tecnologia" || lowercaseC == "tecnologia" || lowercaseC == "tecnologia brasil" {
+		subs := []string{"tecnologia computação", "engenharia de software", "inteligência artificial", "redes de computadores", "segurança da informação", "programação", "banco de dados"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseQ == "saúde" || lowercaseC == "saúde" || lowercaseC == "saúde pública brasil" {
+		subs := []string{"saúde medicina", "enfermagem", "saúde pública", "epidemiologia", "fisioterapia", "nutrição"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if strings.Contains(lowercaseQ, "odontolog") || strings.Contains(lowercaseC, "odontolog") {
+		subs := []string{"odontologia saúde", "odontologia clínica", "cirurgia odontológica", "ortodontia", "periodontia"}
+		refinedQuery = subs[idx % len(subs)]
 	} else if lowercaseQ == "ciências" || lowercaseC == "ciências" || lowercaseC == "science" {
-		refinedQuery = "ciências pesquisa"
+		subs := []string{"ciências pesquisa", "física", "química", "biologia", "astronomia", "ciências da natureza"}
+		refinedQuery = subs[idx % len(subs)]
 	} else if lowercaseQ == "matemática" || lowercaseC == "matemática" || lowercaseC == "mathematics" {
-		refinedQuery = "matemática cálculo"
+		subs := []string{"matemática cálculo", "álgebra", "geometria", "estatística", "matemática aplicada", "probabilidade"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseC == "história" {
+		subs := []string{"história mundial", "história do brasil", "história antiga", "idade média", "história contemporânea"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseC == "educação" {
+		subs := []string{"educação pedagogia", "didática", "educação infantil", "ensino superior", "educação inclusiva"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseC == "jurídico" || lowercaseC == "direito brasileiro" {
+		subs := []string{"direito constitucional", "direito penal", "direito civil", "direito do trabalho", "processo penal", "direito administrativo"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseC == "literatura brasileira" {
+		subs := []string{"literatura brasileira", "poesia brasileira", "romance brasileiro", "contos brasileiros", "modernismo brasileiro"}
+		refinedQuery = subs[idx % len(subs)]
+	} else if lowercaseC == "contabilidade" {
+		subs := []string{"contabilidade geral", "contabilidade financeira", "auditoria", "contabilidade pública", "contabilidade de custos"}
+		refinedQuery = subs[idx % len(subs)]
 	} else if lowercaseQ == "" {
-		refinedQuery = "livro"
+		subjects := []string{
+			"tecnologia", "história", "medicina", "literatura", "filosofia", 
+			"matemática", "física", "biologia", "direito", "economia", 
+			"sociologia", "educação", "geografia", "engenharia", "psicologia", 
+			"arte", "música", "astronomia", "química", "arquitetura", "ciência",
+		}
+		refinedQuery = subjects[idx % len(subjects)]
 	}
 
 	var allMaterials []material.Material
