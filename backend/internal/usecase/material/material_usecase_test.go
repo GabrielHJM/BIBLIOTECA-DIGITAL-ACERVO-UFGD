@@ -34,11 +34,11 @@ func (m *MockRepository) Criar(ctx context.Context, mat *material.Material) erro
 
 // MockHarvester implements Harvester interface
 type MockHarvester struct {
-	SearchFunc func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error)
+	SearchFunc func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error)
 }
 
-func (m *MockHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error) {
-	return m.SearchFunc(ctx, query, category, source, startYear, endYear, limit)
+func (m *MockHarvester) Search(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error) {
+	return m.SearchFunc(ctx, query, category, source, startYear, endYear, limit, offset)
 }
 
 // MockCache implements Cache interface
@@ -88,7 +88,7 @@ func TestListarConteudosExecute(t *testing.T) {
 			},
 		}
 		harvester := &MockHarvester{
-			SearchFunc: func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error) {
+			SearchFunc: func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error) {
 				return []material.Material{{Titulo: "Externo 1"}}, nil
 			},
 		}
@@ -149,7 +149,7 @@ func TestPesquisarMaterialExecute(t *testing.T) {
 			},
 		}
 		harvester := &MockHarvester{
-			SearchFunc: func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int) ([]material.Material, error) {
+			SearchFunc: func(ctx context.Context, query string, category string, source string, startYear int, endYear int, limit int, offset int) ([]material.Material, error) {
 				return []material.Material{
 					{Titulo: "Local 1", ExternoID: "ext_1"}, // Duplicado
 					{Titulo: "Novo Externo", ExternoID: "ext_2"},
