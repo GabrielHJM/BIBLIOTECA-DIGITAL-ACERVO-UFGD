@@ -115,10 +115,17 @@ const router = createRouter({
 	history: createWebHistory(),
 	routes: routes,
 	scrollBehavior(to, from, savedPosition) {
-		if (savedPosition) {
-			return savedPosition;
-		}
-		return { top: 0 };
+		// Retorna uma Promise para atrasar a rolagem da página até que a animação (transition) termine.
+		// A transição "ios-page" dura ~400ms. Evita que a página pule pro topo antes de mudar de tela.
+		return new Promise((resolve) => {
+			setTimeout(() => {
+				if (savedPosition) {
+					resolve(savedPosition);
+				} else {
+					resolve({ top: 0 });
+				}
+			}, 400);
+		});
 	}
 })
 
