@@ -132,7 +132,6 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		refinedQuery = subjects[idx % len(subjects)]
 	}
 
-	var allMaterials []material.Material
 	resultsChan := make(chan []material.Material, 100)
 	var wg sync.WaitGroup
  
