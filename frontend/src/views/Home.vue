@@ -153,7 +153,8 @@ export default {
 				{ title: 'Instantâneo', desc: 'Leitura online sem necessidade de download ou espera.', icon: 'mdi-lightning-bolt', iconColor: '#FFD60A' },
 				{ title: 'Personalizado', desc: 'Favoritos, histórico e recomendações sob medida.', icon: 'mdi-auto-fix', iconColor: '#BF5AF2' },
 				{ title: 'Gratuito', desc: 'Sempre gratuito e democrático. O conhecimento é de todos.', icon: 'mdi-currency-usd-off', iconColor: '#FF375F' }
-			]
+			],
+			savedScrollY: 0
 		}
 	},
 	mounted() {
@@ -177,6 +178,16 @@ export default {
 	beforeUnmount() {
 		window.removeEventListener('scroll', this.handleDynamicScroll);
 		if (this.autoUpdateInterval) clearInterval(this.autoUpdateInterval);
+	},
+	activated() {
+		if (this.savedScrollY > 0) {
+			setTimeout(() => {
+				window.scrollTo({ top: this.savedScrollY, behavior: 'instant' });
+			}, 100);
+		}
+	},
+	deactivated() {
+		this.savedScrollY = window.scrollY || document.documentElement.scrollTop;
 	},
 	methods: {
 		setupIntersectionObserver() {

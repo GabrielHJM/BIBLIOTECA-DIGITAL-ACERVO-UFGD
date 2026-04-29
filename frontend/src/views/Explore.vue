@@ -150,7 +150,8 @@ export default {
 		searchTimeout: null,
 		longRequestTimeout: null,
 		showTimeoutWarning: false,
-		observer: null
+		observer: null,
+		savedScrollY: 0
 	}),
 	setup() {
 		const theme = useTheme();
@@ -171,6 +172,18 @@ export default {
 	mounted() {
 		this.initObserver();
 		document.addEventListener('scroll', this.handleScroll, { passive: true, capture: true });
+	},
+	activated() {
+		// Restaura a posição exata de scroll ao voltar da tela do livro
+		if (this.savedScrollY > 0) {
+			setTimeout(() => {
+				window.scrollTo({ top: this.savedScrollY, behavior: 'instant' });
+			}, 100);
+		}
+	},
+	deactivated() {
+		// Salva a posição exata de scroll ao clicar num livro
+		this.savedScrollY = window.scrollY || document.documentElement.scrollTop;
 	},
 	watch: {
 		'$route.query': {
