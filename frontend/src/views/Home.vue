@@ -156,9 +156,17 @@ export default {
 			]
 		}
 	},
-	async mounted() {
-		await this.fetchMateriais();
-		this.setupIntersectionObserver();
+	mounted() {
+		// Inicia a busca sem bloquear a renderização inicial e os efeitos visuais
+		this.fetchMateriais();
+		
+		this.$nextTick(() => {
+			// Um pequeno delay para garantir que o DOM renderizou completamente as divs vazias
+			setTimeout(() => {
+				this.setupIntersectionObserver();
+			}, 50);
+		});
+		
 		window.addEventListener('scroll', this.handleDynamicScroll, { passive: true });
 		
 		// Auto-Update Sem F5 (a cada 2 minutos)

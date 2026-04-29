@@ -260,54 +260,56 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		close(resultsChan)
 	}()
 
-	for mats := range resultsChan {
-		allMaterials = append(allMaterials, mats...)
-	}
-
 	uniqueMaterials := make([]material.Material, 0)
 	seen := make(map[string]bool)
 
-	for _, m := range allMaterials {
-		if m.Titulo == "" || m.PDFURL == "" || !m.Disponivel {
-			continue
+	for mats := range resultsChan {
+		for _, m := range mats {
+			if m.Titulo == "" || m.PDFURL == "" || !m.Disponivel {
+				continue
+			}
+
+			lowerURL := strings.ToLower(m.PDFURL)
+			isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
+				strings.Contains(lowerURL, "reader") || 
+				strings.Contains(lowerURL, "view") || 
+				strings.Contains(lowerURL, "archive.org") ||
+				strings.Contains(lowerURL, "books.google") ||
+				strings.Contains(lowerURL, "gutendex.com") ||
+				strings.Contains(lowerURL, "arxiv.org") ||
+				strings.Contains(lowerURL, "crossref.org") ||
+				strings.Contains(lowerURL, "europepmc.org") ||
+				strings.Contains(lowerURL, "dblp.org") ||
+				strings.Contains(lowerURL, "plos.org") ||
+				strings.Contains(lowerURL, "doi.org") ||
+				strings.Contains(lowerURL, "openalex.org") ||
+				strings.Contains(lowerURL, "zenodo.org") ||
+				strings.Contains(lowerURL, "archives-ouvertes.fr") ||
+				strings.Contains(lowerURL, "nih.gov") ||
+				strings.Contains(lowerURL, "osf.io")
+
+			if !isValidReader {
+				continue
+			}
+
+			sig := strings.ToLower(m.Titulo + ":" + m.Autor)
+			if m.ExternoID != "" {
+				sig = m.ExternoID
+			}
+
+			if !seen[sig] {
+				seen[sig] = true
+				uniqueMaterials = append(uniqueMaterials, m)
+			}
 		}
 
-		lowerURL := strings.ToLower(m.PDFURL)
-		isValidReader := strings.HasSuffix(lowerURL, ".pdf") || 
-			strings.Contains(lowerURL, "reader") || 
-			strings.Contains(lowerURL, "view") || 
-			strings.Contains(lowerURL, "archive.org") ||
-			strings.Contains(lowerURL, "books.google") ||
-			strings.Contains(lowerURL, "gutendex.com") ||
-			strings.Contains(lowerURL, "arxiv.org") ||
-			strings.Contains(lowerURL, "crossref.org") ||
-			strings.Contains(lowerURL, "europepmc.org") ||
-			strings.Contains(lowerURL, "dblp.org") ||
-			strings.Contains(lowerURL, "plos.org") ||
-			strings.Contains(lowerURL, "doi.org") ||
-			strings.Contains(lowerURL, "openalex.org") ||
-			strings.Contains(lowerURL, "zenodo.org") ||
-			strings.Contains(lowerURL, "archives-ouvertes.fr") ||
-			strings.Contains(lowerURL, "nih.gov") ||
-			strings.Contains(lowerURL, "osf.io")
-
-		if !isValidReader {
-			continue
-		}
-
-		sig := strings.ToLower(m.Titulo + ":" + m.Autor)
-		if m.ExternoID != "" {
-			sig = m.ExternoID
-		}
-
-		if !seen[sig] {
-			seen[sig] = true
-			uniqueMaterials = append(uniqueMaterials, m)
+		// Return early if we have enough results, so the user doesn't wait for all APIs to finish!
+		if limit > 0 && len(uniqueMaterials) >= limit {
+			break
 		}
 	}
 
 	logger.Info("HighCapacity search completed with Supervisor checks", 
-		zap.Int("total_harvested", len(allMaterials)), 
 		zap.Int("unique_high_quality", len(uniqueMaterials)),
 		zap.String("query", query))
 
