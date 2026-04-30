@@ -27,10 +27,6 @@ type MultiSourceHarvester struct {
 	openalex *OpenAlexHarvester
 	zenodo   *ZenodoHarvester
 	hal      *HALHarvester
-	pubmed   *PubMedHarvester
-	osf      *OSFHarvester
-	base     *BASEHarvester
-	core     *COREHarvester
 	scielo   *SciELOHarvester
 }
 
@@ -50,11 +46,7 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 	GlobalSupervisor.RegisterAPI("OpenAlex", "https://api.openalex.org/works?search=test")
 	GlobalSupervisor.RegisterAPI("Zenodo", "https://zenodo.org/api/records?q=test")
 	GlobalSupervisor.RegisterAPI("HAL", "https://api.archives-ouvertes.fr/search/?q=test")
-	GlobalSupervisor.RegisterAPI("PubMed", "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pmc&term=test")
-	GlobalSupervisor.RegisterAPI("OSF", "https://api.osf.io/v2/nodes/?filter[title]=test")
-	GlobalSupervisor.RegisterAPI("BASE", "https://api.base-search.net/cgi-bin/BaseHttpSearch/v1/")
-	GlobalSupervisor.RegisterAPI("CORE", "https://api.core.ac.uk/v3/search/works")
-	GlobalSupervisor.RegisterAPI("SciELO", "https://search.scielo.org/")
+	GlobalSupervisor.RegisterAPI("SciELO", "https://api.crossref.org/works?query=test&filter=prefix:10.1590")
 
 	return &MultiSourceHarvester{
 		capes:    NewCAPESHarvester(),
@@ -72,10 +64,6 @@ func NewMultiSourceHarvester() *MultiSourceHarvester {
 		openalex: NewOpenAlexHarvester(),
 		zenodo:   NewZenodoHarvester(),
 		hal:      NewHALHarvester(),
-		pubmed:   NewPubMedHarvester(),
-		osf:      NewOSFHarvester(),
-		base:     NewBASEHarvester(),
-		core:     NewCOREHarvester(),
 		scielo:   NewSciELOHarvester(),
 	}
 }
@@ -225,18 +213,6 @@ func (h *MultiSourceHarvester) Search(ctx context.Context, query string, categor
 		},
 		func(c context.Context) {
 			executeWithBackoff(c, "HAL", func() ([]material.Material, error) { return h.hal.Search(c, refinedQuery, category, limit, offset) })
-		},
-		func(c context.Context) {
-			executeWithBackoff(c, "PubMed", func() ([]material.Material, error) { return h.pubmed.Search(c, refinedQuery, category, limit, offset) })
-		},
-		func(c context.Context) {
-			executeWithBackoff(c, "OSF", func() ([]material.Material, error) { return h.osf.Search(c, refinedQuery, category, limit, offset) })
-		},
-		func(c context.Context) {
-			executeWithBackoff(c, "BASE", func() ([]material.Material, error) { return h.base.Search(c, refinedQuery, category, limit, offset) })
-		},
-		func(c context.Context) {
-			executeWithBackoff(c, "CORE", func() ([]material.Material, error) { return h.core.Search(c, refinedQuery, category, limit, offset) })
 		},
 		func(c context.Context) {
 			executeWithBackoff(c, "SciELO", func() ([]material.Material, error) { return h.scielo.Search(c, refinedQuery, category, limit, offset) })
